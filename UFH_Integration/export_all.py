@@ -15,6 +15,7 @@ from teaser.logic.buildingobjects.buildingphysics.material import Material
 from teaser.logic.buildingobjects.buildingphysics.buildingelement import BuildingElement
 from teaser.logic.simulation.modelicainfo import ModelicaInfo
 from teaser.logic.buildingobjects.calculation.two_element import TwoElement
+from teaser.logic.buildingobjects.buildingphysics.tabs import InnerTABS, OuterTABS
 
 
 class ExportAll:
@@ -29,6 +30,14 @@ class ExportAll:
         prj.modelica_info.stop_time = 604800
         bldg = self.create_building(prj, 'SimpleBuilding ' + name, 2015, 1, 20)
         tz = self.create_thermal_zone(bldg, "Bed room", "tz_1", 20, 3)
+        self.create_instance(InnerTABS, tz, 20, -1, bldg.year_of_construction, "up_half_heavy")
+        self.create_instance(InnerTABS, tz, 20, -1, bldg.year_of_construction, "up_half_light")
+        self.create_instance(InnerTABS, tz, 20, -1, bldg.year_of_construction, "lo_half")
+
+        self.create_instance(OuterTABS, tz, 20, -1, bldg.year_of_construction, "up_half_heavy")
+        self.create_instance(OuterTABS, tz, 20, -1, bldg.year_of_construction, "up_half_light")
+        self.create_instance(OuterTABS, tz, 20, -1, bldg.year_of_construction, "lo_half")
+
         self.create_instance(OuterWall, tz, 5, 0, bldg.year_of_construction, "light")
         self.create_instance(OuterWall, tz, 4, 90, bldg.year_of_construction, "light")
         self.create_instance(OuterWall, tz, 5, 180, bldg.year_of_construction, "light")

@@ -16,7 +16,7 @@ class InnerTABS(InnerWall):
     parent : ThermalZone()
         The parent class of this object, the ThermalZone the BE belongs to.
         Allows for better control of hierarchical structures. If not None it
-        adds this TABS to ThermalZone.InnerTabs.
+        adds this TABS to ThermalZone.inner_tabs.
         Default is None.
 
     Attributes
@@ -126,7 +126,7 @@ class OuterTABS(OuterWall):
     parent : ThermalZone()
         The parent class of this object, the ThermalZone the BE belongs to.
         Allows for better control of hierarchical structures. If not None it
-        adds this TABS to ThermalZone.InnerTabs.
+        adds this TABS to ThermalZone.outer_tabs.
         Default is None.
 
     Attributes

@@ -388,6 +388,27 @@ class TwoElement(object):
         self.heat_load = 0.0
         self.cool_load = 0.0
 
+        # lumped resistance/capacity InnerTABS
+        self.r1_it = 0.0
+        self.c1_it = 0.0
+
+        # lumped resistances/capacity OuterTABS
+        self.r1_ot = 0.0
+        self.r_rest_ot = 0.0
+        self.c1_ot = 0.0
+
+        # Attributes for outer tabs
+        self.area_ot = 0.0
+
+        # Attributes for outer tabs
+        self.area_it = 0.0
+
+        # coefficient of heat transfer facing the inside of this thermal zone coming from tabs
+        self.alpha_conv_inner_it = 0.0
+
+        # coefficient of heat transfer facing the inside of this thermal zone coming from tabs
+        self.alpha_conv_inner_ot = 0.0
+
     def calc_attributes(self):
         """Calls all necessary function to calculate model attributes"""
 
@@ -411,6 +432,14 @@ class TwoElement(object):
             inner_wall.calc_equivalent_res()
             inner_wall.calc_ua_value()
 
+        for inner_tabs in self.thermal_zone.inner_tabs:
+            inner_tabs.calc_equivalent_res()
+            inner_tabs.calc_ua_value()
+
+        for outer_tabs in self.thermal_zone.outer_tabs:
+            outer_tabs.calc_equivalent_res()
+            outer_tabs.calc_ua_value()
+
         self.set_calc_default()
         if len(outer_walls) < 1:
             warnings.warn(
@@ -424,6 +453,7 @@ class TwoElement(object):
             )
         else:
             self._sum_outer_wall_elements()
+
         if (
             len(
                 self.thermal_zone.inner_walls
@@ -1302,3 +1332,24 @@ class TwoElement(object):
         self.orientation_facade = []
         self.heat_load = 0.0
         self.cool_load = 0.0
+
+        # lumped resistance/capacity InnerTABS
+        self.r1_it = 0.0
+        self.c1_it = 0.0
+
+        # lumped resistances/capacity OuterTABS
+        self.r1_ot = 0.0
+        self.r_rest_ot = 0.0
+        self.c1_ot = 0.0
+
+        # Attributes for outer tabs
+        self.area_ot = 0.0
+
+        # Attributes for outer tabs
+        self.area_it = 0.0
+
+        # coefficient of heat transfer facing the inside of this thermal zone coming from tabs
+        self.alpha_conv_inner_it = 0.0
+
+        # coefficient of heat transfer facing the inside of this thermal zone coming from tabs
+        self.alpha_conv_inner_ot = 0.0
