@@ -76,6 +76,7 @@ def _set_basic_data(element, element_in):
         type(element).__name__ == "OuterWall"
         or type(element).__name__ == "Rooftop"
         or type(element).__name__ == "Door"
+        or type(element).__name__ == "OuterTABS"
     ):
 
         element.inner_radiation = element_in["inner_radiation"]

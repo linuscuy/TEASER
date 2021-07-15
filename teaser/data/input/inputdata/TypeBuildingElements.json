@@ -3183,6 +3183,8 @@
         "construction_type": "up_half_light",
         "inner_radiation": 5.0,
         "inner_convection": 1.7000000000000002,
+        "outer_radiation": 5.0,
+        "outer_convection": 20.000000000000004,
         "layer": {
             "0": {
                 "thickness": 0.06,
@@ -3208,6 +3210,8 @@
         "construction_type": "up_half_heavy",
         "inner_radiation": 5.0,
         "inner_convection": 1.7000000000000002,
+        "outer_radiation": 5.0,
+        "outer_convection": 20.000000000000004,
         "layer": {
             "0": {
                 "thickness": 0.06,
@@ -3233,6 +3237,8 @@
         "construction_type": "lo_half",
         "inner_radiation": 5.0,
         "inner_convection": 1.7000000000000002,
+        "outer_radiation": 5.0,
+        "outer_convection": 20.000000000000004,
         "layer": {
             "0": {
                 "thickness": 0.045,
