@@ -10,7 +10,6 @@ import warnings
 from teaser.logic.buildingobjects.calculation.aixlib import AixLib
 from teaser.logic.buildingobjects.calculation.ibpsa import IBPSA
 
-
 from teaser.logic.buildingobjects.buildingsystems.buildingahu import BuildingAHU
 
 
@@ -153,6 +152,7 @@ class Building(object):
         self.longitude = 6.05
         self.latitude = 50.79
 
+        self.gml_surfaces = []
         self._thermal_zones = []
         self._outer_area = {}
         self._window_area = {}
@@ -166,8 +166,105 @@ class Building(object):
         self._used_library_calc = "AixLib"
 
         self.library_attr = None
+    def set_height_gml(self):
+        """Calculates the height of a building from CityGML data
 
-    def set_outer_wall_area(self, new_area, orientation):
+        With given gml surfaces, this function computes the height of a
+        building of LoD 1 and LoD 2 buildings from CityGML data. All
+        z-coordinates are evaluated and the minimum z-value is subtracted
+        by the maximal value.
+
+        """
+        if self.bldg_height is not None:
+            pass
+        else:
+            max_help = 0
+            min_help = 9999
+            for surface in self.gml_surfaces:
+                z_value = surface.gml_surface[2::3]
+                max_help = max(max_help, max(z_value))
+                min_help = min(min_help, min(z_value))
+            self.bldg_height = max_help - min_help
+
+    def get_footprint_gml(self, merge_building_part=False):
+        """Gets the footprint surface of a building from CityGML data
+
+        with given gml surfaces, this function computes and returns the
+        footprint area of a building from LoD 0 to LoD2 from CityGML data.
+        This is done by either analysing the ground floor or the flat roof.
+
+        Returns
+        ----------
+        surface area : float
+            footprint area of a gml building
+
+        """
+        surface_max_help = []
+        for surface in self.gml_surfaces:
+            # print(surface.surface_area, surface.surface_orientation, surface.surface_tilt)
+            if surface.surface_orientation == -2 or surface.surface_orientation == -1 and surface.surface_tilt == \
+                    0.0:
+                print(surface.surface_area)
+                surface_max_help.append(surface.surface_area)
+        if merge_building_part is False:
+            max_area = max(surface_max_help)
+        else:
+            max_area = sum(surface_max_help)
+        return max_area
+
+    def set_gml_attributes(self, height_of_floor=3.5, merge_building_part=False):
+        """Sets building attributes from CityGML data
+
+        Computes the net_leased_area depending on the footprint area,
+        the number and the height of floors. If the number of floors is
+        specified before it will use this value, if not it will compute the
+        number of floors based on the gml building height and the average
+        height of the floors. If the number of floors is zero it'll be set to
+        one. If the net leased area is below 50.0 sqm it'll be set to 50.0.
+
+        Parameters
+        ----------
+        height_of_floor : float
+            average height of each floor of the building, the default value
+            is 3.5 and is absolutely random.
+        """
+
+        if self.bldg_height is None:
+            raise AttributeError("Building height needs to be defined for gml")
+
+        if self.height_of_floors is None and self.number_of_floors is None:
+            self.height_of_floors = height_of_floor
+        elif self.height_of_floors is None and self.number_of_floors is not \
+                None:
+            self.height_of_floors = self.bldg_height / self.number_of_floors
+        else:
+            pass
+
+        if self.number_of_floors is not None:
+            self.net_leased_area = self.get_footprint_gml() * \
+                                   self.number_of_floors
+            return
+
+        else:
+            self.number_of_floors = int(round((self.bldg_height /
+                                               self.height_of_floors)))
+            if self.number_of_floors == 0:
+                self.number_of_floors = 1
+            if merge_building_part is False:
+                self.net_leased_area = self.get_footprint_gml() * \
+                                       self.number_of_floors
+            else:
+                self.net_leased_area = self.get_footprint_gml(merge_building_part=True) * \
+                                       self.number_of_floors
+
+            if self.net_leased_area < 50.0:
+                raise Exception('The calculated net leased area is under 50m²')
+                # self.net_leased_area = 50.0
+
+    def set_outer_wall_area(
+            self,
+            new_area,
+            orientation):
         """Outer area wall setter
 
         sets the outer wall area of all walls of one direction and weights
@@ -185,27 +282,75 @@ class Building(object):
         for zone in self.thermal_zones:
             for wall in zone.outer_walls:
                 if wall.orientation == orientation:
-                    wall.area = ((new_area / self.net_leased_area) * zone.area) / sum(
-                        count.orientation == orientation for count in zone.outer_walls
-                    )
-
+                    wall.area = ((new_area / self.net_leased_area) * zone.area)
+                    # Addition for LoD3 and LoD4
+                    for win in zone.windows:
+                        if win.area is not None and win.orientation == wall.orientation:
+                            wall.area -= win.area
             for roof in zone.rooftops:
                 if roof.orientation == orientation:
-                    roof.area = ((new_area / self.net_leased_area) * zone.area) / sum(
-                        count.orientation == orientation for count in zone.rooftops
-                    )
-
+                    roof.area = ((new_area / self.net_leased_area) * zone.area)
+                    # Addition for LoD3 and LoD4
+                    for win in zone.windows:
+                        if win.area is not None and win.orientation == roof.orientation and win.tilt == roof.tilt:
+                            roof.area -= win.area
+                            print(roof.area, "roof-window")
             for ground in zone.ground_floors:
-                if ground.orientation == orientation:
-                    ground.area = ((new_area / self.net_leased_area) * zone.area) / sum(
-                        count.orientation == orientation for count in zone.ground_floors
-                    )
-
+                if ground.orientation == orientation and new_area > 50:
+                # TODO: find a better way, using the surfacemember type class and if statement
+                # if ground.orientation == orientation and new_area > 1:
+                # if ground.orientation == orientation:
+                    if new_area < 1:
+                        raise Exception('ground')
+                    else:
+                        ground.area = ((new_area / self.net_leased_area) * zone.area)
+                        print(ground.area, 'ground')
             for door in zone.doors:
                 if door.orientation == orientation:
-                    door.area = ((new_area / self.net_leased_area) * zone.area) / sum(
-                        count.orientation == orientation for count in zone.doors
-                    )
+                    door.area = (
+                            ((new_area / self.net_leased_area) * zone.area) /
+                            sum(count.orientation == orientation for count in
+                                zone.doors))
+
+    # def set_outer_wall_area(self, new_area, orientation):
+    #     """Outer area wall setter
+    #
+    #     sets the outer wall area of all walls of one direction and weights
+    #     them according to zone size. This function covers OuterWalls,
+    #     Rooftops, GroundFloors.
+    #
+    #     Parameters
+    #     ----------
+    #     new_area : float
+    #         new_area of all outer walls of one orientation
+    #     orientation : float
+    #         orientation of the obtained walls
+    #     """
+    #
+    #     for zone in self.thermal_zones:
+    #         for wall in zone.outer_walls:
+    #             if wall.orientation == orientation:
+    #                 wall.area = ((new_area / self.net_leased_area) * zone.area) / sum(
+    #                     count.orientation == orientation for count in zone.outer_walls
+    #                 )
+    #
+    #         for roof in zone.rooftops:
+    #             if roof.orientation == orientation:
+    #                 roof.area = ((new_area / self.net_leased_area) * zone.area) / sum(
+    #                     count.orientation == orientation for count in zone.rooftops
+    #                 )
+    #
+    #         for ground in zone.ground_floors:
+    #             if ground.orientation == orientation:
+    #                 ground.area = ((new_area / self.net_leased_area) * zone.area) / sum(
+    #                     count.orientation == orientation for count in zone.ground_floors
+    #                 )
+    #
+    #         for door in zone.doors:
+    #             if door.orientation == orientation:
+    #                 door.area = ((new_area / self.net_leased_area) * zone.area) / sum(
+    #                     count.orientation == orientation for count in zone.doors
+    #                 )
 
     def set_window_area(self, new_area, orientation):
         """Window area setter

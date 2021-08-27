@@ -11,18 +11,18 @@ CityGML file format .gml
 
 import lxml.etree as ET
 import statistics
-from teaserplus.data.dataclass import DataClass
-from teaserplus.data.surfacegml import SurfaceGML
-from teaserplus.logic.archetypebuildings.bmvbs.singlefamilydwelling \
+from teaser.data.dataclass import DataClass
+from teaser.data.surfacegml import SurfaceGML
+from teaser.logic.archetypebuildings.bmvbs.singlefamilydwelling \
                          import SingleFamilyDwelling
-from teaserplus.logic.archetypebuildings.bmvbs.office import Office
-from teaserplus.logic.archetypebuildings.bmvbs.custom.institute import Institute
-from teaserplus.logic.archetypebuildings.bmvbs.custom.institute4 import Institute4
-from teaserplus.logic.archetypebuildings.tabula.de.singlefamilyhouse import SingleFamilyHouse
-from teaserplus.logic.archetypebuildings.tabula.de.multifamilyhouse import MultiFamilyHouse
-from teaserplus.logic.archetypebuildings.tabula.de.terracedhouse import TerracedHouse
-from teaserplus.logic.archetypebuildings.tabula.de.apartmentblock import ApartmentBlock
-from teaserplus.logic.buildingobjects.building import Building
+from teaser.logic.archetypebuildings.bmvbs.office import Office
+from teaser.logic.archetypebuildings.bmvbs.custom.institute import Institute
+from teaser.logic.archetypebuildings.bmvbs.custom.institute4 import Institute4
+from teaser.logic.archetypebuildings.tabula.de.singlefamilyhouse import SingleFamilyHouse
+from teaser.logic.archetypebuildings.tabula.de.multifamilyhouse import MultiFamilyHouse
+from teaser.logic.archetypebuildings.tabula.de.terracedhouse import TerracedHouse
+from teaser.logic.archetypebuildings.tabula.de.apartmentblock import ApartmentBlock
+from teaser.logic.buildingobjects.building import Building
 
 import copy
 

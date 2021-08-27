@@ -8,12 +8,16 @@
 
 # temporary files for calculation #
 #########################
-
-
+/gmlfiles
+/GML-Example-files
+/Scripts
+/results
 # temporary boundary condition files #
 ######################################
-
-
+simulate.py
+testing_teaserplus_lxml.py
+TEASER+_Gui.py
+gui_functions.py
 # Output-Files #
 ########################
 /teaser/OutputData/

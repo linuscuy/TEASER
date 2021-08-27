@@ -1,20 +1,20 @@
 import lxml.etree as ET
 import collections
-from teaserplus.logic.buildingobjects.building import Building
-from teaserplus.logic.buildingobjects.thermalzone import ThermalZone
-from teaserplus.logic.buildingobjects.buildingphysics.rooftop import Rooftop
-from teaserplus.logic.buildingobjects.buildingphysics.outerwall import OuterWall
-from teaserplus.logic.buildingobjects.buildingphysics.groundfloor import GroundFloor
-from teaserplus.logic.buildingobjects.buildingphysics.layer import Layer
-from teaserplus.logic.buildingobjects.buildingphysics.material import Material
-from teaserplus.logic.buildingobjects.buildingphysics.buildingelement import BuildingElement
-from teaserplus.logic.buildingobjects.buildingphysics.window import Window
-from teaserplus.logic.buildingobjects.buildingphysics.innerwall import InnerWall
-from teaserplus.logic.buildingobjects.buildingphysics.ceiling import Ceiling
-from teaserplus.logic.buildingobjects.buildingphysics.floor import Floor
-from teaserplus.logic.buildingobjects.buildingphysics.door import Door
-from teaserplus.logic.buildingobjects.useconditions import UseConditions
-from teaserplus.data.input.citygml_input import _set_attributes
+from teaser.logic.buildingobjects.building import Building
+from teaser.logic.buildingobjects.thermalzone import ThermalZone
+from teaser.logic.buildingobjects.buildingphysics.rooftop import Rooftop
+from teaser.logic.buildingobjects.buildingphysics.outerwall import OuterWall
+from teaser.logic.buildingobjects.buildingphysics.groundfloor import GroundFloor
+from teaser.logic.buildingobjects.buildingphysics.layer import Layer
+from teaser.logic.buildingobjects.buildingphysics.material import Material
+from teaser.logic.buildingobjects.buildingphysics.buildingelement import BuildingElement
+from teaser.logic.buildingobjects.buildingphysics.window import Window
+from teaser.logic.buildingobjects.buildingphysics.innerwall import InnerWall
+from teaser.logic.buildingobjects.buildingphysics.ceiling import Ceiling
+from teaser.logic.buildingobjects.buildingphysics.floor import Floor
+from teaser.logic.buildingobjects.buildingphysics.door import Door
+from teaser.logic.buildingobjects.useconditions import UseConditions
+from teaser.data.input.citygml_input import _set_attributes
 
 
 def load_ade_lxml(path, prj, chosen_gmls=None):

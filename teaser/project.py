@@ -44,6 +44,9 @@ from teaser.logic.archetypebuildings.bmvbs.singlefamilydwelling import (
 )
 from teaser.logic.simulation.modelicainfo import ModelicaInfo
 
+import teaser.data.output.citygml_output as citygml_out
+import teaser.data.input.citygml_input as citygml_in
+import teaser.data.input.energyade_input as energyade_in
 
 class Project(object):
     """Top class for TEASER projects it serves as an API
@@ -1020,6 +1023,87 @@ internal_gains_mode: int [1, 2, 3]
         """
 
         tjson_in.load_teaser_json(path, self)
+
+    def save_citygml(self, file_name=None, path=None, gml_copy=None, ref_coordinates=None, results=None):
+        """Saves the project to a CityGML file
+
+        calls the function save_gml in data.CityGML we make use of CityGML core
+        and EnergyADE to store semantic information
+
+
+        Parameters
+        ----------
+
+        file_name : string
+            name of the new file
+        path : string
+            if the Files should not be stored in OutputData, an alternative
+            can be specified
+
+        """
+        if file_name is None:
+            name = self.name
+        else:
+            name = file_name
+
+        if path is None:
+            new_path = os.path.join(utilities.get_default_path(), name)
+        else:
+            new_path = os.path.join(path, name)
+            utilities.create_path(utilities.get_full_path(path))
+
+        citygml_out.save_gml(self, new_path, ref_coordinates=ref_coordinates, gml_copy=gml_copy, results=results)
+
+    def load_citygml(self, method="iwu", path=None, energyade=False,
+                     gml_bldg_ids=None, gml_bldg_names=None, gml_bldg_addresses=None):
+        """Loads buildings from a citygml file
+
+        calls the function load_gml choose_gml or load_gmlade
+        in data.CityGML we make use of CityGML core and EnergyADE
+        and possibly not all kinds of CityGML modelling techniques are
+        supported.
+
+        If the function of the building is given as Residential (1000) or
+        Office (1120) the importer directly converts the building to
+        archetype buildings. If not, only the citygml geometry is imported and
+        you need take care of either the material properties and zoning or you
+        may use the _convert_bldg function in citygml_input module.
+
+
+        Parameters
+        ----------
+
+        :param path: string
+            full path to a CityGML file
+        :param energyade:Boolean
+            Load EnergyADE data or not
+            doesn't check if data is there
+        :param method: Str
+            method for enrichment of single family dwellings
+            either default="iwu" or "tabula_de"
+            offices always use "iwu"= BMVBS and other residential
+            buildings will be always using "tabula_de"
+        :param gml_bldg_addresses: List[string]
+            user's selection
+        :param gml_bldg_names: List[string]
+            user's selection
+        :param gml_bldg_ids: List[string]
+            user's selection
+
+        """
+        if energyade is True:
+            energyade_in.load_ade_lxml(path, self)
+        elif gml_bldg_names is not None:
+            chosen_gmls=citygml_in.choose_gml_lxml(path, bldg_names=gml_bldg_names)
+            citygml_in.load_gml_lxml(path, self, method=method, chosen_gmls=chosen_gmls)
+        elif gml_bldg_ids is not None:
+            chosen_gmls=citygml_in.choose_gml_lxml(path, bldg_ids=gml_bldg_ids)
+            citygml_in.load_gml_lxml(path, self, method=method, chosen_gmls=chosen_gmls)
+        elif gml_bldg_addresses is not None:
+            chosen_gmls=citygml_in.choose_gml_lxml(path, bldg_addresses=gml_bldg_addresses)
+            citygml_in.load_gml_lxml(path, self, method=method, chosen_gmls=chosen_gmls)
+        else:
+            citygml_in.load_gml_lxml(path, self, method=method, chosen_gmls=None)
 
     def export_aixlib(
         self,
