@@ -58,7 +58,7 @@ def load_ade_lxml(path, prj, chosen_gmls=None):
                 bldg_name = building_lxml.attrib['{http://www.opengis.net/gml}id']
         print(bldg_name)
 
-        """Create TEASER Building Object and get/set general attributes"""
+        """Create TEASER Building Object and get/set general attributes and Thermal Zone..."""
         bldg = Building(parent=prj)
         _set_attributes(bldg=bldg, gml_bldg=building_lxml, namespace=namespace, bldg_name=bldg_name)
         construction_dict, constr_win_dict = _get_construction(construction_members)
@@ -67,7 +67,9 @@ def load_ade_lxml(path, prj, chosen_gmls=None):
         thermal_zone_dict = _get_thermal_zones(thermal_zone_lxml)
         usage_condition_dict = _get_usage_zones(usage_zone_lxml)
 
-        _set_thermal_zones(bldg, thermal_zone_dict)
+        _set_thermal_zones(bldg, thermal_zone_dict, construction_dict, constr_win_dict,
+                           material_dict,usage_condition_dict,)
+
 
 def _get_construction(construction_members):
     """
@@ -144,7 +146,7 @@ def _get_construction(construction_members):
                 # print(constr_dict)
             else:
                 print()
-
+    # print(constr_dict)
     return constr_dict, constr_win_dict
 
 
@@ -339,7 +341,7 @@ def _get_thermal_zones(thermalzones):
                 usage_href = tz_info.attrib["{http://www.w3.org/1999/xlink}href"].strip('#')
             elif tz_info.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}boundedBy":
                 for thermal_boundary in tz_info.iter():
-                    # print(thermal_boundary)
+                    print(thermal_boundary)
                     if thermal_boundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}ThermalBoundary":
                         tzb_id = thermal_boundary.attrib['{http://www.opengis.net/gml}id']
                         tzb_dict[tzb_id] = []
@@ -515,22 +517,84 @@ def _get_schedules(schedule):
 
     return schedule_dict
 
+
 def _set_thermal_zones(bldg, thermal_zone_dict, construction_dict, constr_win_dict,
                        material_dict,usage_condition_dict, multizone_split=False):
-
-    tz = ThermalZone(parent=bldg)
-    tz.name = tz_id
-    tz.area = get_ade_floor_area(city_object.Feature)
-    tz.volume = volume
-    """if infiltration rate is set in EnregyADE, """
-    # if tz_infiltration_rate is not None:
-    #     tz.infiltration_rate = tz_infiltration_rate
-    # else:
-    #     pass
+    net_factor = 1
+    volume_factor = 1
+    for key in thermal_zone_dict.keys():
+        tz = ThermalZone(parent=bldg)
+        tz.name = key
+        print(thermal_zone_dict[key])
+        if thermal_zone_dict[key][2] is not "netFloorArea":
+            tz.area = thermal_zone_dict[key][1] * net_factor
+        else:
+            tz.area = thermal_zone_dict[key][1]
+        if thermal_zone_dict[key][4] is not "netFloorArea":
+            tz.area = thermal_zone_dict[key][3] * volume_factor
+        else:
+            tz.area = thermal_zone_dict[key][3]
+        # TODO: Find example for EnergyADE with set Infiltration rate and implement in thermal zone extraction
+        """if infiltration rate is specifically set in EnergyADE, otherwise from schedules or default"""
+        # if tz_infiltration_rate is not None:
+        #     tz.infiltration_rate = tz_infiltration_rate
+        # else:
+        #     pass
+        _set_building_elements(tz, thermal_zone_dict[key][7], thermal_zone_dict[key][8],
+                               construction_dict, constr_win_dict,material_dict)
     return
 
 
-def _set_building_elements(tz, tzb_dict, tzb_dict_openings,construction_dict, constr_win_dict,material_dict):
+def _set_building_elements(tz, tzb_dict, tzb_dict_openings,construction_dict,
+                           constr_win_dict,material_dict, tz_factor=1):
+    buildingelements = {"roof": Rooftop(parent=tz), "outerWall": OuterWall(parent=tz),
+                        "groundSlab": GroundFloor(parent=tz)}
+    for key, value in tzb_dict.items():
+        print(value)
+        print(value[0])
+        if value[0] in buildingelements.keys():
+            b_element = buildingelements[value[0]]
+            b_element.name = key
+        else:
+            f"Unknown thermalBoundaryType in EnergyADE: {value[0]}"
+            raise AttributeError
+        b_element.area = value[3] * tz_factor  # MultiZoneTest
+        b_element.orientation = value[1]
+        b_element.tilt = value[2]
+        for key_openings, value_openings in tzb_dict_openings.items():
+            if key == key_openings:
+                b_element.area = value[3] - value_openings[1] * tz_factor # MultiZoneTest
+            else:
+                pass
+
+        """for the EnergyADE version 2.0"""
+        # for concof in construction_dict[value[4]]:
+        #     if concof[0] is not None:
+        #         b_element.outer_convection = concof[0]
+        #         # roof.outer_radiation = 0
+        #     if concof[1] is not None:
+        #         b_element.inner_convection = concof[1]
+        construction_dict[value[4]]
+        for layers in construction_dict[value[4]]:
+            print(layers)
+            for comp in layers:
+                layer = Layer(parent=b_element, id=layers.key)
+                layer.thickness = layers[2]
+                material = Material(parent=layer)
+                material.name = material_dict[layers[3]][0][0]
+                if material_dict[layers[3]][0][0] == 'KIT-FZK-Haus-Luftschicht' or \
+                    material_dict[layers[3]][0][0] == 'Bau05-Material-Air':
+                    rvalue = material_dict[layers[3]][0][2]
+                    material.thermal_conduc = 0.02225
+                    material.density = 1.2041
+                    material.heat_capac = 1
+                else:
+                    material.density = material_dict[layers[3]][0][1]
+                    material.thermal_conduc = material_dict[layers[3]][0][2]
+                    material.heat_capac = material_dict[layers[3]][0][3]
+                BuildingElement.add_layer(b_element, layer=layer)
+    # print(tzb_dict)
+    # print(tzb_dict_openings)
     return
 
 
