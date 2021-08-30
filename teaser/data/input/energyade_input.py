@@ -61,12 +61,13 @@ def load_ade_lxml(path, prj, chosen_gmls=None):
         """Create TEASER Building Object and get/set general attributes"""
         bldg = Building(parent=prj)
         _set_attributes(bldg=bldg, gml_bldg=building_lxml, namespace=namespace, bldg_name=bldg_name)
-        _get_construction(construction_members)
-        _get_materials(material_members)
+        construction_dict, constr_win_dict = _get_construction(construction_members)
+        material_dict = _get_materials(material_members)
         bldg_info_list, thermal_zone_lxml, usage_zone_lxml = _get_building_info(building_lxml)
-        _get_thermal_zones(thermal_zone_lxml)
-        _get_usage_zones(usage_zone_lxml)
+        thermal_zone_dict = _get_thermal_zones(thermal_zone_lxml)
+        usage_condition_dict = _get_usage_zones(usage_zone_lxml)
 
+        _set_thermal_zones(bldg, thermal_zone_dict)
 
 def _get_construction(construction_members):
     """
@@ -514,6 +515,27 @@ def _get_schedules(schedule):
 
     return schedule_dict
 
+def _set_thermal_zones(bldg, thermal_zone_dict, construction_dict, constr_win_dict,
+                       material_dict,usage_condition_dict, multizone_split=False):
+
+    tz = ThermalZone(parent=bldg)
+    tz.name = tz_id
+    tz.area = get_ade_floor_area(city_object.Feature)
+    tz.volume = volume
+    """if infiltration rate is set in EnregyADE, """
+    # if tz_infiltration_rate is not None:
+    #     tz.infiltration_rate = tz_infiltration_rate
+    # else:
+    #     pass
+    return
+
+
+def _set_building_elements(tz, tzb_dict, tzb_dict_openings,construction_dict, constr_win_dict,material_dict):
+    return
+
+
+def _set_usage_conditions(prj, tz, tz_id, usage_condition_dict):
+    return
 
 def load_gmlade(path, prj, chosen_gmls=None):
     """This function loads buildings from a CityGML EnergyADE files
