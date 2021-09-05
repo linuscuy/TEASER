@@ -89,14 +89,14 @@ def _get_construction(construction_members):
             {constr_id: [name, u-value, fraction, wave length range, glazing ratio]}
     """
 
-    layer_dict = {}
-    comp_dict = {}
+
     constr_win_dict = {}
     constr_dict = {}
 
     for construction in construction_members:
         constr_id = construction.attrib['{http://www.opengis.net/gml}id']
         constr_dict[constr_id] = []
+        layer_dict = {}
         for features in construction:
             if features.tag == '{http://www.opengis.net/gml}name':
                 constr_name = features.text
@@ -120,11 +120,13 @@ def _get_construction(construction_members):
                     if opticporps.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}glazingRatio":
                         glazing_ratio = opticporps.text
                         constr_win_dict[constr_id].append(glazing_ratio)
+                pass
             # Wall, Roof and Ground Construction
             elif features.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}layer":
                 for layer in features:
                     layer_id = layer.attrib['{http://www.opengis.net/gml}id']
                     layer_dict[layer_id] = []
+                    comp_dict = {}
                     for layer_comp in layer:
                         for comp in layer_comp:
                             comp_id = comp.attrib['{http://www.opengis.net/gml}id']
@@ -141,12 +143,15 @@ def _get_construction(construction_members):
                                     comp_dict[comp_id].append(material_href)
                                 else:
                                     print("Unknown Layer Component")
-                            layer_dict[layer_id].append(comp_dict)
-                        constr_dict[constr_id].append(layer_dict)
-                # print(constr_dict)
-            else:
-                print()
-    # print(constr_dict)
+                    try:
+                        layer_dict[layer_id].append(comp_dict)
+                    except:
+                        pass
+        try:
+            constr_dict[constr_id].append(layer_dict)
+        except:
+            pass
+    print(constr_dict)
     return constr_dict, constr_win_dict
 
 
@@ -320,7 +325,6 @@ def _get_thermal_zones(thermalzones):
         thermalzone_dict[tz_id] = []
 
         for tz_info in thermal_zone:
-            # print(tz_info.tag)
             if tz_info.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}floorArea":
                 floorelements = tz_info.getchildren()
                 for floor_info in floorelements:
@@ -340,38 +344,39 @@ def _get_thermal_zones(thermalzones):
             elif tz_info.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}contains":
                 usage_href = tz_info.attrib["{http://www.w3.org/1999/xlink}href"].strip('#')
             elif tz_info.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}boundedBy":
-                for thermal_boundary in tz_info.iter():
-                    print(thermal_boundary)
+                for thermal_boundary in tz_info:
                     if thermal_boundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}ThermalBoundary":
                         tzb_id = thermal_boundary.attrib['{http://www.opengis.net/gml}id']
                         tzb_dict[tzb_id] = []
-                    elif thermal_boundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}thermalBoundaryType":
-                        tzb_type = thermal_boundary.text
-                    elif thermal_boundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}azimuth":
-                        tzb_azimuth = thermal_boundary.text
-                    elif thermal_boundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}inclination":
-                        tzb_inclination = thermal_boundary.text
-                    elif thermal_boundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}area":
-                        tzb_area = thermal_boundary.text
-                    elif thermal_boundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}construction":
-                        constr_href = thermal_boundary.attrib["{http://www.w3.org/1999/xlink}href"].strip('#')
-                    elif thermal_boundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}contains":
-                        for opening in thermal_boundary.iter():
-                            if opening.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}ThermalOpening":
-                                tzb_opening_id = opening.attrib['{http://www.opengis.net/gml}id']
-                                tzb_openings_dict[tzb_opening_id] = [tzb_id]
-                            elif opening.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}area":
-                                opening_area = opening.text
-                            elif opening.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}construction":
-                                opening_constr_href = opening.attrib["{http://www.w3.org/1999/xlink}href"].strip('#')
-                        try:
-                            tzb_openings_dict[tzb_opening_id].extend((opening_area, opening_constr_href))
-                        except(UnboundLocalError, KeyError):
-                            pass
-                try:
-                    tzb_dict[tzb_id].extend((tzb_type, tzb_azimuth, tzb_inclination, tzb_area, constr_href))
-                except(UnboundLocalError, KeyError):
-                    pass
+                    for ThermalBoundary in thermal_boundary:
+                        if ThermalBoundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}thermalBoundaryType":
+                            tzb_type = ThermalBoundary.text
+                        elif ThermalBoundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}azimuth":
+                            tzb_azimuth = ThermalBoundary.text
+                        elif ThermalBoundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}inclination":
+                            tzb_inclination = ThermalBoundary.text
+                        elif ThermalBoundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}area":
+                            tzb_area = ThermalBoundary.text
+                        elif ThermalBoundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}construction":
+                            constr_href = ThermalBoundary.attrib["{http://www.w3.org/1999/xlink}href"].strip('#')
+                        elif ThermalBoundary.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}contains":
+                            for opening in ThermalBoundary.iter():
+                                if opening.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}ThermalOpening":
+                                    tzb_opening_id = opening.attrib['{http://www.opengis.net/gml}id']
+                                    tzb_openings_dict[tzb_opening_id] = [tzb_id]
+                                elif opening.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}area":
+                                    opening_area = opening.text
+                                elif opening.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}construction":
+                                    opening_constr_href = opening.attrib["{http://www.w3.org/1999/xlink}href"].strip('#')
+                            try:
+                                tzb_openings_dict[tzb_opening_id].extend((opening_area, tzb_azimuth,
+                                                                          tzb_inclination, opening_constr_href))
+                            except(UnboundLocalError, KeyError):
+                                pass
+                    try:
+                        tzb_dict[tzb_id].extend((tzb_type, tzb_azimuth, tzb_inclination, tzb_area, constr_href))
+                    except(UnboundLocalError, KeyError):
+                        pass
         thermalzone_dict[tz_id].extend((usage_href, floor_area, floor_type, volume_area,
                                         volume_type, isheated, iscooled, tzb_dict, tzb_openings_dict))
 
@@ -525,7 +530,7 @@ def _set_thermal_zones(bldg, thermal_zone_dict, construction_dict, constr_win_di
     for key in thermal_zone_dict.keys():
         tz = ThermalZone(parent=bldg)
         tz.name = key
-        print(thermal_zone_dict[key])
+        # print(thermal_zone_dict[key])
         if thermal_zone_dict[key][2] is not "netFloorArea":
             tz.area = thermal_zone_dict[key][1] * net_factor
         else:
@@ -547,11 +552,10 @@ def _set_thermal_zones(bldg, thermal_zone_dict, construction_dict, constr_win_di
 
 def _set_building_elements(tz, tzb_dict, tzb_dict_openings,construction_dict,
                            constr_win_dict,material_dict, tz_factor=1):
+
     buildingelements = {"roof": Rooftop(parent=tz), "outerWall": OuterWall(parent=tz),
                         "groundSlab": GroundFloor(parent=tz)}
     for key, value in tzb_dict.items():
-        print(value)
-        print(value[0])
         if value[0] in buildingelements.keys():
             b_element = buildingelements[value[0]]
             b_element.name = key
@@ -574,28 +578,75 @@ def _set_building_elements(tz, tzb_dict, tzb_dict_openings,construction_dict,
         #         # roof.outer_radiation = 0
         #     if concof[1] is not None:
         #         b_element.inner_convection = concof[1]
-        construction_dict[value[4]]
-        for layers in construction_dict[value[4]]:
-            print(layers)
-            for comp in layers:
-                layer = Layer(parent=b_element, id=layers.key)
-                layer.thickness = layers[2]
-                material = Material(parent=layer)
-                material.name = material_dict[layers[3]][0][0]
-                if material_dict[layers[3]][0][0] == 'KIT-FZK-Haus-Luftschicht' or \
-                    material_dict[layers[3]][0][0] == 'Bau05-Material-Air':
-                    rvalue = material_dict[layers[3]][0][2]
-                    material.thermal_conduc = 0.02225
-                    material.density = 1.2041
-                    material.heat_capac = 1
-                else:
-                    material.density = material_dict[layers[3]][0][1]
-                    material.thermal_conduc = material_dict[layers[3]][0][2]
-                    material.heat_capac = material_dict[layers[3]][0][3]
-                BuildingElement.add_layer(b_element, layer=layer)
-    # print(tzb_dict)
-    # print(tzb_dict_openings)
-    return
+
+        for layer_key, comp_list in construction_dict[value[4]][2].items():
+            for comp_dict in comp_list:
+                for comp_key, comp in comp_dict.items():
+                    layer = Layer(parent=b_element, id=comp_key)
+                    print(comp[0])
+                    if comp[0] != 1.0:
+                        print("Layer component doesn't have full fraction!")
+                    layer.thickness = comp[1]
+                    material = Material(parent=layer)
+                    # print(material_dict[comp[2]])
+                    material.name = material_dict[comp[2]][0]
+                    if len(material_dict[comp[2]]) < 4:
+                    # if material_dict[layers[3]][0][0] == 'KIT-FZK-Haus-Luftschicht' or \
+                    #     material_dict[layers[3]][0][0] == 'Bau05-Material-Air':
+                        isvetilated = material_dict[comp[2]][1]
+                        rvalue = material_dict[comp[2]][2]
+                        material.thermal_conduc = 0.02225
+                        material.density = 1.2041
+                        material.heat_capac = 1
+                    else:
+                        material.density = material_dict[comp[2]][2]
+                        material.thermal_conduc = material_dict[comp[2]][1]
+                        material.heat_capac = material_dict[comp[2]][3]
+                    BuildingElement.add_layer(b_element, layer=layer)
+
+    print(tzb_dict_openings)
+    for key, value in tzb_dict_openings.items():
+        if value[4] == str("Door_Construction"):
+            door = Door(parent=tz)
+            door.name = key
+            door.area = value[1]
+            door.tilt = value[3]
+            door.orientation = value[2]
+            for layer_key, comp_list in construction_dict[value[4]][2].items():
+                for comp_dict in comp_list:
+                    for comp_key, comp in comp_dict.items():
+                        layer = Layer(parent=door, id=comp_key)
+                        if comp[0] != 1.0:
+                            print("Layer component doesn't have full fraction!")
+                        layer.thickness = comp[1]
+                        material = Material(parent=layer)
+                        # print(material_dict[comp[2]])
+                        material.name = material_dict[comp[2]][0]
+                        material.density = material_dict[comp[2]][2]
+                        material.thermal_conduc = material_dict[comp[2]][1]
+                        material.heat_capac = material_dict[comp[2]][3]
+                        BuildingElement.add_layer(b_element, layer=layer)
+        else:
+            win = Window(parent=tz)
+            win.area = value[1]
+            win.tilt = value[3]
+            win.orientation = value[2]
+            # win.u_value = layers[1]
+            print(value[4])
+            win.g_value = 0.7
+            win.a_conv = 0.3
+            win.shading_g_total = 1
+            win.shading_max_irr = 0.9
+            win.name = value[0]
+            layer = Layer(parent=win)
+            layer.id = value[0]
+            layer.thickness = 0.34
+            material = Material(parent=layer)
+            material.transmittance = 0.3
+            material.thermal_conduc = 0.96
+            material.solar_absorp = 0.5
+            material.density = 2579
+            BuildingElement.add_layer(win, layer=layer)
 
 
 def _set_usage_conditions(prj, tz, tz_id, usage_condition_dict):
