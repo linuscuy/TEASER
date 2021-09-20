@@ -123,7 +123,7 @@ class UseConditions(object):
         of the lighting [convective/radiative]. Default values are derived from
         :cite:`DiLaura.2011`.
         AixLib: Used in Zone record for internal gains, lighting
-    lighting_profil : [float]
+    lighting_profile : [float]
         Relative presence of lighting 0-1 (e.g. 0.5 means that 50% of the total
         lighting power are currently used). Typically given for 24h. This is
         aligned to the user profile.

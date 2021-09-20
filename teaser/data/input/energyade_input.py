@@ -15,6 +15,7 @@ from teaser.logic.buildingobjects.buildingphysics.floor import Floor
 from teaser.logic.buildingobjects.buildingphysics.door import Door
 from teaser.logic.buildingobjects.useconditions import UseConditions
 from teaser.data.input.citygml_input import _set_attributes
+import numpy as np
 
 
 def load_ade_lxml(path, prj, chosen_gmls=None):
@@ -67,8 +68,11 @@ def load_ade_lxml(path, prj, chosen_gmls=None):
         thermal_zone_dict = _get_thermal_zones(thermal_zone_lxml)
         usage_condition_dict = _get_usage_zones(usage_zone_lxml)
 
-        _set_thermal_zones(bldg, thermal_zone_dict, construction_dict, constr_win_dict,
-                           material_dict,usage_condition_dict,)
+        tz, usage_href, tzb_dict, tzb_dict_openings = _set_thermal_zones(bldg, thermal_zone_dict, construction_dict,
+                                                                         constr_win_dict, material_dict)
+        _set_building_elements(tz, tzb_dict, tzb_dict_openings, construction_dict,
+                               constr_win_dict, material_dict)
+        _set_usage_conditions(prj, tz, usage_href, usage_condition_dict)
 
 
 def _get_construction(construction_members):
@@ -88,7 +92,6 @@ def _get_construction(construction_members):
             python dictionary containing the construction and optical properties for windows
             {constr_id: [name, u-value, fraction, wave length range, glazing ratio]}
     """
-
 
     constr_win_dict = {}
     constr_dict = {}
@@ -210,6 +213,8 @@ def _get_building_info(building_lxml):
     :param building_lxml: lxml object
             CityGML City Object(Building)
     :return: bldg_info_list
+    :return: thermal_zone_lxml
+    :return: usage_zone_lxml
     """
     construction_weight = None
     gross_volume = None
@@ -367,7 +372,8 @@ def _get_thermal_zones(thermalzones):
                                 elif opening.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}area":
                                     opening_area = opening.text
                                 elif opening.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}construction":
-                                    opening_constr_href = opening.attrib["{http://www.w3.org/1999/xlink}href"].strip('#')
+                                    opening_constr_href = opening.attrib["{http://www.w3.org/1999/xlink}href"].strip(
+                                        '#')
                             try:
                                 tzb_openings_dict[tzb_opening_id].extend((opening_area, tzb_azimuth,
                                                                           tzb_inclination, opening_constr_href))
@@ -404,8 +410,8 @@ def _get_usage_zones(usagezones):
             CityGML EnergyADE abstract usageZone Object,
             which can contain multiple UsageZone Objects
     :return: usagezone_dict
-            -> {uz_id:[usage_type, heating_schedules_dict,cooling_schedules_dict,occupancy_schedule_dict,
-                ventilation_schedule_dict, electrical_appliances_schedule_dict, lighting_schedule_dict]}
+            -> {uz_id:[usage_type, heating_schedules_dict,cooling_schedules_dict, ventilation_schedule_dict,
+                occupancy_schedule_dict, electrical_appliances_schedule_dict, lighting_schedule_dict]}
     """
     usagezone_dict = {}
 
@@ -439,9 +445,9 @@ def _get_usage_zones(usagezones):
                     elif appliance.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}LightingFacilities":
                         lighting_schedule_dict = _get_schedules(uz_info)
 
-        usagezone_dict[uz_id].extend((usagezone_type,heating_schedules_dict, cooling_schedules_dict,
+        usagezone_dict[uz_id].extend((usagezone_type, heating_schedules_dict, cooling_schedules_dict,
                                       ventilation_schedule_dict, occupancy_schedule_dict,
-                                      electrical_appliances_schedule_dict,lighting_schedule_dict))
+                                      electrical_appliances_schedule_dict, lighting_schedule_dict))
     return usagezone_dict
 
 
@@ -495,7 +501,7 @@ def _get_schedules(schedule):
                             if daily_schedule.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}values":
                                 schedule_weekday = []
                                 day_type = "weekDay"
-                                values = daily_schedule.text.splitlines() # if there is a \n newline
+                                values = daily_schedule.text.splitlines()  # if there is a \n newline
                                 for value in values:
                                     schedule_weekday.extend(list(map(float, value.split())))
                                 schedule_dict["weekDay"] = schedule_weekday
@@ -504,7 +510,7 @@ def _get_schedules(schedule):
                             if daily_schedule.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}values":
                                 schedule_weekend = []
                                 day_type = "weekEnd"
-                                values = daily_schedule.text.splitlines() # if there is a \n newline
+                                values = daily_schedule.text.splitlines()  # if there is a \n newline
                                 for value in values:
                                     schedule_weekend.extend(list(map(float, value.split())))
                                 schedule_dict["weekEnd"] = schedule_weekday
@@ -515,7 +521,7 @@ def _get_schedules(schedule):
                             if daily_schedule.tag == "{http://www.sig3d.org/citygml/2.0/energy/1.0}values":
                                 schedule_weekday = []
                                 day_type = "weekDay"
-                                values = daily_schedule.text.splitlines() # if there is a \n newline
+                                values = daily_schedule.text.splitlines()  # if there is a \n newline
                                 for value in values:
                                     schedule_weekday.extend(list(map(float, value.split())))
                                 schedule_dict["weekDay"] = schedule_weekday
@@ -524,7 +530,7 @@ def _get_schedules(schedule):
 
 
 def _set_thermal_zones(bldg, thermal_zone_dict, construction_dict, constr_win_dict,
-                       material_dict,usage_condition_dict, multizone_split=False):
+                       material_dict, multizone_split=False):
     net_factor = 1
     volume_factor = 1
     for key in thermal_zone_dict.keys():
@@ -539,20 +545,21 @@ def _set_thermal_zones(bldg, thermal_zone_dict, construction_dict, constr_win_di
             tz.area = thermal_zone_dict[key][3] * volume_factor
         else:
             tz.area = thermal_zone_dict[key][3]
-        # TODO: Find example for EnergyADE with set Infiltration rate and implement in thermal zone extraction
-        """if infiltration rate is specifically set in EnergyADE, otherwise from schedules or default"""
+        # TODO: Find example for EnergyADE with set Infiltration rate and implement in thermal zone extraction,
+        #  otherwise has to be set in usage zone
+        """if infiltration rate is specifically set in EnergyADE, otherwise from schedules or default(0.4)"""
         # if tz_infiltration_rate is not None:
         #     tz.infiltration_rate = tz_infiltration_rate
         # else:
         #     pass
-        _set_building_elements(tz, thermal_zone_dict[key][7], thermal_zone_dict[key][8],
-                               construction_dict, constr_win_dict,material_dict)
-    return
+        # _set_building_elements(tz, thermal_zone_dict[key][7], thermal_zone_dict[key][8],
+        #                        construction_dict, constr_win_dict, material_dict)
+
+        return tz, thermal_zone_dict[key][0], thermal_zone_dict[key][7], thermal_zone_dict[key][8]
 
 
-def _set_building_elements(tz, tzb_dict, tzb_dict_openings,construction_dict,
-                           constr_win_dict,material_dict, tz_factor=1):
-
+def _set_building_elements(tz, tzb_dict, tzb_dict_openings, construction_dict,
+                           constr_win_dict, material_dict, tz_factor=1):
     buildingelements = {"roof": Rooftop(parent=tz), "outerWall": OuterWall(parent=tz),
                         "groundSlab": GroundFloor(parent=tz)}
     for key, value in tzb_dict.items():
@@ -567,7 +574,7 @@ def _set_building_elements(tz, tzb_dict, tzb_dict_openings,construction_dict,
         b_element.tilt = value[2]
         for key_openings, value_openings in tzb_dict_openings.items():
             if key == key_openings:
-                b_element.area = value[3] - value_openings[1] * tz_factor # MultiZoneTest
+                b_element.area = value[3] - value_openings[1] * tz_factor  # MultiZoneTest
             else:
                 pass
 
@@ -591,8 +598,8 @@ def _set_building_elements(tz, tzb_dict, tzb_dict_openings,construction_dict,
                     # print(material_dict[comp[2]])
                     material.name = material_dict[comp[2]][0]
                     if len(material_dict[comp[2]]) < 4:
-                    # if material_dict[layers[3]][0][0] == 'KIT-FZK-Haus-Luftschicht' or \
-                    #     material_dict[layers[3]][0][0] == 'Bau05-Material-Air':
+                        # if material_dict[layers[3]][0][0] == 'KIT-FZK-Haus-Luftschicht' or \
+                        #     material_dict[layers[3]][0][0] == 'Bau05-Material-Air':
                         isvetilated = material_dict[comp[2]][1]
                         rvalue = material_dict[comp[2]][2]
                         material.thermal_conduc = 0.02225
@@ -649,8 +656,134 @@ def _set_building_elements(tz, tzb_dict, tzb_dict_openings,construction_dict,
             BuildingElement.add_layer(win, layer=layer)
 
 
-def _set_usage_conditions(prj, tz, tz_id, usage_condition_dict):
+def _set_usage_conditions(prj, tz, usage_href, usage_condition_dict):
+    # TODO: Load Use Conditions if already saved, without reloading everything
+    if usage_href is None:
+        print("The Thermal Zone has no containing Usage Zone")
+    else:
+        print(usage_condition_dict[usage_href])
+        use_cond = UseConditions(parent=tz)
+        if usage_condition_dict[usage_href][0] == "residential":
+            use_cond.load_use_conditions(zone_usage="Living")
+        elif usage_condition_dict[usage_href][0] is None:
+            print("No usage type is set, Living preset is used as bases")
+            use_cond.load_use_conditions(zone_usage="Living")
+        elif usage_condition_dict[usage_href][0] == "office":
+            use_cond.load_use_conditions(zone_usage="Single office")
+        else:
+            print("Unknown usage type is set, Living preset is used as bases")
+            use_cond.load_use_conditions(zone_usage="Living")
+
+        use_cond.usage = usage_condition_dict[usage_href][0] + "" + usage_href
+        use_cond.typical_length = np.sqrt(tz.area)
+        use_cond.typical_width = np.sqrt(tz.area)
+
+        """heating profile"""
+        if usage_condition_dict[usage_href][1] is not None:
+            print(list(usage_condition_dict[usage_href][1].keys()))
+            if len(list(usage_condition_dict[usage_href][1].keys())) == 2:
+                for key, value in usage_condition_dict[usage_href][1].items():
+                    if key == "weekDay":
+                        use_cond.heating_profile = [x + 273.15 for x in value]
+                        for i in range(4):
+                            use_cond.heating_profile.extend([x + 273.15 for x in value])
+                    elif key == "weekEnd":
+                        for i in range(2):
+                            use_cond.heating_profile.extend([x + 273.15 for x in value])
+                    else:
+                        print(f"Unknown Day-type{key}")
+            else:
+                for key, value in usage_condition_dict[usage_href][1].items():
+                    print(key)
+                    use_cond.heating_profile = [x + 273.15 for x in value]
+        else:
+            print("No heating profile is defined, default is used")
+
+        """cooling profile"""
+        if usage_condition_dict[usage_href][2] is not None:
+            use_cond.with_cooling = True
+            if len(list(usage_condition_dict[usage_href][2].keys())) == 2:
+                for key, value in usage_condition_dict[usage_href][2].items():
+                    if key == "weekDay":
+                        use_cond.cooling_profile = [x + 273.15 for x in value]
+                        for i in range(4):
+                            use_cond.cooling_profile.extend([x + 273.15 for x in value])
+                    elif key == "weekEnd":
+                        for i in range(2):
+                            use_cond.cooling_profile.extend([x + 273.15 for x in value])
+                    else:
+                        print(f"Unknown Day-type{key}")
+            else:
+                for key, value in usage_condition_dict[usage_href][2].items():
+                    print(key)
+                    use_cond.cooling_profile = [x + 273.15 for x in value]
+
+        """occupancy profile"""
+        if usage_condition_dict[usage_href][4] is not None:
+            use_cond.persons = int(usage_condition_dict[usage_href][4]["number_of_occupants"]) / tz.area
+            use_cond.ratio_conv_rad_persons = float(usage_condition_dict[usage_href][4]["convective_fraction"]) / \
+                                              float(usage_condition_dict[usage_href][4]["radiant_fraction"])
+            use_cond.fixed_heat_flow_rate_persons = float(usage_condition_dict[usage_href][4]["total_value"])
+            if len(list(usage_condition_dict[usage_href][4].keys())) == 2:
+                for key, value in usage_condition_dict[usage_href][4].items():
+                    if key == "weekDay":
+                        use_cond.persons_profile = [x for x in value]
+                        for i in range(4):
+                            use_cond.persons_profile.extend([x for x in value])
+                    elif key == "weekEnd":
+                        for i in range(2):
+                            use_cond.persons_profile.extend([x for x in value])
+                    else:
+                        print(f"Unknown Day-type{key}")
+            else:
+                for key, value in usage_condition_dict[usage_href][4].items():
+                    print(key)
+                    use_cond.persons_profile = [x for x in value]
+
+        """machines profile"""
+        if usage_condition_dict[usage_href][5] is not None:
+            use_cond.machines = float(usage_condition_dict[usage_href][5]["total_value"])
+            use_cond.ratio_conv_rad_machines = float(usage_condition_dict[usage_href][5]["convective_fraction"]) / \
+                                               float(usage_condition_dict[usage_href][5]["radiant_fraction"])
+            if len(list(usage_condition_dict[usage_href][5].keys())) == 2:
+                for key, value in usage_condition_dict[usage_href][5].items():
+                    if key == "weekDay":
+                        use_cond.machines_profile = [x for x in value]
+                        for i in range(4):
+                            use_cond.machines_profile.extend([x for x in value])
+                    elif key == "weekEnd":
+                        for i in range(2):
+                            use_cond.machines_profile.extend([x for x in value])
+                    else:
+                        print(f"Unknown Day-type{key}")
+            else:
+                for key, value in usage_condition_dict[usage_href][5].items():
+                    print(key)
+                    use_cond.machines_profile = [x for x in value]
+
+        """lighting profile"""
+        if usage_condition_dict[usage_href][6] is not None:
+            use_cond.lighting_power = float(usage_condition_dict[usage_href][6]["total_value"])
+            use_cond.ratio_conv_rad_lighting = float(usage_condition_dict[usage_href][6]["convective_fraction"]) / \
+                                               float(usage_condition_dict[usage_href][6]["radiant_fraction"])
+            if len(list(usage_condition_dict[usage_href][6].keys())) == 2:
+                for key, value in usage_condition_dict[usage_href][6].items():
+                    if key == "weekDay":
+                        use_cond.lighting_profile = [x for x in value]
+                        for i in range(4):
+                            use_cond.lighting_profile.extend([x for x in value])
+                    elif key == "weekEnd":
+                        for i in range(2):
+                            use_cond.lighting_profile.extend([x for x in value])
+                    else:
+                        print(f"Unknown Day-type{key}")
+            else:
+                for key, value in usage_condition_dict[usage_href][6].items():
+                    print(key)
+                    use_cond.lighting_profile = [x for x in value]
+        tz.use_conditions = use_cond
     return
+
 
 def load_gmlade(path, prj, chosen_gmls=None):
     """This function loads buildings from a CityGML EnergyADE files
@@ -779,12 +912,16 @@ def load_gmlade(path, prj, chosen_gmls=None):
                     convective_fraction_persons, radiant_fraction_persons, total_value_machines, convective_fraction_machines, \
                     radiant_fraction_machines = get_ade_schedules(city_object.Feature)
 
-                    set_ade_bldgelements(tz, tzb_dict, tzb_dict_openings, layer_dict, material_dict, constr_dict, value[0])
+                    set_ade_bldgelements(tz, tzb_dict, tzb_dict_openings, layer_dict, material_dict, constr_dict,
+                                         value[0])
                     set_ade_boundary_conditions(prj, tz, tz_id, bldg.type_of_building, tz.area,
-                                                schedule_heating, schedule_ventilation, schedule_person, schedule_machine,
+                                                schedule_heating, schedule_ventilation, schedule_person,
+                                                schedule_machine,
                                                 schedule_lighting, total_value_lighting, convective_fraction_lighting,
-                                                radiant_fraction_lighting, number_of_occupants,convective_fraction_persons,
-                                                radiant_fraction_persons, total_value_machines, convective_fraction_machines,
+                                                radiant_fraction_lighting, number_of_occupants,
+                                                convective_fraction_persons,
+                                                radiant_fraction_persons, total_value_machines,
+                                                convective_fraction_machines,
                                                 radiant_fraction_machines)
 
                     # TODO: Write separate function, including the case of Interior Walls already in EnergyADE
@@ -816,7 +953,8 @@ def load_gmlade(path, prj, chosen_gmls=None):
                     tz.use_conditions.persons *= tz.area * 0.01
                     tz.use_conditions.machines *= tz.area * 0.01
                     tzb_dict, tzb_dict_openings = get_ade_thermal_boundaries(city_object.Feature)
-                    set_ade_bldgelements(tz, tzb_dict, tzb_dict_openings, layer_dict, material_dict, constr_dict, value[0])
+                    set_ade_bldgelements(tz, tzb_dict, tzb_dict_openings, layer_dict, material_dict, constr_dict,
+                                         value[0])
 
                     # TODO: Write separate function, including the case of Interior Walls already in EnergyADE
                     """Setting Inner Walls"""
@@ -839,18 +977,18 @@ def load_gmlade(path, prj, chosen_gmls=None):
 
 def set_ade_bldgelements(tz, tzb_dict, tzb_dict_openings, layer_dict, material_dict, constr_dict, tz_factor=1):
     """Trying to set Rooftop / with Layers/ Materials"""
-    #TODO: Do something nice for Air and other gasses as Materials
+    # TODO: Do something nice for Air and other gasses as Materials
     for key, value in tzb_dict.items():
         if value[0] == "roof":
             roof = Rooftop(parent=tz)
             roof.name = key
             for key_openings, value_openings in tzb_dict_openings.items():
                 if key == key_openings:
-                    roof.area = (value[3] - value_openings[1]) * tz_factor # MultiZoneTest
+                    roof.area = (value[3] - value_openings[1]) * tz_factor  # MultiZoneTest
                     break
                 else:
-                    roof.area = value[3] * tz_factor # MultiZoneTest
-            roof.area = value[3] * tz_factor # MultiZoneTest
+                    roof.area = value[3] * tz_factor  # MultiZoneTest
+            roof.area = value[3] * tz_factor  # MultiZoneTest
             roof.orientation = value[1]
             roof.tilt = value[2]
             for concof in constr_dict[value[4]]:
@@ -865,7 +1003,7 @@ def set_ade_bldgelements(tz, tzb_dict, tzb_dict_openings, layer_dict, material_d
                 material = Material(parent=layer)
                 material.name = material_dict[layers[3]][0][0]
                 if material_dict[layers[3]][0][0] == 'KIT-FZK-Haus-Luftschicht' or \
-                    material_dict[layers[3]][0][0] == 'Bau05-Material-Air':
+                        material_dict[layers[3]][0][0] == 'Bau05-Material-Air':
                     rvalue = material_dict[layers[3]][0][2]
                     material.thermal_conduc = 0.02225
                     material.density = 1.2041
@@ -889,10 +1027,10 @@ def set_ade_bldgelements(tz, tzb_dict, tzb_dict_openings, layer_dict, material_d
             for key_openings, value_openings in tzb_dict_openings.items():
                 if key == value_openings[0]:
                     openings_area_for_surface += value_openings[1]
-            out_wall.area = (value[3] - openings_area_for_surface) * tz_factor # MultiZoneTest
+            out_wall.area = (value[3] - openings_area_for_surface) * tz_factor  # MultiZoneTest
             print(out_wall.area, value[3])
-                # else:
-                #     out_wall.area = value[3] * tz_factor
+            # else:
+            #     out_wall.area = value[3] * tz_factor
             out_wall.orientation = value[1]
             out_wall.tilt = value[2]
             for concof in constr_dict[value[4]]:
@@ -927,7 +1065,7 @@ def set_ade_bldgelements(tz, tzb_dict, tzb_dict_openings, layer_dict, material_d
         if value[0] == "groundSlab":
             ground = GroundFloor(parent=tz)
             ground.name = key
-            ground.area = value[3] * tz_factor # MultiZoneTest
+            ground.area = value[3] * tz_factor  # MultiZoneTest
             ground.orientation = value[1]
             ground.tilt = value[2]
             for concof in constr_dict[value[4]]:
@@ -1004,7 +1142,6 @@ def set_ade_boundary_conditions(prj, tz, tz_id, type_of_usage, floorareavalue, s
                                 convective_fraction_lighting, radiant_fraction_lighting, number_of_occupants,
                                 convective_fraction_persons, radiant_fraction_persons, total_value_machines,
                                 convective_fraction_machines, radiant_fraction_machines):
-
     """Trying to set the Boundary Conditions"""
     # TODO: look once again over the Boundary Condition calculations and selection
 
@@ -1054,8 +1191,8 @@ def set_ade_boundary_conditions(prj, tz, tz_id, type_of_usage, floorareavalue, s
         BoundaryConditions.ratio_conv_rad_lighting = max(convective_fraction_lighting, radiant_fraction_lighting)
 
         for (schedule, profile) in [(schedule_person, tz.use_conditions.profile_persons),
-                                  (schedule_machine, tz.use_conditions.profile_machines),
-                                  (schedule_lighting, tz.use_conditions.profile_lighting)]:
+                                    (schedule_machine, tz.use_conditions.profile_machines),
+                                    (schedule_lighting, tz.use_conditions.profile_lighting)]:
             print(schedule, profile)
             if not schedule:
                 schedule = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
