@@ -245,3 +245,45 @@ class en15804IndicatorValue(object):
             return(new)
         else:
             print("Addend must be 'en15804IndicatorValue'-Object!")
+            
+    def _ignore_none_mul(self, value1, value2):
+        if not value1 or not value2:
+            return(None)
+        else:
+            return(value1 * value2)
+        
+    def __mul__(self, scalar):
+        try:
+            scalar = float(scalar)
+            
+            values = {"a1": self._ignore_none_mul(self.a1, scalar),
+                "a2": self._ignore_none_mul(self.a2, scalar),
+                "a3": self._ignore_none_mul(self.a3, scalar),
+                "a1_a3": self._ignore_none_mul(self.a1_a3, scalar),
+                "a4": self._ignore_none_mul(self.a4, scalar),
+                "a5": self._ignore_none_mul(self.a5, scalar),
+                "b1": self._ignore_none_mul(self.b1, scalar),
+                "b2": self._ignore_none_mul(self.b2, scalar),
+                "b3": self._ignore_none_mul(self.b3, scalar),
+                "b4": self._ignore_none_mul(self.b4, scalar),
+                "b5": self._ignore_none_mul(self.b5, scalar),
+                "b6": self._ignore_none_mul(self.b6, scalar),
+                "b7": self._ignore_none_mul(self.b7, scalar),
+                "c1": self._ignore_none_mul(self.c1, scalar),
+                "c2": self._ignore_none_mul(self.c2, scalar),
+                "c3": self._ignore_none_mul(self.c3, scalar),
+                "c4": self._ignore_none_mul(self.c4, scalar),
+                "d": self._ignore_none_mul(self.d, scalar)}
+            
+            new = en15804IndicatorValue()
+            new.set_values(**values)
+            return(new)
+            
+        except ValueError:
+            print("Can't convert value of '{}' to float. Please insert scalar!".format(scalar))
+        
+        except TypeError:
+            print("Can´t convert {} into float. Please insert scalar!".format(type(scalar)))
+            
+    
+        
