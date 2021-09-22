@@ -204,3 +204,44 @@ class en15804IndicatorValue(object):
     def set_values(self, **values):
         for attr, value in values.items():
             setattr(self, attr, value)
+    
+    def _ignore_none_sum(self, value1, value2):
+        if value1 and value2:
+            return(value1 + value2)
+        else:
+            if not value1 and not value2:
+                return(None)
+            else:
+                if value1:
+                    return(value1)
+                else:
+                    return(value2)
+                
+    def __add__(self, other):
+        
+        if isinstance(other, en15804IndicatorValue):
+            values = {"a1": self._ignore_none_sum(self.a1, other.a1),
+                "a2": self._ignore_none_sum(self.a2, other.a2),
+                "a3": self._ignore_none_sum(self.a3, other.a3),
+                "a1_a3": self._ignore_none_sum(self.a1_a3, other.a1_a3),
+                "a4": self._ignore_none_sum(self.a4, other.a4),
+                "a5": self._ignore_none_sum(self.a5, other.a5),
+                "b1": self._ignore_none_sum(self.b1, other.b1),
+                "b2": self._ignore_none_sum(self.b2, other.b2),
+                "b3": self._ignore_none_sum(self.b3, other.b3),
+                "b4": self._ignore_none_sum(self.b4, other.b4),
+                "b5": self._ignore_none_sum(self.b5, other.b5),
+                "b6": self._ignore_none_sum(self.b6, other.b6),
+                "b7": self._ignore_none_sum(self.b7, other.b7),
+                "c1": self._ignore_none_sum(self.c1, other.c1),
+                "c2": self._ignore_none_sum(self.c2, other.c2),
+                "c3": self._ignore_none_sum(self.c3, other.c3),
+                "c4": self._ignore_none_sum(self.c4, other.c4),
+                "d": self._ignore_none_sum(self.d, other.d)}
+
+            
+            new = en15804IndicatorValue()
+            new.set_values(**values)
+            return(new)
+        else:
+            print("Addend must be 'en15804IndicatorValue'-Object!")
