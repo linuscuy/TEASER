@@ -3,7 +3,7 @@
 # created September 2021
 # by Johannes Linus Cuypers
 
-class en15804IndicatorValue(object):
+class En15804IndicatorValue(object):
     def __init__(self, parent = None):
         self.parent = parent
         self._unit = None
@@ -55,7 +55,7 @@ class en15804IndicatorValue(object):
         if isinstance(value, str):
             self._unit = value
         else:
-            print("en15804IndicatorValue.unit must be string!")
+            print("En15804IndicatorValue.unit must be string!")
                   
     @property
     def a1(self):
@@ -219,7 +219,8 @@ class en15804IndicatorValue(object):
                 
     def __add__(self, other):
         
-        if isinstance(other, en15804IndicatorValue):
+        if isinstance(other, En15804IndicatorValue):
+
             values = {"a1": self._ignore_none_sum(self.a1, other.a1),
                 "a2": self._ignore_none_sum(self.a2, other.a2),
                 "a3": self._ignore_none_sum(self.a3, other.a3),
@@ -240,7 +241,7 @@ class en15804IndicatorValue(object):
                 "d": self._ignore_none_sum(self.d, other.d)}
 
             
-            new = en15804IndicatorValue()
+            new = En15804IndicatorValue()
             new.set_values(**values)
             return(new)
         else:
@@ -275,7 +276,7 @@ class en15804IndicatorValue(object):
                 "c4": self._ignore_none_mul(self.c4, scalar),
                 "d": self._ignore_none_mul(self.d, scalar)}
             
-            new = en15804IndicatorValue()
+            new = En15804IndicatorValue()
             new.set_values(**values)
             return(new)
             
