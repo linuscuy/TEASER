@@ -71,7 +71,7 @@ class En15804IndicatorValue(object):
     
     @a2.setter
     def a2(self, value):
-       self._a2 = self._validate_stage_value(value, "a2")
+       self._a2 = self._validate_stage_value(value, "A2")
        
     @property
     def a3(self):
@@ -79,7 +79,7 @@ class En15804IndicatorValue(object):
     
     @a3.setter
     def a3(self, value):
-       self._a3 = self._validate_stage_value(value, "a3")
+       self._a3 = self._validate_stage_value(value, "A3")
     
     @property
     def a1_a3(self):
@@ -87,7 +87,7 @@ class En15804IndicatorValue(object):
     
     @a1_a3.setter
     def a1_a3(self, value):
-       self._a1_a3 = self._validate_stage_value(value, "a1_a3")
+       self._a1_a3 = self._validate_stage_value(value, "A1-A3")
        
     @property
     def a4(self):
@@ -95,7 +95,7 @@ class En15804IndicatorValue(object):
     
     @a4.setter
     def a4(self, value):
-       self._a4 = self._validate_stage_value(value, "a4")
+       self._a4 = self._validate_stage_value(value, "A4")
        
     @property
     def a5(self):
@@ -103,7 +103,7 @@ class En15804IndicatorValue(object):
     
     @a5.setter
     def a5(self, value):
-       self._a5 = self._validate_stage_value(value, "a5")
+       self._a5 = self._validate_stage_value(value, "A5")
        
     @property
     def b1(self):
@@ -111,7 +111,7 @@ class En15804IndicatorValue(object):
     
     @b1.setter
     def b1(self, value):
-       self._b1 = self._validate_stage_value(value, "b1")
+       self._b1 = self._validate_stage_value(value, "B1")
        
     @property
     def b2(self):
@@ -119,7 +119,7 @@ class En15804IndicatorValue(object):
     
     @b2.setter
     def b2(self, value):
-       self._b2 = self._validate_stage_value(value, "b2")
+       self._b2 = self._validate_stage_value(value, "B2")
        
     @property
     def b3(self):
@@ -127,7 +127,7 @@ class En15804IndicatorValue(object):
     
     @b3.setter
     def b3(self, value):
-       self._b3 = self._validate_stage_value(value, "b3")
+       self._b3 = self._validate_stage_value(value, "B3")
        
     @property
     def b4(self):
@@ -135,7 +135,7 @@ class En15804IndicatorValue(object):
     
     @b4.setter
     def b4(self, value):
-       self._b4 = self._validate_stage_value(value, "b4")
+       self._b4 = self._validate_stage_value(value, "B4")
        
     @property
     def b5(self):
@@ -143,7 +143,7 @@ class En15804IndicatorValue(object):
     
     @b5.setter
     def b5(self, value):
-       self._b5 = self._validate_stage_value(value, "b5")
+       self._b5 = self._validate_stage_value(value, "B5")
        
     @property
     def b6(self):
@@ -151,7 +151,7 @@ class En15804IndicatorValue(object):
     
     @b6.setter
     def b6(self, value):
-       self._b6 = self._validate_stage_value(value, "b6")
+       self._b6 = self._validate_stage_value(value, "B6")
        
     @property
     def b7(self):
@@ -159,7 +159,7 @@ class En15804IndicatorValue(object):
     
     @b7.setter
     def b7(self, value):
-       self._b7 = self._validate_stage_value(value, "b7")
+       self._b7 = self._validate_stage_value(value, "B7")
        
     @property
     def c1(self):
@@ -167,7 +167,7 @@ class En15804IndicatorValue(object):
     
     @c1.setter
     def c1(self, value):
-       self._c1 = self._validate_stage_value(value, "c1")
+       self._c1 = self._validate_stage_value(value, "C1")
        
     @property
     def c2(self):
@@ -175,7 +175,7 @@ class En15804IndicatorValue(object):
     
     @c2.setter
     def c2(self, value):
-       self._c2 = self._validate_stage_value(value, "c2")
+       self._c2 = self._validate_stage_value(value, "C2")
        
     @property
     def c3(self):
@@ -183,7 +183,7 @@ class En15804IndicatorValue(object):
     
     @c3.setter
     def c3(self, value):
-       self._c3 = self._validate_stage_value(value, "c3")
+       self._c3 = self._validate_stage_value(value, "C3")
        
     @property
     def c4(self):
@@ -191,7 +191,7 @@ class En15804IndicatorValue(object):
     
     @c4.setter
     def c4(self, value):
-       self._c4 = self._validate_stage_value(value, "c4")
+       self._c4 = self._validate_stage_value(value, "C4")
        
     @property
     def d(self):
@@ -199,26 +199,65 @@ class En15804IndicatorValue(object):
     
     @d.setter
     def d(self, value):
-       self._d = self._validate_stage_value(value, "d")
+       self._d = self._validate_stage_value(value, "D")
        
     def set_values(self, **values):
+        """Procedure to set all object-attributes at once
+
+        Parameters
+        ----------
+        **values : dict
+            Dictionary with attribute-name as key and attribute-value as value 
+
+        """
+        
         for attr, value in values.items():
             setattr(self, attr, value)
+
     
-    def _ignore_none_sum(self, value1, value2):
-        if value1 and value2:
-            return(value1 + value2)
+    def _ignore_none_sum(self, addend1, addend2):
+        """sums up two numbers, but interprets Noneaddends as 0. When both
+        input-addends are None, it returns None
+        
+        Parameters
+        ----------
+        addend1 : int, float, none
+            addend 1
+        addend2 : int, float, none
+            addend 2
+
+        Returns
+        -------
+        sum of addends : int, float
+        or None
+        """
+        if addend1 and addend2:
+            return(addend1 + addend2)
         else:
-            if not value1 and not value2:
+            if not addend1 and not addend2:
                 return(None)
             else:
-                if value1:
-                    return(value1)
+                if addend1:
+                    return(addend1)
                 else:
-                    return(value2)
+                    return(addend2)
                 
     def __add__(self, other):
+        """Adds two En15804IndicatorValue-Objects. Every stage is summed up 
+        separately and both Objects need equal units.
         
+
+        Parameters
+        ----------
+        other : En15804IndicatorValue
+            The addend En15804IndicatorValue-Object
+
+        Returns
+        -------
+        sum: En15804IndicatorValue
+           sum of both En15804IndicatorValue-Objects. 
+
+        """
         if isinstance(other, En15804IndicatorValue):
 
             values = {"a1": self._ignore_none_sum(self.a1, other.a1),
