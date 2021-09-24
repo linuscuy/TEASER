@@ -4,7 +4,65 @@
 # by Johannes Linus Cuypers
 
 class En15804IndicatorValue(object):
+    """En15804IndicatorValue class
+    
+    This class holds one value for every lifecycle-stage according to EN 15804.
+    It can be used to set the value of an environmental indicator.    
+    
+    Parameters
+    ----------
+    
+    parent : XXX, optional
+        Default is None
+    
+    Attributes
+    ----------
+    unit : str
+        unit of the values
+    a1 : float
+        Product stage: Raw material supply
+    a2 : float
+        Product stage: Transport
+    a3 : float
+        Product stage: Manufacturing
+    a1_a3 : float
+        sum of stage a1, a2 and a3
+    a4 : float
+        Construction on process stage: Transport from the gate to the site
+    a5 : float
+        Construction on process stage: Assembly
+    b1 : float
+        Use stage: Use
+    b2 : float
+        Use Stage: Maintenance
+    b3 : float
+        Use Stage: Repair
+    b4 : float
+        Use Stage: Replacement
+    b5 : float
+        Use Stage: Refurbishment
+    b6 : float
+        Use Stage: Operational energy use
+    b7 : float
+        Use Stage: Operational water use
+    c1 : float
+        End of Life Stage: De-Construction demolition
+    c2 : float
+        End of Life Stage: Transport
+    c3 : float
+        End of Life Stage: Waste processing
+    c4 : float
+        End of Life stage: Disposal
+    d : float
+        Benefits and loads beyond the system boundaries: 
+        Reuse-Recovery-Recycling-Potential
+    
+    
+    """
     def __init__(self, parent = None):
+        """Constructor of En15804IndicatorValue
+        """
+        
         self.parent = parent
         self._unit = None
         
@@ -32,6 +90,20 @@ class En15804IndicatorValue(object):
         self._d = None
         
     def _validate_stage_value(self, value, stage_name):
+        """Function to validate the value of an stage.
+
+        Parameters
+        ----------
+        value : TYPE
+            value to be validated 
+        stage_name : str
+            printable name of a stage. Used for Error-Messages.
+
+        Returns
+        -------
+        validated value: float, nonetype
+
+        """
         if isinstance(value, float):
             return(value)
         else:
@@ -41,10 +113,10 @@ class En15804IndicatorValue(object):
                 value = float(value)
                 return(value)
             except ValueError:
-                print("Can't convert value of '{}' to float".format(stage_name))
-            
+                print("Can't convert value of '{}' to float".format(stage_name))       
             except TypeError:
                 print("Can´t convert {} into float".format(type(value)))
+
                 
     @property
     def unit(self):
@@ -284,15 +356,43 @@ class En15804IndicatorValue(object):
             new.set_values(**values)
             return(new)
         else:
-            print("Addend must be 'en15804IndicatorValue'-Object!")
             
-    def _ignore_none_mul(self, value1, value2):
-        if not value1 or not value2:
+            print("Addend must be an 'En15804IndicatorValue'-Object!")
+            
+    def _ignore_none_mul(self, factor1, factor2):
+        """Multiplies two factors. If one is None, it returns None
+
+        Parameters
+        ----------
+        factor1 : int, float
+            Factor 1
+        factor2 : TYPE
+            Factor 2
+
+        Returns
+        -------
+            Product of factors or None
+
+        """
+        if not factor1 or not factor2:
             return(None)
         else:
-            return(value1 * value2)
+            return(factor1 * factor2)
         
     def __mul__(self, scalar):
+        """Multiplies every stage-value with a scalar
+
+        Parameters
+        ----------
+        scalar : int, float
+            scalar to be mutliplied
+
+        Returns
+        -------
+        new : En15804IndicatorValue
+            product of "self" and scalar
+
+        """
         try:
             scalar = float(scalar)
             
@@ -324,8 +424,21 @@ class En15804IndicatorValue(object):
         
         except TypeError:
             print("Can´t convert {} into float. Please insert scalar!".format(type(scalar)))
-            
+    
     def sum_stages(self, add_stage_d = False):
+        """sums up all values of the object
+
+        Parameters
+        ----------
+        add_stage_d : Boolean
+            Is true, when stage d should be added. The default is False.
+
+        Returns
+        -------
+            sum : overall value of all stages. With or without stage d 
+
+        """
+
         addends = []
         
         if self.a1: addends.append(self.a1)
@@ -348,5 +461,8 @@ class En15804IndicatorValue(object):
         if self.d and add_stage_d: addends.append(self.d)
         
         return(sum(addends))
+
+        
+                
     
         
