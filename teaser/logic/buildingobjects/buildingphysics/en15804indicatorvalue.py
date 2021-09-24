@@ -286,5 +286,28 @@ class En15804IndicatorValue(object):
         except TypeError:
             print("Can´t convert {} into float. Please insert scalar!".format(type(scalar)))
             
+    def sum_stages(self, add_stage_d = False):
+        addends = []
+        
+        if self.a1: addends.append(self.a1)
+        if self.a2: addends.append(self.a2)
+        if self.a3: addends.append(self.a3)
+        if self.a1_a3: addends.append(self.a1_a3)
+        if self.a4: addends.append(self.a4)
+        if self.a5: addends.append(self.a5)
+        if self.b1: addends.append(self.b1)
+        if self.b2: addends.append(self.b2)
+        if self.b3: addends.append(self.b3)
+        if self.b4: addends.append(self.b4)
+        if self.b5: addends.append(self.b5)
+        if self.b6: addends.append(self.b6)
+        if self.b7: addends.append(self.b7)
+        if self.c1: addends.append(self.c1)
+        if self.c2: addends.append(self.c2)
+        if self.c3: addends.append(self.c3)
+        if self.c4: addends.append(self.c4)
+        if self.d and add_stage_d: addends.append(self.d)
+        
+        return(sum(addends))
     
         
