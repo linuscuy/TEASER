@@ -462,7 +462,37 @@ class En15804IndicatorValue(object):
         
         return(sum(addends))
 
+    def stages(self):
+        """returns a list with all stages that are not None
+
+
+        Returns
+        -------
+            stages
+
+        """
+        stages = []
         
+        if self.a1: stages.append("a1")
+        if self.a2: stages.append("a2")
+        if self.a3: stages.append("a3")
+        if self.a1_a3: stages.append("a1_a3")
+        if self.a4: stages.append("a4")
+        if self.a5: stages.append("a5")
+        if self.b1: stages.append("b1")
+        if self.b2: stages.append("b2")
+        if self.b3: stages.append("b3")
+        if self.b4: stages.append("b4")
+        if self.b5: stages.append("b5")
+        if self.b6: stages.append("b6")
+        if self.b7: stages.append("b7")
+        if self.c1: stages.append("c1")
+        if self.c2: stages.append("c2")
+        if self.c3: stages.append("c3")
+        if self.c4: stages.append("c4")
+        if self.d: stages.append("d")
+        
+        return(stages)
                 
     
         
