@@ -62,17 +62,21 @@ def load_ade_lxml(path, prj, chosen_gmls=None):
         """Create TEASER Building Object and get/set general attributes and Thermal Zone..."""
         bldg = Building(parent=prj)
         _set_attributes(bldg=bldg, gml_bldg=building_lxml, namespace=namespace, bldg_name=bldg_name)
+        # bldg.set_gml_attributes()
         construction_dict, constr_win_dict = _get_construction(construction_members)
         material_dict = _get_materials(material_members)
         bldg_info_list, thermal_zone_lxml, usage_zone_lxml = _get_building_info(building_lxml)
         thermal_zone_dict = _get_thermal_zones(thermal_zone_lxml)
         usage_condition_dict = _get_usage_zones(usage_zone_lxml)
 
-        tz, usage_href, tzb_dict, tzb_dict_openings = _set_thermal_zones(bldg, thermal_zone_dict, construction_dict,
-                                                                         constr_win_dict, material_dict)
-        _set_building_elements(tz, tzb_dict, tzb_dict_openings, construction_dict,
-                               constr_win_dict, material_dict)
-        _set_usage_conditions(prj, tz, usage_href, usage_condition_dict)
+        # tz, usage_href, tzb_dict, tzb_dict_openings = _set_thermal_zones(bldg, thermal_zone_dict, construction_dict,
+        #                                                                  constr_win_dict, material_dict)
+        for tz, usage_href, tzb_dict, tzb_dict_openings in _set_thermal_zones(bldg, thermal_zone_dict, construction_dict,
+                                                                         constr_win_dict, material_dict):
+            _set_building_elements(tz, tzb_dict, tzb_dict_openings, construction_dict,
+                                   constr_win_dict, material_dict)
+            _set_usage_conditions(prj, tz, usage_href, usage_condition_dict)
+            _set_inner_walls(bldg, tz)
 
 
 def _get_construction(construction_members):
@@ -529,8 +533,34 @@ def _get_schedules(schedule):
     return schedule_dict
 
 
-def _set_thermal_zones(bldg, thermal_zone_dict, construction_dict, constr_win_dict,
-                       material_dict, multizone_split=False):
+def _set_thermal_zones(bldg, thermal_zone_dict, multizone_split=False):
+    """
+    Creates a TEASER Thermal Zone Objects for the TEASER Building and sets area and volume.
+
+    Parameters
+    ----------
+    bldg: TEASER building()
+            TEASER Building Object
+    thermal_zone_dict: python Dict{}
+            {tz_id: [usage_zone_href,floor area, floor area type, volume, volume type, isheated, iscooled,
+                         Thermal_Zone_Boundary_dict, Thermal_Zone_Boundary_openings-dict]}
+    multizone_split: Boolean
+            For Office Buildings, should the single thermal zone from the ADE be only used for office space and
+            the rest of the thermal zone split according to office building archetype
+{tzb_id:[type, azimuth, inclination, area, constr_href]}
+    -------
+    tz: TEASER thermalzone()
+            TEASER Thermal Zone Object(), holds usage zones and is attached to a TEASER Building Object
+    thermal_zone_dict[key][0]: str
+            GML Usage Zone ID for the Thermal Zone
+    thermal_zone_dict[key][7]: python Dict{}
+            Thermal Zone Boundary Information
+            tzb_dict -> {tzb_id:[type, azimuth, inclination, area, constr_href]}
+    thermal_zone_dict[key][8]: python Dict{}
+            Thermal Zone Openings Information
+            tzb_openiongs_dict-> {tzb_opening_id:[tzb_id, opening_area, opening_constr_href]}
+    """
+
     net_factor = 1
     volume_factor = 1
     for key in thermal_zone_dict.keys():
@@ -541,25 +571,52 @@ def _set_thermal_zones(bldg, thermal_zone_dict, construction_dict, constr_win_di
             tz.area = thermal_zone_dict[key][1] * net_factor
         else:
             tz.area = thermal_zone_dict[key][1]
-        if thermal_zone_dict[key][4] is not "netFloorArea":
-            tz.area = thermal_zone_dict[key][3] * volume_factor
+        if thermal_zone_dict[key][4] is not "netVolume":
+            tz.volume = thermal_zone_dict[key][3] * volume_factor
         else:
-            tz.area = thermal_zone_dict[key][3]
+            tz.volume = thermal_zone_dict[key][3]
         # TODO: Find example for EnergyADE with set Infiltration rate and implement in thermal zone extraction,
         #  otherwise has to be set in usage zone
+
         """if infiltration rate is specifically set in EnergyADE, otherwise from schedules or default(0.4)"""
         # if tz_infiltration_rate is not None:
         #     tz.infiltration_rate = tz_infiltration_rate
         # else:
         #     pass
-        # _set_building_elements(tz, thermal_zone_dict[key][7], thermal_zone_dict[key][8],
-        #                        construction_dict, constr_win_dict, material_dict)
 
-        return tz, thermal_zone_dict[key][0], thermal_zone_dict[key][7], thermal_zone_dict[key][8]
+        yield tz, thermal_zone_dict[key][0], thermal_zone_dict[key][7], thermal_zone_dict[key][8]
 
 
 def _set_building_elements(tz, tzb_dict, tzb_dict_openings, construction_dict,
                            constr_win_dict, material_dict, tz_factor=1):
+    """
+    Creates and set the Buildingelements(Wall, Floor, Roof).
+
+    Parameters
+    ----------
+    tz: TEASER thermalzone()
+            TEASER Thermal Zone Object(), holds usage zones and is attached to a TEASER Building Object
+    tzb_dict: python Dict{}
+            Thermal Zone Boundary Information
+            tzb_dict -> {tzb_id:[type, azimuth, inclination, area, constr_href]}
+    tzb_dict_openings: python Dict{}
+            Thermal Zone Openings Information
+            tzb_openiongs_dict-> {tzb_opening_id:[tzb_id, opening_area, opening_constr_href]}
+    construction_dict: python Dict{}
+            python dictionary containing the construction, layer information
+            and material reference id for Walls, Roofs and Grounds
+            {constr_id: [name, u-value,layer_dict]}
+    constr_win_dict: python Dict{}
+            python dictionary containing the construction and optical properties for windows
+            {constr_id: [name, u-value, fraction, wave length range, glazing ratio]}
+    material_dict: python Dict{}
+            python dictionary containing the material information
+            Solids -> {mat_id: [solid, name, conductivity, density, specific heat capacity]}
+            Gases -> {mat_id: [gas, name, is vetilated, r Value]}
+    tz_factor: float [0,1]
+            factor for sizing the Thermal Zones if the option of Multi-zones is selected
+    """
+
     buildingelements = {"roof": Rooftop(parent=tz), "outerWall": OuterWall(parent=tz),
                         "groundSlab": GroundFloor(parent=tz)}
     for key, value in tzb_dict.items():
@@ -567,7 +624,7 @@ def _set_building_elements(tz, tzb_dict, tzb_dict_openings, construction_dict,
             b_element = buildingelements[value[0]]
             b_element.name = key
         else:
-            f"Unknown thermalBoundaryType in EnergyADE: {value[0]}"
+            print(f"Unknown thermalBoundaryType in EnergyADE: {value[0]}")
             raise AttributeError
         b_element.area = value[3] * tz_factor  # MultiZoneTest
         b_element.orientation = value[1]
@@ -656,7 +713,54 @@ def _set_building_elements(tz, tzb_dict, tzb_dict_openings, construction_dict,
             BuildingElement.add_layer(win, layer=layer)
 
 
+def _set_inner_walls(bldg, tz, construction="heavy"):
+
+    """
+    Creating and setting the Inner Walls(Ceiling, floor, inner wall)
+
+    Parameters
+    ----------
+    bldg: TEASER building()
+            TEASER Building Object
+    tz: TEASER thermalzone()
+            TEASER Thermal Zone Object(), holds usage zones and is attached to a TEASER Building Object
+    construction: str
+        "heavy" and "light" construction of the inner walls can be selected here
+    """
+
+    floor = Floor(parent=tz)
+    floor.name = "floor"
+    floor.tilt = 0
+    floor.load_type_element(year=bldg.year_of_construction, construction=construction)
+
+    ceiling = Ceiling(parent=tz)
+    ceiling.name = "ceiling"
+    ceiling.tilt = 180
+    ceiling.load_type_element(year=bldg.year_of_construction, construction=construction)
+
+    inner = InnerWall(parent=tz)
+    inner.name = "innerWall"
+    inner.tilt = 90
+    inner.load_type_element(year=bldg.year_of_construction, construction=construction)
+    tz.set_inner_wall_area()
+
+
 def _set_usage_conditions(prj, tz, usage_href, usage_condition_dict):
+    """
+    setting the usage zone, schedules...
+    Parameters
+    ----------
+    prj: Project()
+            Teaser instance of Project()
+    tz: TEASER thermalzone()
+            TEASER Thermal Zone Object(), holds usage zones and is attached to a TEASER Building Object
+    usage_href: str
+            GML Usage Zone ID for the Thermal Zone
+    usage_condition_dict:
+            usagezone_dict-> {uz_id:[usage_type, heating_schedules_dict,cooling_schedules_dict,
+            ventilation_schedule_dict, occupancy_schedule_dict, electrical_appliances_schedule_dict,
+            lighting_schedule_dict]}
+    """
     # TODO: Load Use Conditions if already saved, without reloading everything
     if usage_href is None:
         print("The Thermal Zone has no containing Usage Zone")
@@ -675,8 +779,7 @@ def _set_usage_conditions(prj, tz, usage_href, usage_condition_dict):
             use_cond.load_use_conditions(zone_usage="Living")
 
         use_cond.usage = usage_condition_dict[usage_href][0] + "" + usage_href
-        use_cond.typical_length = np.sqrt(tz.area)
-        use_cond.typical_width = np.sqrt(tz.area)
+
 
         """heating profile"""
         if usage_condition_dict[usage_href][1] is not None:
@@ -782,7 +885,6 @@ def _set_usage_conditions(prj, tz, usage_href, usage_condition_dict):
                     print(key)
                     use_cond.lighting_profile = [x for x in value]
         tz.use_conditions = use_cond
-    return
 
 
 def load_gmlade(path, prj, chosen_gmls=None):

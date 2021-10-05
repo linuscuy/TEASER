@@ -516,7 +516,7 @@ def _set_attributes(bldg, gml_bldg, namespace, bldg_name, gml_bldg_part=None, bl
         print("no storeysAboveGround specified in gml file")
         pass
     try:
-        bldg.height_of_floors = float(gml_bldg.find(".//bldg:storeysHeightAboveGround", namespace).text)
+        bldg.height_of_floors = float(gml_bldg.find(".//bldg:storeyHeightsAboveGround", namespace).text)
     except (UserWarning, AttributeError):
         print("no storeyHeightsAboveGround specified in gml file")
         pass
