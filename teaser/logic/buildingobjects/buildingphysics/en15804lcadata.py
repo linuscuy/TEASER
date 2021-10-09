@@ -382,3 +382,30 @@ class En15804LcaData(object):
             if self._check_unit(value.unit, "MJ", "adpf"):
                 self._adpf = value
    
+    def __mul__(self, scalar):
+        
+        self._pere = self._pere * scalar
+        self._perm = self._perm * scalar
+        self._pert = self._pert* scalar
+        self._penre = self._penre * scalar
+        self._penrm = self._penrm * scalar
+        self._penrt = self._penrt * scalar
+        self._sm = self._sm * scalar
+        self._rsf = self._rsf * scalar
+        self._nrsf = self._nrsf * scalar
+        self._fw = self._fw * scalar
+        self._hwd = self._hwd * scalar
+        self._nhwd = self._nhwd * scalar
+        self._rwd = self._rwd * scalar
+        self._cru = self._cru * scalar
+        self._mfr = self._mfr * scalar
+        self._mer = self._mer * scalar
+        self._eee = self._eee * scalar
+        self._eet = self._eet * scalar
+        self._gwp = self._gwp * scalar
+        self._odp = self._odp * scalar
+        self._pocp = self._pocp * scalar
+        self._ap = self._ap * scalar
+        self._ep = self._ep * scalar
+        self._adpe = self._adpe * scalar
+        self._adpf = self._adpf * scalar
