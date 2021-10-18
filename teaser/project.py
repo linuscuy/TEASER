@@ -1052,7 +1052,7 @@ internal_gains_mode: int [1, 2, 3]
             new_path = os.path.join(path, name)
             utilities.create_path(utilities.get_full_path(path))
 
-        citygml_out.save_gml(self, new_path, ref_coordinates=ref_coordinates, gml_copy=gml_copy, results=results)
+        citygml_out.save_gml_lxml(self, new_path, ref_coordinates=ref_coordinates, gml_copy=gml_copy, results=results)
 
     def load_citygml(self, method="iwu", path=None, energyade=False,
                      gml_bldg_ids=None, gml_bldg_names=None, gml_bldg_addresses=None):

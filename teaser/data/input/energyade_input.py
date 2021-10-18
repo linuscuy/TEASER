@@ -71,8 +71,8 @@ def load_ade_lxml(path, prj, chosen_gmls=None):
 
         # tz, usage_href, tzb_dict, tzb_dict_openings = _set_thermal_zones(bldg, thermal_zone_dict, construction_dict,
         #                                                                  constr_win_dict, material_dict)
-        for tz, usage_href, tzb_dict, tzb_dict_openings in _set_thermal_zones(bldg, thermal_zone_dict, construction_dict,
-                                                                         constr_win_dict, material_dict):
+        for tz, usage_href, tzb_dict, tzb_dict_openings in _set_thermal_zones(bldg, thermal_zone_dict,
+                                                                              construction_dict):
             _set_building_elements(tz, tzb_dict, tzb_dict_openings, construction_dict,
                                    constr_win_dict, material_dict)
             _set_usage_conditions(prj, tz, usage_href, usage_condition_dict)
