@@ -7,9 +7,11 @@ This module contains function to save and load Projects in the non proprietary
 CityGML file format .gml
 """
 import re
+import os
 import lxml.etree as ET
+from datetime import date, datetime
 import uuid
-import citygml_classes as cl
+import teaser.data.output.citygml_classes as cl
 import pyxb
 import pyxb.utils
 import pyxb.namespace
@@ -20,10 +22,10 @@ import pyxb.bundles.common.raw.xlink as xlink
 def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=None):
     """Based on CityGML Building export from CityBIT"""
 
-    if path.endswith("gml"):
-        out_file = open(path, 'w')
-    else:
-        out_file = open(path + ".gml", 'w')
+    # if path.endswith("gml"):
+    #     out_file = open(path, 'w')
+    # else:
+    #     out_file = open(path + ".gml", 'w')
 
     crs = "urn:adv:crs:ETRS89_UTM32*DE_DHHN2016_NH*GCG2016"
     print('crs:', crs)
@@ -42,14 +44,14 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
     name_E = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'name'), nsmap={'gml': nsClass.gml})
     name_E.text = 'created using the e3D CityBIT'
 
-    """create new building here"""
+    """create new cityObjectMember here"""
     cityObjectMember_E = ET.SubElement(nroot_E, ET.QName(nsClass.core, 'cityObjectMember'))
 
     # setting gml:id
     # if u_GML_id != None:
     #     gmlID = u_GML_id
     # else:
-    #     gmlID = "e3D_CityBIT_" + str(uuid.uuid1())
+    gmlID = "e3D_CityBIT_" + str(uuid.uuid1())
 
     if ref_coordinates is not None:
 
@@ -66,9 +68,9 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
 
         if gml_copy is None or re.match(r"(\w+)bt_", bldg_count.name):
 
-            gml_bldg = = ET.SubElement(cityObjectMember_E, ET.QName(nsClass.bldg, 'Building'),
+            gml_bldg = ET.SubElement(cityObjectMember_E, ET.QName(nsClass.bldg, 'Building'),
                                        attrib={ET.QName(nsClass.gml, 'id'): gmlID})
-
+            gml_bldg = _set_gml_building_lxml(gml_bldg, nsClass, bldg_count, ET)
 
             """for testing the loop"""
             if results is not None:
@@ -85,6 +87,15 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
             if results is not None:
                 _save_simulation_results(gml_bldg, results=results)
 
+        tree = ET.ElementTree(nroot_E)
+
+        # writing file
+        print('writing file')
+        print(tree)
+        print(os.path.normpath(os.path.join(path, "test.gml")))
+        print(str(os.path.join(path, "test.gml")))
+        tree.write(os.path.join(path), pretty_print=True, xml_declaration=True,
+                   encoding='utf-8', standalone='yes', method="xml")
 
 def save_gml(project, path, gml_copy=None, ref_coordinates=None, results=None):
     """This function saves a project to a cityGML file
@@ -256,7 +267,8 @@ def save_gml(project, path, gml_copy=None, ref_coordinates=None, results=None):
 
     out_file.write(gml_out.toDOM().toprettyxml())
 
-def _set_gml_building_lxml(teaser_building):
+
+def _set_gml_building_lxml(gml_bldg, nsClass,teaser_building, ET):
     """Creates an instance of a citygml Building with attributes
 
         creates a citygml.building.Building object. And fills the attributes of
@@ -274,7 +286,28 @@ def _set_gml_building_lxml(teaser_building):
         gml_bldg : citygml.building.Building() object
             Returns a citygml Building with attributes
         """
-    gml_bldg =
+
+# gml_bldg = ET.SubElement(cityObjectMember_E, ET.QName(nsClass.bldg, 'Building'),
+#                                        attrib={ET.QName(nsClass.gml, 'id'): gmlID})
+
+    ET.SubElement(gml_bldg, ET.QName(nsClass.gml,
+                                       'description')).text = 'created using the e3D TEASER+'
+
+    # building attributes
+    ET.SubElement(gml_bldg, ET.QName(nsClass.gml, 'name')).text = teaser_building.name
+    ET.SubElement(gml_bldg, ET.QName(nsClass.core, 'creationDate')).text = str(date.today())
+    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'buildingFunction')).text = str(teaser_building.type_of_building)
+    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'yearOfConstruction')).text = \
+        str(teaser_building.year_of_construction)
+    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'roofType'), attrib={
+        'codeSpace': 'http://www.sig3d.org/codelists/citygml/2.0/building/2.0/_AbstractBuilding_roofType.xml'})\
+        .text = str(1000)
+    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'measuredHeight'), attrib={'uom': "m"}).text = \
+        str(teaser_building.number_of_floors * teaser_building.height_of_floors)
+    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'storeysAboveGround')).text = \
+        str(teaser_building.height_of_floors)
+
+
 def _set_gml_building(teaser_building):
     """Creates an instance of a citygml Building with attributes
 

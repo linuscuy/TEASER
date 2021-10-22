@@ -1049,7 +1049,7 @@ internal_gains_mode: int [1, 2, 3]
         if path is None:
             new_path = os.path.join(utilities.get_default_path(), name)
         else:
-            new_path = os.path.join(path, name)
+            new_path = os.path.join(path, name + ".gml")
             utilities.create_path(utilities.get_full_path(path))
 
         citygml_out.save_gml_lxml(self, new_path, ref_coordinates=ref_coordinates, gml_copy=gml_copy, results=results)
