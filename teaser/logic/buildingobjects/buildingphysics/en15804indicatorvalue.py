@@ -331,30 +331,36 @@ class En15804IndicatorValue(object):
 
         """
         if isinstance(other, En15804IndicatorValue):
-
-            values = {"a1": self._ignore_none_sum(self.a1, other.a1),
-                "a2": self._ignore_none_sum(self.a2, other.a2),
-                "a3": self._ignore_none_sum(self.a3, other.a3),
-                "a1_a3": self._ignore_none_sum(self.a1_a3, other.a1_a3),
-                "a4": self._ignore_none_sum(self.a4, other.a4),
-                "a5": self._ignore_none_sum(self.a5, other.a5),
-                "b1": self._ignore_none_sum(self.b1, other.b1),
-                "b2": self._ignore_none_sum(self.b2, other.b2),
-                "b3": self._ignore_none_sum(self.b3, other.b3),
-                "b4": self._ignore_none_sum(self.b4, other.b4),
-                "b5": self._ignore_none_sum(self.b5, other.b5),
-                "b6": self._ignore_none_sum(self.b6, other.b6),
-                "b7": self._ignore_none_sum(self.b7, other.b7),
-                "c1": self._ignore_none_sum(self.c1, other.c1),
-                "c2": self._ignore_none_sum(self.c2, other.c2),
-                "c3": self._ignore_none_sum(self.c3, other.c3),
-                "c4": self._ignore_none_sum(self.c4, other.c4),
-                "d": self._ignore_none_sum(self.d, other.d)}
-
             
-            new = En15804IndicatorValue()
-            new.set_values(**values)
-            return(new)
+            if self.unit == other.unit:
+
+                values = {"a1": self._ignore_none_sum(self.a1, other.a1),
+                    "a2": self._ignore_none_sum(self.a2, other.a2),
+                    "a3": self._ignore_none_sum(self.a3, other.a3),
+                    "a1_a3": self._ignore_none_sum(self.a1_a3, other.a1_a3),
+                    "a4": self._ignore_none_sum(self.a4, other.a4),
+                    "a5": self._ignore_none_sum(self.a5, other.a5),
+                    "b1": self._ignore_none_sum(self.b1, other.b1),
+                    "b2": self._ignore_none_sum(self.b2, other.b2),
+                    "b3": self._ignore_none_sum(self.b3, other.b3),
+                    "b4": self._ignore_none_sum(self.b4, other.b4),
+                    "b5": self._ignore_none_sum(self.b5, other.b5),
+                    "b6": self._ignore_none_sum(self.b6, other.b6),
+                    "b7": self._ignore_none_sum(self.b7, other.b7),
+                    "c1": self._ignore_none_sum(self.c1, other.c1),
+                    "c2": self._ignore_none_sum(self.c2, other.c2),
+                    "c3": self._ignore_none_sum(self.c3, other.c3),
+                    "c4": self._ignore_none_sum(self.c4, other.c4),
+                    "d": self._ignore_none_sum(self.d, other.d),
+                    "unit": self.unit}
+                
+                new = En15804IndicatorValue()
+                new.set_values(**values)
+                return(new)
+            
+            else:
+                print("Addends must have the same unit!")
+            
         else:
             
             print("Addend must be an 'En15804IndicatorValue'-Object!")
@@ -413,7 +419,8 @@ class En15804IndicatorValue(object):
                 "c2": self._ignore_none_mul(self.c2, scalar),
                 "c3": self._ignore_none_mul(self.c3, scalar),
                 "c4": self._ignore_none_mul(self.c4, scalar),
-                "d": self._ignore_none_mul(self.d, scalar)}
+                "d": self._ignore_none_mul(self.d, scalar),
+                "unit": self.unit}
             
             new = En15804IndicatorValue()
             new.set_values(**values)
@@ -468,7 +475,7 @@ class En15804IndicatorValue(object):
 
         Returns
         -------
-            stages
+            list of stages
 
         """
         stages = []
