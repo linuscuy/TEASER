@@ -6,8 +6,8 @@ Created on Sat Sep 25 15:33:51 2021
 """
 
 import uuid
-#from teaser.logic.buildingobjects.buildingphysics.en15804indicatorvalue import En15804IndicatorValue
-from en15804indicatorvalue import En15804IndicatorValue
+
+from teaser.logic.buildingobjects.buildingphysics.en15804indicatorvalue import En15804IndicatorValue
 
 class En15804LcaData(object):
     """En15804LcaData class
@@ -80,6 +80,9 @@ class En15804LcaData(object):
     """
     def __init__(self, parent = None):
       
+        self.lca_data_id = str(uuid.uuid1())
+        
+        self._name = None
         
         self._ref_flow_value = None
         self._ref_flow_unit = None
@@ -110,9 +113,26 @@ class En15804LcaData(object):
         self._adpe = None
         self._adpf = None
         
-        self.lca_data_id = str(uuid.uuid1())
+        self._fallback = None
+        
         
     def _check_unit(self, unit, unit_expected, var_name = None):
+        """function to check if unit
+
+        Parameters
+        ----------
+        unit : str
+            Unit to be checked
+        unit_expected : str
+            unit to be expected
+        var_name : str, optional
+            Name of the Variable to display Error. The default is None.
+
+        Returns
+        -------
+        Boolean
+
+        """
         
         if unit == unit_expected:
             return(True)
@@ -124,13 +144,26 @@ class En15804LcaData(object):
             return(False)
         
     def _check_en15804indicatorvalue_class(self, value, var_name = None):
-        if isinstance(value, En15804IndicatorValue): 
-            return(True)
-        else:
-            if var_name:
-                print("'{}' has to be an En15804IndicatorValue-Object!".format(var_name))
+
+        if value:
+            if isinstance(value, En15804IndicatorValue): 
+                return(True)
             else:
-                print("Please insert a En15804IndicatorValue-Object!")
+                if var_name:
+                    print("'{}' has to be an En15804IndicatorValue-Object!".format(var_name))
+                else:
+                    print("Please insert a En15804IndicatorValue-Object!")
+                return(False)
+        else:
+            return(False)
+    
+    @property
+    def fallback(self):
+        return(self._fallback)
+    
+    @fallback.setter
+    def fallback(self, value):
+        self._fallback = value
         
     @property
     def pere(self):
@@ -381,31 +414,107 @@ class En15804LcaData(object):
         if self._check_en15804indicatorvalue_class(value, var_name = "adpf"):
             if self._check_unit(value.unit, "MJ", "adpf"):
                 self._adpf = value
-   
-    def __mul__(self, scalar):
+    
+    def set_values(self, **values):
+        """Procedure to set all object-attributes at once
+
+        Parameters
+        ----------
+        **values : dict
+            Dictionary with attribute-name as key and attribute-value as value 
+
+        """
         
-        self._pere = self._pere * scalar
-        self._perm = self._perm * scalar
-        self._pert = self._pert* scalar
-        self._penre = self._penre * scalar
-        self._penrm = self._penrm * scalar
-        self._penrt = self._penrt * scalar
-        self._sm = self._sm * scalar
-        self._rsf = self._rsf * scalar
-        self._nrsf = self._nrsf * scalar
-        self._fw = self._fw * scalar
-        self._hwd = self._hwd * scalar
-        self._nhwd = self._nhwd * scalar
-        self._rwd = self._rwd * scalar
-        self._cru = self._cru * scalar
-        self._mfr = self._mfr * scalar
-        self._mer = self._mer * scalar
-        self._eee = self._eee * scalar
-        self._eet = self._eet * scalar
-        self._gwp = self._gwp * scalar
-        self._odp = self._odp * scalar
-        self._pocp = self._pocp * scalar
-        self._ap = self._ap * scalar
-        self._ep = self._ep * scalar
-        self._adpe = self._adpe * scalar
-        self._adpf = self._adpf * scalar
+        for attr, value in values.items():
+            setattr(self, attr, value)
+            
+    def _ignore_none_mul(self, lca_indicator, scalar):
+        if lca_indicator:
+            return(lca_indicator * scalar)
+        else:
+            return None
+            
+
+    def __mul__(self, scalar):
+        """Multiplies every indicator with a scalar
+        
+
+        Parameters
+        ----------
+        scalar : int, float
+            scalar to be mutliplied
+
+        Returns
+        -------
+        new : En15804LcaData
+            product of "self" and scalar
+        """       
+        
+        
+        values = {"pere": self._ignore_none_mul(self.pere , scalar),
+                "pert": self._ignore_none_mul(self.pert , scalar),
+                "penre": self._ignore_none_mul(self.penre , scalar),
+                "penrm": self._ignore_none_mul(self.penrm , scalar),
+                "penrt": self._ignore_none_mul(self.penrt , scalar),
+                "sm": self._ignore_none_mul(self.sm , scalar),
+                "rsf": self._ignore_none_mul(self.rsf , scalar),
+                "nrsf": self._ignore_none_mul(self.nrsf , scalar),
+                "fw": self._ignore_none_mul(self.fw , scalar),
+                "hwd": self._ignore_none_mul(self.hwd , scalar),
+                "nhwd": self._ignore_none_mul(self.nhwd , scalar),
+                "rwd": self._ignore_none_mul(self.rwd , scalar),
+                "cru": self._ignore_none_mul(self.cru , scalar),
+                "mfr": self._ignore_none_mul(self.mfr , scalar),
+                "mer": self._ignore_none_mul(self.mer , scalar),
+                "eee": self._ignore_none_mul(self.eee , scalar),
+                "eet": self._ignore_none_mul(self.eet , scalar),
+                "gwp": self._ignore_none_mul(self.gwp , scalar),
+                "odp": self._ignore_none_mul(self.odp , scalar),
+                "pocp": self._ignore_none_mul(self.pocp , scalar),
+                "ap": self._ignore_none_mul(self.ap , scalar),
+                "ep": self._ignore_none_mul(self.ep , scalar),
+                "adpe": self._ignore_none_mul(self.adpe , scalar),
+                "adpf": self._ignore_none_mul(self.adpf , scalar)
+                }
+        
+        new = En15804LcaData()
+        new.set_values(**values)
+        
+        return(new)
+
+        
+    def __add__(self, other):
+        
+        if isinstance(other, En15804LcaData):
+
+            values = {"pere": self.pere + other.pere,
+                        "pert": self.pert + other.pert,
+                        "penre": self.penre + other.penre,
+                        "penrm": self.penrm + other.penrm,
+                        "penrt": self.penrt + other.penrt,
+                        "sm": self.sm + other.sm,
+                        "rsf": self.rsf + other.rsf,
+                        "nrsf": self.nrsf + other.nrsf,
+                        "fw": self.fw + other.fw,
+                        "hwd": self.hwd + other.hwd,
+                        "nhwd": self.nhwd + other.nhwd,
+                        "rwd": self.rwd + other.rwd,
+                        "cru": self.cru + other.cru,
+                        "mfr": self.mfr + other.mfr,
+                        "mer": self.mer + other.mer,
+                        "eee": self.eee + other.eee,
+                        "eet": self.eet + other.eet,
+                        "gwp": self.gwp + other.gwp,
+                        "odp": self.odp + other.odp,
+                        "pocp": self.pocp + other.pocp,
+                        "ap": self.ap + other.ap,
+                        "ep": self.ep + other.ep,
+                        "adpe": self.adpe + other.adpe,
+                        "adpf": self.adpf + other.adpf    
+                    }
+                        
+            new = En15804LcaData()
+            new.set_values(**values)
+            return(new)
+        else:      
+            print("Addend must be an 'En15804LcaData'-Object!")
