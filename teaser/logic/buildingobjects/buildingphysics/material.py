@@ -6,6 +6,8 @@ import re
 import uuid
 import teaser.data.input.material_input_json as material_input
 import teaser.data.output.material_output as material_output
+from teaser.logic.buildingobjects.buildingphysics.en15804lcadata import En15804LcaData
+
 
 
 class Material(object):
@@ -65,6 +67,8 @@ class Material(object):
         self._transmittance = 0.0
         self._thickness_default = 0.0
         self._thickness_list = []
+        self._lca_data = None
+        self._service_life = None
 
         self.material_id = str(uuid.uuid1())
 
@@ -348,3 +352,29 @@ class Material(object):
                             "Can't convert entry of thickness_list to float")
 
                 self._thickness_list = value
+                
+    @property
+    def lca_data(self):
+        return self._lca_data
+    
+    @lca_data.setter
+    def _lca_data(self, value):
+        if isinstance(value, En15804LcaData):
+            self._lca_data = value
+        else:
+            print("lca_data must be an En15804IndicatorValue-Object!")
+            
+    @property
+    def service_life(self):
+        return self._service_life
+
+    @service_life.setter
+    def service_life(self, value):
+        if not isinstance(value, int):
+            try:
+                value = int(value)
+            except:
+                raise ValueError("Service Life has to be integer")
+                
+                
+        self._service_life = value
