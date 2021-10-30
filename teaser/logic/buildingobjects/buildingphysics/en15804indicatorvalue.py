@@ -89,6 +89,8 @@ class En15804IndicatorValue(object):
         
         self._d = None
         
+    
+        
     def _validate_stage_value(self, value, stage_name):
         """Function to validate the value of an stage.
 
