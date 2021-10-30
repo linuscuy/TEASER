@@ -47,6 +47,10 @@ class Material(object):
     material_id : str(uuid)
         UUID of material, this is used to have similar behaviour like foreign
         key in SQL data bases for use in TypeBuildingElements and Material json
+    lca_data : En15804LcaData
+        LCA-data with indicators according to EN15804
+    service_life : int [a]
+        service life of the material
 
     """
 
