@@ -9,6 +9,8 @@ import uuid
 
 from teaser.logic.buildingobjects.buildingphysics.en15804indicatorvalue import En15804IndicatorValue
 
+import teaser.data.input.lca_data_input as lca_data_input
+
 class En15804LcaData(object):
     """En15804LcaData class
     
@@ -518,3 +520,47 @@ class En15804LcaData(object):
             return(new)
         else:      
             print("Addend must be an 'En15804LcaData'-Object!")
+            
+        def load_lca_data_template(self, lca_id, data_class=self.parent.parent.parent.parent.data):
+            """LCA-data loader.
+
+            Loads LCA-data specified in the json.
+
+            Parameters
+            ----------
+
+            lca_id : str
+                LCA-data Identifier
+
+            data_class : DataClass()
+                
+
+            """
+            #data_class = self.parent.parent.parent.parent.data
+  
+
+            lca_data_input.load_en15804_lca_data_id(lca_data=self,
+                                         lca_id=lca_id,
+                                         data_class=data_class)
+        
+        def load_lca_data_fallback_tempalte(self, lca_id, data_class=self.parent.parent.parent.parent.data):
+            """LCA-data-fallback loader.
+
+            Loads LCA-data-fallbacks specified in the json.
+
+            Parameters
+            ----------
+
+            lca_id : str
+                LCA-Data Identifier
+
+            data_class : DataClass()
+                
+
+            """
+               #data_class = self.parent.parent.parent.parent.data
+
+
+            lca_data_input.load_en15804_lca_data_fallback_id(lca_data=self,
+                                         lca_id=lca_id,
+                                         data_class=data_class)
