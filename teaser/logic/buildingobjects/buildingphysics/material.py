@@ -362,7 +362,7 @@ class Material(object):
         return self._lca_data
     
     @lca_data.setter
-    def _lca_data(self, value):
+    def lca_data(self, value):
         if isinstance(value, En15804LcaData):
             self._lca_data = value
         else:
