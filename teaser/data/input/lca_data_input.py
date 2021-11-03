@@ -8,19 +8,19 @@ Created on Wed Oct 13 17:25:24 2021
 
 from teaser.logic.buildingobjects.buildingphysics.en15804indicatorvalue import En15804IndicatorValue
 from teaser.logic.buildingobjects.buildingphysics.en15804lcadata import En15804LcaData
-from teaser.data.dataclass import DataClass
+
 
 def load_en15804_lca_data_id(lca_data, lca_id, data_class):
-    """Material loader with id as identification.
+    """LCA-data loader with id as identification.
 
-    Loads LCA-Data specified in the JSON by given LCA-ID.
+    Loads LCA-data specified in the JSON by given LCA-ID.
 
     Parameters
     ----------
     lca_data : En15804MainLcaData()
         instance of TEASERS En15804nLcaData class
 
-    lca_id : name
+    lca_id : str
         id of LCA-data from JSON
 
     data_class : DataClass()
@@ -135,6 +135,27 @@ def load_en15804_lca_data_id(lca_data, lca_id, data_class):
                         
 
 def load_en15804_lca_data_fallback_id(lca_data, lca_id, data_class):
+    """LCA-data-fallback loader with id as identification.
+
+    Loads LCA-data-fallbacks specified in the JSON by given LCA-ID.
+    LCA-fallbacks are specified in an seperated JSON-file to clarify they are
+    just partial defined.
+
+    Parameters
+    ----------
+    lca_data : En15804MainLcaData()
+        instance of TEASERS En15804nLcaData class
+
+    lca_id : str
+        id of LCA-data from JSON
+
+    data_class : DataClass()
+        DataClass containing the bindings for En15804MainLcaData, TypeBuildingElement and
+        Material (typically this is the data class stored in prj.data,
+        but the user can individually change that.
+
+    """
+    
 
     binding = data_class.lca_data_fallback_bind
     
