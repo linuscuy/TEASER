@@ -542,6 +542,19 @@ class En15804LcaData(object):
             lca_data_input.load_en15804_lca_data_id(lca_data=self,
                                          lca_id=lca_id,
                                          data_class=data_class)
+            
+        def load_fallbacks(self, fallback_dictonarie, data_class):
+            if fallback_dictonarie:
+                self.fallback = {}
+                for stage in fallback_dictonarie:
+                    
+                    fallback_id = fallback_dictonarie["stage"]
+                    
+                    fallback_object = En15804LcaData()
+                    
+                    self.fallback[stage] = fallback_object
+                    
+                    self.fallback[stage].load_lca_data_fallback_template(fallback_id, data_class)
         
         def load_lca_data_fallback_tempalte(self, lca_id, data_class=self.parent.parent.parent.parent.data):
             """LCA-data-fallback loader.

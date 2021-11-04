@@ -674,13 +674,18 @@ class BuildingElement(object):
     def calc_lca_data(self):
         if self.layer != []:
             lca_data = En15804LcaData()
+            
             for layer in self.layer:
+                
                 if layer.material.lca_data.ref_flow_unit == "m^3":
                     scalar = (self.area * layer.thickness) / layer.material.lca_data.ref_flow_value
+                    
                 elif layer.material.lca_data_ref_flow_unit == "kg":
                     scalar = (self.area * layer.thickness * layer.material.density) / layer.material.lca_data.ref_flow_value
+                    
                 elif layer.material.lca_data_ref_flow_unit == "m^2":
                     scalar = self.area / layer.material.lca_data.ref_flow_value
+                    
                 else:
                     factor = 0
                     print("Unknown unit for reference flow!")

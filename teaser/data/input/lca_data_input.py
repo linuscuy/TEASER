@@ -7,7 +7,6 @@ Created on Wed Oct 13 17:25:24 2021
 
 
 from teaser.logic.buildingobjects.buildingphysics.en15804indicatorvalue import En15804IndicatorValue
-from teaser.logic.buildingobjects.buildingphysics.en15804lcadata import En15804LcaData
 
 
 def load_en15804_lca_data_id(lca_data, lca_id, data_class):
@@ -121,15 +120,7 @@ def load_en15804_lca_data_id(lca_data, lca_id, data_class):
                 
                 
                 if data["fallback"]:
-                    lca_data.fallback = {}
-                    for stage in data["fallbacks"]:
-                        
-                        fallback_id = data["fallback"][stage]
-                        
-                        fallback_object = En15804LcaData()
-                        
-                        lca_data.fallback[stage] = fallback_object
-                        lca_data.fallback[stage].load_lca_data_fallback_template(fallback_id, data_class)
+                    lca_data.load_fallbacks(data["fallback"], data_class)
                 else:
                     lca_data.fallback = None
                         
