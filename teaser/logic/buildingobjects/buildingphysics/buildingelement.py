@@ -2,6 +2,8 @@
 
 from __future__ import division
 from teaser.logic.buildingobjects.buildingphysics.layer import Layer
+from teaser.logic.buildingobjects.buildingphysics.en15804lcadata import En15804LcaData
+
 import teaser.data.input.buildingelement_input_json as buildingelement_input
 import numpy as np
 import random
@@ -150,6 +152,9 @@ class BuildingElement(object):
         self.r_outer_rad = 0.0
         self.r_outer_comb = 0.0
         self.wf_out = 0.0
+        
+        self._lca_data
+        self._additional_lca_data
 
     def calc_ua_value(self):
         """U*A value for building element.
@@ -649,3 +654,42 @@ class BuildingElement(object):
     def construction_type(self, value):
 
         self._construction_type = value
+
+    @property
+    def lca_data(self):
+        return self._lca_data
+
+    @lca_data.setter
+    def lca_data(self, value):
+        self._lca_data = value
+    
+    @property
+    def additional_lca_data(self):
+        return self._additional_lca_data
+    
+    @additional_lca_data.setter
+    def additional_lca_data(self, value):
+        self._additional_lca_data = value
+    
+    def calc_lca_data(self):
+        if self.layer != []:
+            lca_data = En15804LcaData()
+            for layer in self.layer:
+                if layer.material.lca_data.ref_flow_unit == "m^3":
+                    scalar = (self.area * layer.thickness) / layer.material.lca_data.ref_flow_value
+                elif layer.material.lca_data_ref_flow_unit == "kg":
+                    scalar = (self.area * layer.thickness * layer.material.density) / layer.material.lca_data.ref_flow_value
+                elif layer.material.lca_data_ref_flow_unit == "m^2":
+                    scalar = self.area / layer.material.lca_data.ref_flow_value
+                else:
+                    factor = 0
+                    print("Unknown unit for reference flow!")
+                lca_data = lca_data + layer.material.lca_data * scalar
+                
+            if self.additional_lca_data:
+                if self.additional_lca_data.ref_flow_unit:
+                    pass
+                else:
+                    lca_data = lca_data + self.additional_lca_data
+        else:
+            print("Please load Data into buildingelemt to calculate LCA-data")
