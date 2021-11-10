@@ -158,10 +158,30 @@ class En15804LcaData(object):
                 return(False)
         else:
             return(False)
+        
+        
+        
+        
+
+    @property
+    def ref_flow_value(self):
+        return self._ref_flow_value
     
+    @ref_flow_value.setter
+    def ref_flow_value(self, value):
+        self.ref_flow_value = value
+        
+    @property
+    def ref_flow_unit(self):
+        return self._ref_flow_unit
+    
+    @ref_flow_unit.setter
+    def ref_flow_unit(self, value):
+        self.ref_flow_unit = value
+        
     @property
     def fallback(self):
-        return(self._fallback)
+        return self._fallback 
     
     @fallback.setter
     def fallback(self, value):
@@ -169,7 +189,7 @@ class En15804LcaData(object):
         
     @property
     def pere(self):
-        return(self._pere)
+        return self._pere
     
     @pere.setter
     def pere(self, value):
@@ -179,7 +199,7 @@ class En15804LcaData(object):
                 
     @property
     def perm(self):
-        return(self._perm)
+        return self._perm
     
     @perm.setter
     def perm(self, value):
@@ -189,7 +209,7 @@ class En15804LcaData(object):
                          
     @property
     def pert(self):
-        return(self._pert)
+        return self._pert 
     
     @pert.setter
     def pert(self, value):
@@ -199,7 +219,7 @@ class En15804LcaData(object):
                 
     @property
     def penre(self):
-        return(self._penre)
+        return self._penre
     
     @penre.setter
     def penre(self, value):
@@ -209,7 +229,7 @@ class En15804LcaData(object):
                 
     @property
     def penrm(self):
-        return(self._penrm)
+        return self._penrm
     
     @penrm.setter
     def penrm(self, value):
@@ -219,7 +239,7 @@ class En15804LcaData(object):
                 
     @property
     def penrt(self):
-        return(self._penrt)
+        return self._penrt
     
     @penrt.setter
     def penrt(self, value):
@@ -229,7 +249,7 @@ class En15804LcaData(object):
     
     @property
     def sm(self):
-        return(self._sm)
+        return self._sm
     
     @sm.setter
     def sm(self, value):
@@ -239,7 +259,7 @@ class En15804LcaData(object):
     
     @property
     def rsf(self):
-        return(self._rsf)
+        return self._rsf
     
     @rsf.setter
     def rsf(self, value):
@@ -249,7 +269,7 @@ class En15804LcaData(object):
     
     @property
     def nrsf(self):
-        return(self._nrsf)
+        return self._nrsf
     
     @nrsf.setter
     def nrsf(self, value):
@@ -259,7 +279,7 @@ class En15804LcaData(object):
     
     @property
     def fw(self):
-        return(self._fw)
+        return self._fw
     
     @fw.setter
     def fw(self, value):
@@ -269,7 +289,7 @@ class En15804LcaData(object):
     
     @property
     def hwd(self):
-        return(self._hwd)
+        return self._hwd
     
     @hwd.setter
     def hwd(self, value):
@@ -279,7 +299,7 @@ class En15804LcaData(object):
                 
     @property
     def nhwd(self):
-        return(self._nhwd)
+        return self._nhwd
     
     @nhwd.setter
     def nhwd(self, value):
@@ -289,7 +309,7 @@ class En15804LcaData(object):
                 
     @property
     def rwd(self):
-        return(self._rwd)
+        return self._rwd
     
     @rwd.setter
     def rwd(self, value):
@@ -299,7 +319,7 @@ class En15804LcaData(object):
                 
     @property
     def cru(self):
-        return(self._cru)
+        return self._cru
     
     @cru.setter
     def cru(self, value):
@@ -309,7 +329,7 @@ class En15804LcaData(object):
                 
     @property
     def mfr(self):
-        return(self._mfr)
+        return self._mfr
     
     @mfr.setter
     def mfr(self, value):
@@ -319,7 +339,7 @@ class En15804LcaData(object):
                 
     @property
     def mer(self):
-        return(self._mer)
+        return self._mer
     
     @mer.setter
     def mer(self, value):
@@ -329,7 +349,7 @@ class En15804LcaData(object):
                 
     @property
     def eee(self):
-        return(self._eee)
+        return self._eee
     
     @eee.setter
     def eee(self, value):
@@ -339,7 +359,7 @@ class En15804LcaData(object):
                 
     @property
     def eet(self):
-        return(self._eet)
+        return self._eet
     
     @eet.setter
     def eet(self, value):
@@ -349,7 +369,7 @@ class En15804LcaData(object):
                 
     @property
     def gwp(self):
-        return(self._gwp)
+        return self._gwp
     
     @gwp.setter
     def gwp(self, value):
@@ -359,7 +379,7 @@ class En15804LcaData(object):
     
     @property
     def odp(self):
-        return(self._odp)
+        return self._odp
     
     @odp.setter
     def odp(self, value):
@@ -369,7 +389,7 @@ class En15804LcaData(object):
     
     @property
     def pocp(self):
-        return(self._pocp)
+        return self._pocp
     
     @pocp.setter
     def pocp(self, value):
@@ -379,7 +399,7 @@ class En15804LcaData(object):
     
     @property
     def ap(self):
-        return(self._ap)
+        return self._ap
     
     @ap.setter
     def ap(self, value):
@@ -389,7 +409,7 @@ class En15804LcaData(object):
     
     @property
     def ep(self):
-        return(self._ep)
+        return self._ep
     
     @ep.setter
     def ep(self, value):
@@ -399,7 +419,7 @@ class En15804LcaData(object):
     
     @property
     def adpe(self):
-        return(self._adpe)
+        return self._adpe
     
     @adpe.setter
     def adpe(self, value):
@@ -409,7 +429,7 @@ class En15804LcaData(object):
     
     @property
     def adpf(self):
-        return(self._adpf)
+        return self._adpf
     
     @adpf.setter
     def adpf(self, value):
@@ -577,3 +597,33 @@ class En15804LcaData(object):
             lca_data_input.load_en15804_lca_data_fallback_id(lca_data=self,
                                          lca_id=lca_id,
                                          data_class=data_class)
+            
+        def convert_ref_unit(self, target_unit, area = None, thickness = None, density = None):
+            
+            result = En15804LcaData()
+            
+            if target_unit == "pcs":
+
+                if self.ref_flow_unit == "m^3":
+                    scalar = (area * thickness)
+                    
+                elif self.ref_flow_unit == "kg":
+                    scalar = (area * thickness * density)
+
+                elif self.ref_flow_unit == "m^2":
+                    scalar = area
+                
+                elif self.ref_flow_unit == "pcs":
+                    scalar = 1
+                    
+                else:
+                    scalar = 1
+                    target_unit = self.unit
+                    print("Unknown unit for reference flow!")
+            
+            #elif target_unit == "m^3":
+                
+                scalar = scalar / self.ref_flow_value
+                result = self * scalar
+                result.ref_flow_unit = target_unit
+                result.ref_flow_value = 1
