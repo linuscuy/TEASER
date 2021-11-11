@@ -111,6 +111,13 @@ class BuildingElement(object):
         InnerWalls and GroundFloors this value is set to 0.0
     wf_out : float
         Weightfactor of building element ua_value/ua_value_zone
+    lca_data : En15804LcaData
+        enviromental indicator of the buildingelement. The data referencing
+        one buildingelement
+    additional_lca_data : En15804LcaData
+        additional environmental indicators to the indicators from the materials
+    service_life : int [a]
+        service_life of the building_element in years
     """
 
     def __init__(self, parent=None):
@@ -153,8 +160,9 @@ class BuildingElement(object):
         self.r_outer_comb = 0.0
         self.wf_out = 0.0
         
-        self._lca_data
-        self._additional_lca_data
+        self._lca_data = None
+        self._additional_lca_data = None
+        self._service_life = None
 
     def calc_ua_value(self):
         """U*A value for building element.
@@ -670,31 +678,154 @@ class BuildingElement(object):
     @additional_lca_data.setter
     def additional_lca_data(self, value):
         self._additional_lca_data = value
+        
+    @property
+    def service_life(self):
+        return self._service_life
     
-    def calc_lca_data(self):
+    @service_life.setter
+    def service_life(self, value):
+        if not isinstance(value, int):
+            try:
+                value = int(value)
+            except ValueError:
+                print("Service life has to be integer")
+                
+                
+        self._service_life = value
+    
+    def calc_lca_data(self, use_b4 = None):
+        
+        if use_b4 is None:
+            try:
+                use_b4 = self.parent.parent.parent.use_b4
+            except:
+                False
+        
         if self.layer != []:
             lca_data = En15804LcaData()
+            lca_data.ref_flow_unit = "pcs"
             
-            for layer in self.layer:
+            if self.parent.parent.parent.period_lca_scenario:
+                period_lca_scenario = self.parent.parent.parent.period_lca_scenario
+            else:
+                period_lca_scenario = 80
                 
-                if layer.material.lca_data.ref_flow_unit == "m^3":
-                    scalar = (self.area * layer.thickness) / layer.material.lca_data.ref_flow_value
-                    
-                elif layer.material.lca_data_ref_flow_unit == "kg":
-                    scalar = (self.area * layer.thickness * layer.material.density) / layer.material.lca_data.ref_flow_value
-                    
-                elif layer.material.lca_data_ref_flow_unit == "m^2":
-                    scalar = self.area / layer.material.lca_data.ref_flow_value
-                    
-                else:
-                    factor = 0
-                    print("Unknown unit for reference flow!")
-                lca_data = lca_data + layer.material.lca_data * scalar
+            
+            if self.service_life:
+
+                n_be_repl = int(period_lca_scenario / self.service_life)
+                remaining_period = period_lca_scenario % self.service_life
                 
-            if self.additional_lca_data:
-                if self.additional_lca_data.ref_flow_unit:
+                if use_b4:
                     pass
                 else:
-                    lca_data = lca_data + self.additional_lca_data
+                    lca_data = lca_data + (n_be_repl + 1) * self._calc_lca_data_no_repl
+                    
+                    lca_data = lca_data + (n_be_repl + 1) * self._calc_lca_data_layer_repl(self.service_life)
+                    
+                    lca_data = lca_data + self._calc_lca_data_layer_repl(remaining_period)
+            else:
+                
+                if use_b4:
+                    pass
+                else:
+                    lca_data = self._calc_lca_data_no_repl
+                    
+                    lca_data = lca_data + self._calc_lca_data_layer_repl(period_lca_scenario)
+                
+
+
+                
+            
+                
+                
+            
+            
+        
+
+    def _calc_lca_data_no_repl(self):
+        
+        lca_data_be = En15804LcaData()
+        lca_data_be.ref_flow_unit = "pcs"
+                
+        for layer in self.layer:
+            
+            lca_data_layer = layer.material.lca_data
+            lca_data_layer = lca_data_layer.convert_ref_unit(
+                                    target_unit = "pcs",
+                                    area = self.area,
+                                    thickness = layer.thickness,
+                                    density = layer.material.density
+                                    )
+            
+            lca_data_be = lca_data_be + lca_data_layer
+        
+        return lca_data_be
+        
+    def _calc_lca_data_layer_repl(self, ref_period=80):
+        
+        lca_data_repl_layers = En15804LcaData()
+        lca_data_repl_layers.ref_flow_unit = "pcs"
+        
+        repl_layers_1, repl_interval_1 = self._get_repl_layers(True)
+        repl_layers_2, repl_interval_2 = self._get_repl_layers(False)
+        
+        if repl_interval_1 < ref_period:
+            for layer in repl_layers_1:
+                
+                lca_data_layer = layer.material.lca_data
+                lca_data_layer = lca_data_layer.convert_ref_unit(
+                                        target_unit = "pcs",
+                                        area = self.area,
+                                        thickness = layer.thickness,
+                                        density = layer.material.density
+                                        )
+                lca_data_repl_layers = lca_data_repl_layers + lca_data_layer
+                
+        if repl_interval_2 < ref_period:
+            for layer in repl_layers_2:
+                
+                lca_data_layer = layer.material.lca_data
+                lca_data_layer = lca_data_layer.convert_ref_unit(
+                                        target_unit = "pcs",
+                                        area = self.area,
+                                        thickness = layer.thickness,
+                                        density = layer.material.density
+                                        )
+                
+                lca_data_repl_layers = lca_data_repl_layers + lca_data_layer
+                
+        return lca_data_repl_layers
+            
+            
+            
+    def _get_repl_layers(self, side: bool):
+        
+        repl_layers = []
+        
+        if side:
+            layers = self.layers
         else:
-            print("Please load Data into buildingelemt to calculate LCA-data")
+            layers = reversed(self.layers)
+        
+        if layers[0].material.service_life:
+            repl_interval = layers[0].material.service_life
+            
+            repl_layers.append(layers[0])
+            
+            for layer in layers[1:]:
+                if layer.material.service_life:
+                    if layer.material.service_life <= repl_interval:
+                        repl_layers.append(layer)
+                    else:
+                        break
+                else:
+                    break   
+                
+            return repl_layers, repl_interval
+            
+        else:
+            return None
+        
+        
