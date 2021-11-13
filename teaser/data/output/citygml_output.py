@@ -19,6 +19,7 @@ import pyxb.bundles
 import pyxb.binding as bd
 import pyxb.bundles.common.raw.xlink as xlink
 
+
 def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=None):
     """Based on CityGML Building export from CityBIT"""
 
@@ -35,14 +36,15 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
     # creating new namespacemap
     newNSmap = {'core': nsClass.core, 'gen': nsClass.gen, 'grp': nsClass.grp, 'app': nsClass.app, 'bldg': nsClass.bldg,
                 'gml': nsClass.gml, 'xal': nsClass.xal, 'xlink': nsClass.xlink, 'xsi': nsClass.xsi,
-                'energy': nsClass.xsi}
+                'energy': nsClass.energy}
+    schemaLocation = "http://www.opengis.net/citygml/2.0 http://www.sig3d.org/citygml/2.0/energy/1.0/EnergyADE.xsd"
 
     # creating new root element
-    nroot_E = ET.Element(ET.QName(nsClass.core, 'CityModel'), nsmap=newNSmap)
+    nroot_E = ET.Element(ET.QName(nsClass.core, 'CityModel'),attrib={"{" + nsClass.xsi + "}schemaLocation" : schemaLocation}, nsmap=newNSmap)
 
     # creating name element
     name_E = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'name'), nsmap={'gml': nsClass.gml})
-    name_E.text = 'created using the e3D CityBIT'
+    name_E.text = 'created using the e3D TEASERplus'
 
     """create new cityObjectMember here"""
     cityObjectMember_E = ET.SubElement(nroot_E, ET.QName(nsClass.core, 'cityObjectMember'))
@@ -70,13 +72,31 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
 
             gml_bldg = ET.SubElement(cityObjectMember_E, ET.QName(nsClass.bldg, 'Building'),
                                        attrib={ET.QName(nsClass.gml, 'id'): gmlID})
-            gml_bldg = _set_gml_building_lxml(gml_bldg, nsClass, bldg_count, ET)
+
+            _set_gml_building_lxml(gml_bldg, nsClass, bldg_count, ET)
 
             """for testing the loop"""
             if results is not None:
                 _save_simulation_results(gml_bldg, results=results)
 
             bldg_center = [i * 80, 0, 0]
+
+            if type(bldg_count).__name__ == "SingleFamilyDwelling":
+                building_length = (bldg_count.thermal_zones[0].area /
+                                   bldg_count.thermal_zones[0].typical_width)
+                building_width = bldg_count.thermal_zones[0].typical_width
+                building_height = (bldg_count.number_of_floors *
+                                   bldg_count.height_of_floors)
+
+            else:
+                building_width = 0.05 * (bldg_count.net_leased_area /
+                                         bldg_count.number_of_floors)
+                building_length = (bldg_count.net_leased_area /
+                                   bldg_count.number_of_floors) / building_width
+                building_height = (bldg_count.number_of_floors *
+                                   bldg_count.height_of_floors)
+
+            _set_lod_2_lxml(gml_bldg, building_length, building_width, building_height, bldg_center, nsClass, None)
 
         else:
             for e in range(0, len(gml_copy)):
@@ -87,6 +107,12 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
             if results is not None:
                 _save_simulation_results(gml_bldg, results=results)
 
+        for zone_count in bldg_count.thermal_zones:
+            _set_gml_volume_lxml(gml_bldg, nsClass, zone_count, ET)
+            PolyIDs = _set_gml_thermal_zone_lxml(gml_bldg, nsClass, zone_count, ET)
+            # gml_usage = _set_gml_usage(zone_count, zone_count.use_conditions)
+
+
         tree = ET.ElementTree(nroot_E)
 
         # writing file
@@ -96,6 +122,455 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
         print(str(os.path.join(path, "test.gml")))
         tree.write(os.path.join(path), pretty_print=True, xml_declaration=True,
                    encoding='utf-8', standalone='yes', method="xml")
+
+
+def _set_gml_building_lxml(gml_bldg, nsClass, teaser_building, ET):
+    """Creates an instance of a citygml Building with attributes
+
+        creates a citygml.building.Building object. And fills the attributes of
+        this instance with attributes of the TEASER building
+
+        Parameters
+        ----------
+
+        teaser_building : Building Object of TEASER
+            Instance of a TEASER object with set attributes
+
+        Returns
+        -------
+
+        gml_bldg : citygml.building.Building() object
+            Returns a citygml Building with attributes
+        """
+
+# gml_bldg = ET.SubElement(cityObjectMember_E, ET.QName(nsClass.bldg, 'Building'),
+#                                        attrib={ET.QName(nsClass.gml, 'id'): gmlID})
+
+    ET.SubElement(gml_bldg, ET.QName(nsClass.gml,
+                                       'description')).text = 'created using the e3D TEASER+'
+
+    # building attributes
+    ET.SubElement(gml_bldg, ET.QName(nsClass.gml, 'name')).text = teaser_building.name
+    ET.SubElement(gml_bldg, ET.QName(nsClass.core, 'creationDate')).text = str(date.today())
+    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'buildingFunction')).text = str(teaser_building.type_of_building)
+    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'yearOfConstruction')).text = \
+        str(teaser_building.year_of_construction)
+    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'roofType'), attrib={
+        'codeSpace': 'http://www.sig3d.org/codelists/citygml/2.0/building/2.0/_AbstractBuilding_roofType.xml'})\
+        .text = str(1000)
+    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'measuredHeight'), attrib={'uom': "m"}).text = \
+        str(teaser_building.number_of_floors * teaser_building.height_of_floors)
+    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'storeysAboveGround')).text = \
+        str(teaser_building.height_of_floors)
+
+
+def _set_reference_boundary(gml_out, lower_coords, upper_coords):
+    """Adds a reference coordinate system with `Envelope`'s corners
+
+    The gml file includes a reference coordinate system defined in the
+    `boundedBy` object, within which the `Envelope` object contains both a
+    `lowerCorner` and an `upperCorner`. Both corners extend
+    `gml.DirectPositionType`. This method sets all necessary parts of the
+    `boundedBy` in a given gml file.
+
+    Parameters
+    ----------
+
+    gml_out : citygml.CityModel() object
+        A CityModel object, where citygml is a reference to
+        `pyxb.bundles.opengis.citygml.base`. The reference coordinate system
+        will be added to this object.
+    lower_coords : list
+        A list that contains the coordinates of the point for the
+        `lowerCorner` definition. It should contain 3 ints or floats for
+        x, y, and z coordinates of the point.
+    upper_coords : list
+        A list that contains the coordinates of the point for the
+        `upperCorner` definition. It should contain 3 ints or floats for
+        x, y, and z coordinates of the point.
+
+    Returns
+    -------
+
+    gml_out : citygml.CityModel() object
+        Returns the modified CityModel object
+    """
+    assert len(lower_coords) == 3, 'lower_coords must contain 3 elements'
+    assert len(upper_coords) == 3, 'lower_coords must contain 3 elements'
+
+    reference_bound = gml.boundedBy()
+
+    reference_envelope = gml.Envelope()
+    reference_envelope.srsDimension = 3
+    reference_envelope.srsName = 'urn:adv:crs:ETRS89_UTM32'
+
+    lower_corner = gml.DirectPositionType(lower_coords)
+    lower_corner.srsDimension = 3
+    reference_envelope.lowerCorner = lower_corner
+    upper_corner = gml.DirectPositionType(upper_coords)
+    upper_corner.srsDimension = 3
+    reference_envelope.upperCorner = upper_corner
+
+    reference_bound.Envelope = reference_envelope
+    gml_out.boundedBy = reference_bound
+
+    return gml_out
+
+
+def _set_lod_2_lxml(gml_bldg, length, width, height, bldg_center, nsClass, PolyIDs):
+    """Adds a LOD 2 representation of the building based on building length,
+    width and height
+
+    alternative way to handle building position
+
+    Parameters
+    ----------
+
+    gml_bldg : bldg.Building() object
+        A building object, where bldg is a reference to
+        `pyxb.bundles.opengis.citygml.building`.
+    length : float
+        length of the building
+    width : float
+        width of the building
+    height : float
+        height of the building
+    bldg_center : list
+        coordinates in the reference system of the building center
+
+
+    """
+
+    # Ground surface
+
+    boundedBy_E = ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'boundedBy'))
+    groundSurfaceID = "GML_" + str(uuid.uuid1())
+    wallRoofGround_E = ET.SubElement(boundedBy_E, ET.QName(nsClass.bldg, 'GroundSurface'),
+                                     attrib={ET.QName(nsClass.gml, 'id'): groundSurfaceID})
+    ET.SubElement(wallRoofGround_E, ET.QName(nsClass.gml, 'name')).text = 'GroundSurface'
+    lodnMultisurface_E = ET.SubElement(wallRoofGround_E, ET.QName(nsClass.bldg, 'lod2MultiSurface'))
+    multiSurface_E = ET.SubElement(lodnMultisurface_E, ET.QName(nsClass.gml, 'MultiSurface'))
+    surfaceMember_E = ET.SubElement(multiSurface_E, ET.QName(nsClass.gml, 'surfaceMember'))
+
+    bldg_center[0] -= length / 2
+    bldg_center[1] -= width / 2
+
+    coords = [[bldg_center[0], bldg_center[1], bldg_center[2]],
+              [length + bldg_center[0], bldg_center[1], bldg_center[2]],
+              [length + bldg_center[0], width + bldg_center[1], bldg_center[2]],
+              [bldg_center[0], width + bldg_center[1], bldg_center[2]]]
+
+    polyID = str(uuid.uuid1())
+
+    _add_surface_lxml(surfaceMember_E, nsClass, coords, polyID)
+
+    # Roof surface
+
+    boundedBy_E = ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'boundedBy'))
+    roofSurfaceID = "GML_" + str(uuid.uuid1())
+    wallRoofGround_E = ET.SubElement(boundedBy_E, ET.QName(nsClass.bldg, 'RoofSurface'),
+                                     attrib={ET.QName(nsClass.gml, 'id'): roofSurfaceID})
+    ET.SubElement(wallRoofGround_E, ET.QName(nsClass.gml, 'name')).text = 'RoofSurface'
+    lodnMultisurface_E = ET.SubElement(wallRoofGround_E, ET.QName(nsClass.bldg, 'lod2MultiSurface'))
+    multiSurface_E = ET.SubElement(lodnMultisurface_E, ET.QName(nsClass.gml, 'MultiSurface'))
+    surfaceMember_E = ET.SubElement(multiSurface_E, ET.QName(nsClass.gml, 'surfaceMember'))
+
+    coords = [[bldg_center[0], bldg_center[1], bldg_center[2] + height],
+              [length + bldg_center[0], bldg_center[1],
+               bldg_center[2] + height],
+              [length + bldg_center[0], width + bldg_center[1],
+               bldg_center[2] + height],
+              [bldg_center[0], width + bldg_center[1], bldg_center[2] + height]]
+
+    polyID = str(uuid.uuid1())
+
+    _add_surface_lxml(surfaceMember_E, nsClass, coords, polyID)
+
+    # Side a surface
+
+    boundedBy_E = ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'boundedBy'))
+    wall_a_SurfaceID = "GML_" + str(uuid.uuid1())
+    wallRoofGround_E = ET.SubElement(boundedBy_E, ET.QName(nsClass.bldg, 'WallSurface'),
+                                     attrib={ET.QName(nsClass.gml, 'id'): wall_a_SurfaceID})
+    ET.SubElement(wallRoofGround_E, ET.QName(nsClass.gml, 'name')).text = 'WallSurface'
+    lodnMultisurface_E = ET.SubElement(wallRoofGround_E, ET.QName(nsClass.bldg, 'lod2MultiSurface'))
+    multiSurface_E = ET.SubElement(lodnMultisurface_E, ET.QName(nsClass.gml, 'MultiSurface'))
+    surfaceMember_E = ET.SubElement(multiSurface_E, ET.QName(nsClass.gml, 'surfaceMember'))
+
+    coords = [[bldg_center[0], bldg_center[1], bldg_center[2]],
+              [length + bldg_center[0], bldg_center[1], bldg_center[2]],
+              [length + bldg_center[0], bldg_center[1],
+               bldg_center[2] + height],
+              [bldg_center[0], bldg_center[1], bldg_center[2] + height]]
+
+    polyID = str(uuid.uuid1())
+
+    _add_surface_lxml(surfaceMember_E, nsClass, coords, polyID)
+
+    # Side b surface
+
+    boundedBy_E = ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'boundedBy'))
+    wall_b_SurfaceID = "GML_" + str(uuid.uuid1())
+    wallRoofGround_E = ET.SubElement(boundedBy_E, ET.QName(nsClass.bldg, 'WallSurface'),
+                                     attrib={ET.QName(nsClass.gml, 'id'): wall_b_SurfaceID})
+    ET.SubElement(wallRoofGround_E, ET.QName(nsClass.gml, 'name')).text = 'WallSurface'
+    lodnMultisurface_E = ET.SubElement(wallRoofGround_E, ET.QName(nsClass.bldg, 'lod2MultiSurface'))
+    multiSurface_E = ET.SubElement(lodnMultisurface_E, ET.QName(nsClass.gml, 'MultiSurface'))
+    surfaceMember_E = ET.SubElement(multiSurface_E, ET.QName(nsClass.gml, 'surfaceMember'))
+
+    coords = [[bldg_center[0], width + bldg_center[1], bldg_center[2]],
+              [length + bldg_center[0], width + bldg_center[1],
+               bldg_center[2]],
+              [length + bldg_center[0], width + bldg_center[1],
+               bldg_center[2] + height],
+              [bldg_center[0], width + bldg_center[1], bldg_center[2] + height]]
+
+    polyID = str(uuid.uuid1())
+
+    _add_surface_lxml(surfaceMember_E, nsClass, coords, polyID)
+
+    # Side c surface
+
+    boundedBy_E = ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'boundedBy'))
+    wall_c_SurfaceID = "GML_" + str(uuid.uuid1())
+    wallRoofGround_E = ET.SubElement(boundedBy_E, ET.QName(nsClass.bldg, 'WallSurface'),
+                                     attrib={ET.QName(nsClass.gml, 'id'): wall_c_SurfaceID})
+    ET.SubElement(wallRoofGround_E, ET.QName(nsClass.gml, 'name')).text = 'WallSurface'
+    lodnMultisurface_E = ET.SubElement(wallRoofGround_E, ET.QName(nsClass.bldg, 'lod2MultiSurface'))
+    multiSurface_E = ET.SubElement(lodnMultisurface_E, ET.QName(nsClass.gml, 'MultiSurface'))
+    surfaceMember_E = ET.SubElement(multiSurface_E, ET.QName(nsClass.gml, 'surfaceMember'))
+
+    coords = [[bldg_center[0], bldg_center[1], bldg_center[2]],
+              [bldg_center[0], width + bldg_center[1], bldg_center[2]],
+              [bldg_center[0], width + bldg_center[1], bldg_center[2] + height],
+              [bldg_center[0], bldg_center[1], bldg_center[2] + height]]
+
+    polyID = str(uuid.uuid1())
+
+    _add_surface_lxml(surfaceMember_E, nsClass, coords, polyID)
+
+    # Side d surface
+
+    boundedBy_E = ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'boundedBy'))
+    wall_d_SurfaceID = "GML_" + str(uuid.uuid1())
+    wallRoofGround_E = ET.SubElement(boundedBy_E, ET.QName(nsClass.bldg, 'WallSurface'),
+                                     attrib={ET.QName(nsClass.gml, 'id'): wall_d_SurfaceID})
+    ET.SubElement(wallRoofGround_E, ET.QName(nsClass.gml, 'name')).text = 'WallSurface'
+    lodnMultisurface_E = ET.SubElement(wallRoofGround_E, ET.QName(nsClass.bldg, 'lod2MultiSurface'))
+    multiSurface_E = ET.SubElement(lodnMultisurface_E, ET.QName(nsClass.gml, 'MultiSurface'))
+    surfaceMember_E = ET.SubElement(multiSurface_E, ET.QName(nsClass.gml, 'surfaceMember'))
+
+    coords = [[length + bldg_center[0], bldg_center[1], bldg_center[2]],
+              [length + bldg_center[0], width + bldg_center[1],
+               bldg_center[2]],
+              [length + bldg_center[0], width + bldg_center[1],
+               bldg_center[2] + height],
+              [length + bldg_center[0], bldg_center[1],
+               bldg_center[2] + height]]
+
+    polyID = str(uuid.uuid1())
+
+    _add_surface_lxml(surfaceMember_E, nsClass, coords, polyID)
+
+
+def _add_surface_lxml(multi_surface, nsClass, coords, polyID):
+    assert len(coords) == 4, 'coords must contain 4 elements'
+    for coord in coords:
+        assert len(coord) == 3, 'Each coord list should contain 3 elements'
+
+    surfaceMember_E = ET.SubElement(multi_surface, ET.QName(nsClass.gml, 'surfaceMember'))
+    polygon_E = ET.SubElement(surfaceMember_E, ET.QName(nsClass.gml, 'Polygon'),
+                              attrib={ET.QName(nsClass.gml, 'id'): polyID})
+    exterior_E = ET.SubElement(polygon_E, ET.QName(nsClass.gml, 'exterior'))
+    ring_id = polyID + '_0'
+    linearRing_E = ET.SubElement(exterior_E, ET.QName(nsClass.gml, 'LinearRing'),
+                                 attrib={ET.QName(nsClass.gml, 'id'): ring_id})
+
+    input_list = []
+    for coord in coords:
+        for value in coord:
+            input_list.append(value)
+    for value in coords[0]:
+        input_list.append(value)
+
+    stringed = [str(j) for j in input_list]
+    ET.SubElement(linearRing_E, ET.QName(nsClass.gml, 'pos')).text = ' '.join(stringed)
+
+
+def _set_gml_volume_lxml(gml_bldg, nsClass, thermal_zone, ET):
+
+    # declaring Volume Object
+
+    gml_volume = ET.SubElement(gml_bldg, ET.QName(nsClass.energy, 'volume'))
+    gml_volume_type = ET.SubElement(gml_volume, ET.QName(nsClass.energy, 'VolumeType'))
+    ET.SubElement(gml_volume_type, ET.QName(nsClass.energy, 'type')).text = "grossVolume"
+    ET.SubElement(gml_volume_type, ET.QName(nsClass.energy, 'value'), attrib={'uom': "m3"}).text \
+        = str(thermal_zone.volume)
+
+
+def _set_gml_floor_area_lxml(gml_bldg, nsClass,thermal_zone, ET):
+
+    # declaring Floor Area Object
+
+    gml_floor_area = ET.SubElement(gml_bldg, ET.QName(nsClass.energy, 'floorArea'))
+    gml_floor_area_type = ET.SubElement(gml_floor_area, ET.QName(nsClass.energy, 'FloorArea'))
+    ET.SubElement(gml_floor_area_type, ET.QName(nsClass.energy, 'type')).text = "grossFloorArea"
+    ET.SubElement(gml_floor_area_type, ET.QName(nsClass.energy, 'value'), attrib={'uom': "m2"}).text \
+        = str(thermal_zone.area)
+
+
+def _set_gml_thermal_zone_lxml(gml_bldg, nsClass, thermal_zone, ET):
+
+    thermal_zone_id = uuid.uuid1()
+    usage_zone_id = uuid.uuid1()
+    gml_thermal_zone = ET.SubElement(gml_bldg, ET.QName(nsClass.energy, 'thermalZone'))
+    gml_Thermal_Zone = ET.SubElement(gml_thermal_zone, ET.QName(nsClass.energy, 'ThermalZone'),
+                                     attrib={ET.QName(nsClass.gml, 'id'): str("GML_" + str(thermal_zone_id))})
+    ET.SubElement(gml_Thermal_Zone, ET.QName(nsClass.energy, 'contains'),
+                  attrib={ET.QName(nsClass.xlink, 'href'): str('#' + "GML_" + str(usage_zone_id))})
+    _set_gml_volume_lxml(gml_Thermal_Zone, nsClass, thermal_zone, ET)
+    _set_gml_floor_area_lxml(gml_Thermal_Zone, nsClass, thermal_zone, ET)
+    ET.SubElement(gml_Thermal_Zone, ET.QName(nsClass.energy, 'isCooled')).text = "false"
+    ET.SubElement(gml_Thermal_Zone, ET.QName(nsClass.energy, 'isHeated')).text = "true"
+    gml_volume_geometry = ET.SubElement(gml_Thermal_Zone, ET.QName(nsClass.energy, 'volumeGeometry'))
+    polyIDs, exteriorSurfaces = _set_composite_surface(gml_volume_geometry, nsClass, thermal_zone, ET)
+
+    """Set boundary Surfaces"""
+    for i in range(len(exteriorSurfaces)):
+        if i == 0:
+            surfaceType = 'WallSurface'
+        elif i == 1:
+            surfaceType = 'RoofSurface'
+        elif i == 2:
+            surfaceType = 'GroundSurface'
+
+        for surface in exteriorSurfaces[i]:
+            thermal_openings = []
+            for win_count in thermal_zone.windows:
+                if surface.orientation == win_count.orientation and surface.tilt == win_count.tilt:
+                    thermal_openings.append(win_count)
+            _set_gml_thermal_boundary_lxml(gml_Thermal_Zone, surface, thermal_openings, nsClass)
+    return polyIDs
+
+
+def _set_composite_surface(solid, nsClass, thermal_zone, ET):
+
+    exteriorSurfaces = [thermal_zone.outer_walls, thermal_zone.rooftops, thermal_zone.ground_floors]
+    polyIDs = []
+    n = 0
+    UUID = uuid.uuid1()
+    for dictionary in exteriorSurfaces:
+        for key in dictionary:
+            ID = "PolyID" + str(UUID) + '_' + str(n)
+            polyIDs.append(ID)
+            hashtagedID = '#' + ID
+            ET.SubElement(solid, ET.QName(nsClass.gml, 'surfaceMember'),
+                          attrib={ET.QName(nsClass.xlink, 'href'): hashtagedID})
+            n -= - 1
+    return polyIDs, exteriorSurfaces
+
+
+def _set_gml_thermal_boundary_lxml(gml_zone, wall, thermal_openings, nsClass):
+    """Control function to add a thermal boundary surface to the thermal zone
+
+    The thermal zone instance of citygml is modified and thermal boundary
+    surfaces are added. The thermal boundaries are chosen according to their
+    type (OuterWall, InnerWall, Roof, etc.). For outer walls (including roof)
+    the thermal boundary is returned to add windows (Thermal Openings).
+
+    Parameters
+    ----------
+
+    gml_zone : energy.thermalZones() object
+        A thermalZone object, where energy is a reference to
+        `pyxb.bundles.opengis.citygml.energy`.
+
+    wall : TEASER instance of Wall()
+        Teaser instance of Wall or its inherited classes
+
+    thermal_openings: List of TEASER instances of Window() or Door()
+        Teaser instance of BuildingElement or its inherited classes
+    Returns
+    ----------
+
+    _current_tb : energy.ThermalBoundarySurface()
+        A ThermalBoundarySurface object with semantic information
+        (area, azimuth, inclination etc.)
+
+    """
+    _current_tb = None
+    if type(wall).__name__ == "OuterWall":
+
+        thermal_boundary_type_value = "outerWall"
+
+
+    elif type(wall).__name__ == "Rooftop":
+        thermal_boundary_type_value = "roof"
+
+
+    elif type(wall).__name__ == "GroundFloor":
+
+        thermal_boundary_type_value = "groundSlab"
+
+    elif type(wall).__name__ == "InnerWall":
+        thermal_boundary_type_value = "intermediaryFloor"
+
+
+    elif type(wall).__name__ == "Ceiling" or type(wall).__name__ == "Floor":
+
+        thermal_boundary_type_value = "interiorWall"
+
+    else:
+        print("Strange Wall Surface detected!")
+
+    boundedBy_E = ET.SubElement(gml_zone, ET.QName(nsClass.energy, 'boundedBy'))
+    thermal_boundary_E = ET.SubElement(boundedBy_E, ET.QName(nsClass.energy, 'ThermalBoundary'),
+                                     attrib={ET.QName(nsClass.gml, 'id'): str("GML_" + str(uuid.uuid1()))})
+    ET.SubElement(thermal_boundary_E, ET.QName(nsClass.energy, "thermalBoundaryType")).text = \
+        thermal_boundary_type_value
+    ET.SubElement(thermal_boundary_E, ET.QName(nsClass.energy, "azimuth"), attrib={'uom': "deg"}).text = \
+        str(wall.orientation)
+    ET.SubElement(thermal_boundary_E, ET.QName(nsClass.energy, "inclination"), attrib={'uom': "deg"}).text = \
+        str(wall.tilt)
+    ET.SubElement(thermal_boundary_E, ET.QName(nsClass.energy, "area"), attrib={'uom': "m2"}).text = \
+        str(wall.area)
+
+def _add_gml_boundary_lxml(boundary_surface, gml_id):
+    """Adds a surface to the  LOD representation of the building
+
+    Parameters
+    ----------
+
+    boundary_surface : bldg.BoundarySurfacePropertyType() object
+        A boundary surface object (Roof, Wall, Floor) for one side of the bldg
+    gml_id : str
+        gmlID of the corresponding gml.Solid to reference the Surface
+
+    Returns
+    -------
+
+    boundary_surface : gml.BoundarySurfacePropertyType() object
+        Returns the modified boundary surface object
+
+    """
+    boundary_surface.id = "b_" + gml_id
+    boundary_surface.lod2MultiSurface = gml.MultiSurfacePropertyType()
+    boundary_surface.lod2MultiSurface.MultiSurface = gml.MultiSurfaceType()
+    boundary_surface.lod2MultiSurface.MultiSurface.surfaceMember.append(
+        gml.SurfacePropertyType())
+    boundary_surface.lod2MultiSurface.MultiSurface.surfaceMember[
+        -1].href = gml_id
+
+    boundary_surface.opening.append(bldg.OpeningPropertyType())
+    boundary_surface.opening[-1].Opening = bldg.Window()
+    boundary_surface.opening[-1].Opening.id = gml_id + "_win"
+
+    return boundary_surface
+
+
+def _set_usage_zone_lxml(thermal_zone, usage_zone):
+    return
+
 
 def save_gml(project, path, gml_copy=None, ref_coordinates=None, results=None):
     """This function saves a project to a cityGML file
@@ -268,46 +743,6 @@ def save_gml(project, path, gml_copy=None, ref_coordinates=None, results=None):
     out_file.write(gml_out.toDOM().toprettyxml())
 
 
-def _set_gml_building_lxml(gml_bldg, nsClass,teaser_building, ET):
-    """Creates an instance of a citygml Building with attributes
-
-        creates a citygml.building.Building object. And fills the attributes of
-        this instance with attributes of the TEASER building
-
-        Parameters
-        ----------
-
-        teaser_building : Building Object of TEASER
-            Instance of a TEASER object with set attributes
-
-        Returns
-        -------
-
-        gml_bldg : citygml.building.Building() object
-            Returns a citygml Building with attributes
-        """
-
-# gml_bldg = ET.SubElement(cityObjectMember_E, ET.QName(nsClass.bldg, 'Building'),
-#                                        attrib={ET.QName(nsClass.gml, 'id'): gmlID})
-
-    ET.SubElement(gml_bldg, ET.QName(nsClass.gml,
-                                       'description')).text = 'created using the e3D TEASER+'
-
-    # building attributes
-    ET.SubElement(gml_bldg, ET.QName(nsClass.gml, 'name')).text = teaser_building.name
-    ET.SubElement(gml_bldg, ET.QName(nsClass.core, 'creationDate')).text = str(date.today())
-    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'buildingFunction')).text = str(teaser_building.type_of_building)
-    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'yearOfConstruction')).text = \
-        str(teaser_building.year_of_construction)
-    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'roofType'), attrib={
-        'codeSpace': 'http://www.sig3d.org/codelists/citygml/2.0/building/2.0/_AbstractBuilding_roofType.xml'})\
-        .text = str(1000)
-    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'measuredHeight'), attrib={'uom': "m"}).text = \
-        str(teaser_building.number_of_floors * teaser_building.height_of_floors)
-    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'storeysAboveGround')).text = \
-        str(teaser_building.height_of_floors)
-
-
 def _set_gml_building(teaser_building):
     """Creates an instance of a citygml Building with attributes
 
@@ -358,59 +793,6 @@ def _set_gml_building(teaser_building):
     #                bd.datatypes.gYear(teaser_building.year_of_construction)))
 
     return gml_bldg
-
-
-def _set_reference_boundary(gml_out, lower_coords, upper_coords):
-    """Adds a reference coordinate system with `Envelope`'s corners
-
-    The gml file includes a reference coordinate system defined in the
-    `boundedBy` object, within which the `Envelope` object contains both a
-    `lowerCorner` and an `upperCorner`. Both corners extend
-    `gml.DirectPositionType`. This method sets all necessary parts of the
-    `boundedBy` in a given gml file.
-
-    Parameters
-    ----------
-
-    gml_out : citygml.CityModel() object
-        A CityModel object, where citygml is a reference to
-        `pyxb.bundles.opengis.citygml.base`. The reference coordinate system
-        will be added to this object.
-    lower_coords : list
-        A list that contains the coordinates of the point for the
-        `lowerCorner` definition. It should contain 3 ints or floats for
-        x, y, and z coordinates of the point.
-    upper_coords : list
-        A list that contains the coordinates of the point for the
-        `upperCorner` definition. It should contain 3 ints or floats for
-        x, y, and z coordinates of the point.
-
-    Returns
-    -------
-
-    gml_out : citygml.CityModel() object
-        Returns the modified CityModel object
-    """
-    assert len(lower_coords) == 3, 'lower_coords must contain 3 elements'
-    assert len(upper_coords) == 3, 'lower_coords must contain 3 elements'
-
-    reference_bound = gml.boundedBy()
-
-    reference_envelope = gml.Envelope()
-    reference_envelope.srsDimension = 3
-    reference_envelope.srsName = 'urn:adv:crs:ETRS89_UTM32'
-
-    lower_corner = gml.DirectPositionType(lower_coords)
-    lower_corner.srsDimension = 3
-    reference_envelope.lowerCorner = lower_corner
-    upper_corner = gml.DirectPositionType(upper_coords)
-    upper_corner.srsDimension = 3
-    reference_envelope.upperCorner = upper_corner
-
-    reference_bound.Envelope = reference_envelope
-    gml_out.boundedBy = reference_bound
-
-    return gml_out
 
 
 def _set_lod_2(gml_bldg, length, width, height, bldg_center):
