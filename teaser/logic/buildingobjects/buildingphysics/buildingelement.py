@@ -700,7 +700,7 @@ class BuildingElement(object):
             try:
                 use_b4 = self.parent.parent.parent.use_b4
             except:
-                False
+                use_b4 = False
         
         if self.layer != []:
             lca_data = En15804LcaData()
@@ -738,6 +738,8 @@ class BuildingElement(object):
                     lca_data = self._calc_lca_data_no_repl
                     
                     lca_data = lca_data + self._calc_lca_data_layer_repl(period_lca_scenario)
+                
+            self.lca_data = lca_data
                 
 
 
