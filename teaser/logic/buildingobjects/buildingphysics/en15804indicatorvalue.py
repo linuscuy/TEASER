@@ -450,10 +450,14 @@ class En15804IndicatorValue(object):
 
         addends = []
         
-        if self.a1: addends.append(self.a1)
-        if self.a2: addends.append(self.a2)
-        if self.a3: addends.append(self.a3)
-        if self.a1_a3: addends.append(self.a1_a3)
+        
+        
+        if self.a1_a3:
+            addends.append(self.a1_a3)
+        else:
+            if self.a1: addends.append(self.a1)
+            if self.a2: addends.append(self.a2)
+            if self.a3: addends.append(self.a3)
         if self.a4: addends.append(self.a4)
         if self.a5: addends.append(self.a5)
         if self.b1: addends.append(self.b1)
