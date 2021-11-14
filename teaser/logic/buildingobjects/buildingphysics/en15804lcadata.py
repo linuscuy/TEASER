@@ -537,7 +537,7 @@ class En15804LcaData(object):
                         
             new = En15804LcaData()
             new.set_values(**values)
-            return(new)
+            return new
         else:      
             print("Addend must be an 'En15804LcaData'-Object!")
             
@@ -627,3 +627,99 @@ class En15804LcaData(object):
                 result = self * scalar
                 result.ref_flow_unit = target_unit
                 result.ref_flow_value = 1
+                
+        def sum_to_b4(self):
+            """function to sum up all every stage indicators to stage
+            B4; replacement
+            
+
+            Returns
+            -------
+            result : En15804LcaData()
+                LCA-data with all stages sumed up in b4
+
+            """
+            
+            result = En15804LcaData()
+            
+            values = {"pere": En15804IndicatorValue() ,
+                    "pert": En15804IndicatorValue(),
+                    "penre": En15804IndicatorValue(),
+                    "penrm": En15804IndicatorValue(),
+                    "penrt": En15804IndicatorValue(),
+                    "sm": En15804IndicatorValue(),
+                    "rsf": En15804IndicatorValue(),
+                    "nrsf": En15804IndicatorValue(),
+                    "fw": En15804IndicatorValue(),
+                    "hwd": En15804IndicatorValue(),
+                    "nhwd": En15804IndicatorValue(),
+                    "rwd": En15804IndicatorValue(),
+                    "cru": En15804IndicatorValue(),
+                    "mfr": En15804IndicatorValue(),
+                    "mer": En15804IndicatorValue(),
+                    "eee": En15804IndicatorValue(),
+                    "eet": En15804IndicatorValue(),
+                    "gwp": En15804IndicatorValue(),
+                    "odp": En15804IndicatorValue(),
+                    "pocp": En15804IndicatorValue(),
+                    "ap": En15804IndicatorValue(),
+                    "ep": En15804IndicatorValue(),
+                    "adpe": En15804IndicatorValue(),
+                    "adpf": En15804IndicatorValue(),
+                    "ref_flow_value": self.ref_flow_value,
+                    "ref_flow_unit": self.ref_flow_unit
+                }
+            
+            values["pere"].unit = self.pere.unit
+            values["pert"].unit = self.pert.unit
+            values["penre"].unit = self.penre.unit
+            values["penrm"].unit = self.penrm.unit
+            values["penrt"].unit = self.penrt.unit
+            values["sm"].unit = self.sm.unit
+            values["rsf"].unit = self.rsf.unit
+            values["nrsf"].unit = self.nrsf.unit
+            values["fw"].unit = self.fw.unit
+            values["hwd"].unit = self.hwd.unit
+            values["nhwd"].unit = self.nhwd.unit
+            values["rwd"].unit = self.rwd.unit
+            values["cru"].unit = self.cru.unit
+            values["mfr"].unit = self.mfr.unit
+            values["mer"].unit = self.mer.unit
+            values["eee"].unit = self.eee.unit
+            values["eet"].unit = self.eet.unit
+            values["gwp"].unit = self.gwp.unit
+            values["odp"].unit = self.odp.unit
+            values["pocp"].unit = self.pocp.unit
+            values["ap"].unit = self.ap.unit
+            values["ep"].unit = self.ep.unit
+            values["adpe"].unit = self.adpe.unit
+            values["adpf"].unit = self.adpf.unit
+
+            
+            values["pere"].b4 = self.pere.sum_stages()
+            values["pert"].b4 = self.pert.sum_stages()
+            values["penre"].b4 = self.penre.sum_stages()
+            values["penrm"].b4 = self.penrm.sum_stages()
+            values["penrt"].b4 = self.penrt.sum_stages()
+            values["sm"].b4 = self.sm.sum_stages()
+            values["rsf"].b4 = self.rsf.sum_stages()
+            values["nrsf"].b4 = self.nrsf.sum_stages()
+            values["fw"].b4 = self.fw.sum_stages()
+            values["hwd"].b4 = self.hwd.sum_stages()
+            values["nhwd"].b4 = self.nhwd.sum_stages()
+            values["rwd"].b4 = self.rwd.sum_stages()
+            values["cru"].b4 = self.cru.sum_stages()
+            values["mfr"].b4 = self.mfr.sum_stages()
+            values["mer"].b4 = self.mer.sum_stages()
+            values["eee"].b4 = self.eee.sum_stages()
+            values["eet"].b4 = self.eet.sum_stages()
+            values["gwp"].b4 = self.gwp.sum_stages()
+            values["odp"].b4 = self.odp.sum_stages()
+            values["pocp"].b4 = self.pocp.sum_stages()
+            values["ap"].b4 = self.ap.sum_stages()
+            values["ep"].b4 = self.ep.sum_stages()
+            values["adpe"].b4 = self.adpe.sum_stages()
+            values["adpf"].b4 = self.adpf.sum_stages()
+            
+            result.set_values(**values)
+            return result
