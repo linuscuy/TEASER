@@ -694,4 +694,17 @@ class ThermalZone(object):
     def lca_data(self, value):
         self._lca_data = value
         
-    
+    def get_buildingelements(self):
+        
+        building_elements = []
+        
+        building_elements.extend(self.outer_walls)
+        building_elements.extend(self.ground_floors)
+        building_elements.extend(self.rooftops)
+        building_elements.extend(self.inner_walls)
+        building_elements.extend(self.floors)
+        building_elements.extend(self.windows)
+        
+        return(building_elements)
+
+   
