@@ -105,6 +105,8 @@ class ThermalZone(object):
         self.density_air = 1.25
         self.heat_capac_air = 1002
         self.t_ground = 286.15
+        
+        self._lca_data = None
 
     def calc_zone_parameters(
             self,
@@ -683,3 +685,13 @@ class ThermalZone(object):
                 self._t_outside = value
             except:
                 raise ValueError("Can't convert temperature to float")
+                
+    @property
+    def lca_data(self):
+        return self._lca_data
+
+    @lca_data.setter
+    def lca_data(self, value):
+        self._lca_data = value
+        
+    
