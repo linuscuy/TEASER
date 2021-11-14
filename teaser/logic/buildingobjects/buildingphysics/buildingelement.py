@@ -694,7 +694,7 @@ class BuildingElement(object):
                 
         self._service_life = value
     
-    def calc_lca_data(self, use_b4 = None):
+    def calc_lca_data(self, use_b4 = None, period_lca_scenario = None):
         
         if use_b4 is None:
             try:
@@ -706,10 +706,13 @@ class BuildingElement(object):
             lca_data = En15804LcaData()
             lca_data.ref_flow_unit = "pcs"
             
-            if self.parent.parent.parent.period_lca_scenario:
-                period_lca_scenario = self.parent.parent.parent.period_lca_scenario
-            else:
-                period_lca_scenario = 80
+            
+            if period_lca_scenario == None:
+                try:
+                    period_lca_scenario = self.parent.parent.parent.period_lca_scenario
+                except:
+                    print("Please enter a period for the LCA-scenario!")
+            
                 
             
             if self.service_life:
@@ -718,7 +721,9 @@ class BuildingElement(object):
                 remaining_period = period_lca_scenario % self.service_life
                 
                 if use_b4:
-                    pass
+                    lca_data = self._calc_lca_data_no_repl
+                    
+                    
                 else:
                     lca_data = lca_data + (n_be_repl + 1) * self._calc_lca_data_no_repl
                     
