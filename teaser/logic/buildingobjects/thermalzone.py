@@ -11,6 +11,7 @@ from teaser.logic.buildingobjects.calculation.one_element import OneElement
 from teaser.logic.buildingobjects.calculation.two_element import TwoElement
 from teaser.logic.buildingobjects.calculation.three_element import ThreeElement
 from teaser.logic.buildingobjects.calculation.four_element import FourElement
+from teaser.logic.buildingobjects.buildingphysics.en15804lcadata import En15804LcaData
 
 
 class ThermalZone(object):
@@ -707,4 +708,33 @@ class ThermalZone(object):
         
         return(building_elements)
 
-   
+    def calc_lca_data(self, use_b4 = None, period_lca_scenario = None):
+        
+        lca_data = En15804LcaData()
+        
+        if use_b4 is None:
+            try:
+                use_b4 = self.parent.parent.parent.use_b4
+            except:
+                use_b4 = False
+        
+        if period_lca_scenario == None:
+            try:
+                period_lca_scenario = self.parent.parent.parent.period_lca_scenario
+            except:
+                print("Please enter a period for the LCA-scenario!")
+                
+        building_elements = self.get_buildingelements()
+        
+        for building_element in building_elements:
+            
+            if building_element.lca_data:
+                lca_data = self.lca_data + building_element.lca_data
+            else:
+                try:
+                    building_element.calc_lca_data(use_b4, period_lca_scenario)
+                    lca_data = self.lca_data + building_element.lca_data
+                except:
+                    print("Error while adding {}".format(type(building_element).__name__))
+            
+        self.lca_data = lca_data
