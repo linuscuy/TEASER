@@ -114,6 +114,11 @@ class Building(object):
     library_attr : Annex() or AixLib() instance
         Classes with specific functions and attributes for building models in
         IBPSA and AixLib. Python classes can be found in calculation package.
+    lca_data : En15804LcaData
+        enviromental indicator of the building. The data referencing
+        one building
+    additional_lca_data : En15804LcaData
+        additional environmental indicators to the indicators from the thermalzones
 
     """
 
@@ -164,6 +169,9 @@ class Building(object):
         self._number_of_elements_calc = 2
         self._merge_windows_calc = False
         self._used_library_calc = "AixLib"
+        
+        self._lca_data = None
+        self._additional_lca_data = None
 
         self.library_attr = None
     def set_height_gml(self):
@@ -892,3 +900,19 @@ class Building(object):
             self.library_attr = AixLib(parent=self)
         elif self.used_library_calc == "IBPSA":
             self.library_attr = IBPSA(parent=self)
+            
+    @property
+    def lca_data(self):
+        return self._lca_data
+
+    @lca_data.setter
+    def lca_data(self, value):
+        self._lca_data = value
+    
+    @property
+    def additional_lca_data(self):
+        return self._additional_lca_data
+    
+    @additional_lca_data.setter
+    def additional_lca_data(self, value):
+        self._additional_lca_data = value
