@@ -9,6 +9,7 @@ import re
 import warnings
 from teaser.logic.buildingobjects.calculation.aixlib import AixLib
 from teaser.logic.buildingobjects.calculation.ibpsa import IBPSA
+from teaser.logic.buildingobjects.buildingphysics.en15804lcadata import En15804LcaData
 
 from teaser.logic.buildingobjects.buildingsystems.buildingahu import BuildingAHU
 
@@ -916,3 +917,28 @@ class Building(object):
     @additional_lca_data.setter
     def additional_lca_data(self, value):
         self._additional_lca_data = value
+        
+    def calc_lca_data(self, use_b4 = None, period_lca_scenario = None):
+        lca_data = En15804LcaData()
+        
+        if use_b4 is None:
+            try:
+                use_b4 = self.parent.parent.parent.use_b4
+            except:
+                use_b4 = False
+        
+        if period_lca_scenario == None:
+            try:
+                period_lca_scenario = self.parent.parent.parent.period_lca_scenario
+            except:
+                print("Please enter a period for the LCA-scenario!")
+        
+        for thermal_zone in self.thermal_zones:
+            
+            try:
+                thermal_zone.calc_lca_data(use_b4, period_lca_scenario)
+                lca_data = self.lca_data + thermal_zone.lca_data
+            except:
+                print("Error while adding lca-data from thermal zone")
+            
+        self.lca_data = lca_data
