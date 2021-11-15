@@ -695,6 +695,19 @@ class BuildingElement(object):
         self._service_life = value
     
     def calc_lca_data(self, use_b4 = None, period_lca_scenario = None):
+        """calculates the LCA-data of the buildingelement and set it to the
+        attribute lca_data
+        
+
+        Parameters
+        ----------
+        use_b4 : bool, optional
+            if true environmental indicators of replaced buildingelements are added
+            to stage B4. Otherwise they are added seperatly to the other stages
+        period_lca_scenario : TYPE, optional
+            period which is taken into account for LCA. The default is None.
+
+        """
         
         if use_b4 is None:
             try:
@@ -752,6 +765,16 @@ class BuildingElement(object):
         
 
     def _calc_lca_data_no_repl(self):
+        """calculates the LCA-data of the buildingelement without any
+        replacements
+        
+
+        Returns
+        -------
+        lca_data_be : En15804LcaData
+            LCA-data of the buildingelement without any replacements
+
+        """
         
         lca_data_be = En15804LcaData()
         lca_data_be.ref_flow_unit = "pcs"
@@ -771,6 +794,21 @@ class BuildingElement(object):
         return lca_data_be
         
     def _calc_lca_data_layer_repl(self, ref_period=80):
+        """calculates the LCA-data caused by layer replacement in a specific
+        time period
+        
+
+        Parameters
+        ----------
+        ref_period : int, optional
+            reference time period. The default is 80.
+
+        Returns
+        -------
+        lca_data_repl_layers : En15804LcaData
+            LCA-data caused by layer replacement in a specific time period
+
+        """
         
         lca_data_repl_layers = En15804LcaData()
         lca_data_repl_layers.ref_flow_unit = "pcs"
@@ -808,6 +846,24 @@ class BuildingElement(object):
             
             
     def _get_repl_layers(self, side: bool):
+        """returns all materials which must be replaced on one side of the
+        buildingelement. Materials which are surrounded by layers with longer
+        service life will not be replaced
+
+        Parameters
+        ----------
+        side : bool
+            is true for the first side of the element and false for the second
+
+        Returns
+        -------
+        repl_layers : list
+            layers to be replaced
+        repl_interval : TYPE
+            longest service life of the replaced layers (= interval in which
+            the layers are replaced)
+
+        """
         
         repl_layers = []
         
