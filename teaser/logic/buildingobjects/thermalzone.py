@@ -696,7 +696,14 @@ class ThermalZone(object):
         self._lca_data = value
         
     def get_buildingelements(self):
+        """returns a list of all buildingelements of the thermalzone
         
+
+        Returns
+        -------
+        building_elements : list
+
+        """
         building_elements = []
         
         building_elements.extend(self.outer_walls)
@@ -706,10 +713,21 @@ class ThermalZone(object):
         building_elements.extend(self.floors)
         building_elements.extend(self.windows)
         
-        return(building_elements)
+        return building_elements
 
     def calc_lca_data(self, use_b4 = None, period_lca_scenario = None):
+        """sums up every LCA-data from building elements oft he thermalzone
         
+
+        Parameters
+        ----------
+        use_b4 : bool, optional
+            if true alls replaced materials and building elements are added to
+            stage B4. The default is None.
+        period_lca_scenario : int [a], optional
+            period which is taken into account for LCA. The default is None.
+
+        """
         lca_data = En15804LcaData()
         
         if use_b4 is None:
