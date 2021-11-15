@@ -745,14 +745,10 @@ class ThermalZone(object):
         building_elements = self.get_buildingelements()
         
         for building_element in building_elements:
-            
-            if building_element.lca_data:
+            try:
+                building_element.calc_lca_data(use_b4, period_lca_scenario)
                 lca_data = self.lca_data + building_element.lca_data
-            else:
-                try:
-                    building_element.calc_lca_data(use_b4, period_lca_scenario)
-                    lca_data = self.lca_data + building_element.lca_data
-                except:
-                    print("Error while adding {}".format(type(building_element).__name__))
+            except:
+                print("Error while adding {}".format(type(building_element).__name__))
             
         self.lca_data = lca_data
