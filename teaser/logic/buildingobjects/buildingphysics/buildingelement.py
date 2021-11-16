@@ -868,9 +868,9 @@ class BuildingElement(object):
         repl_layers = []
         
         if side:
-            layers = self.layers
+            layers = self.layer
         else:
-            layers = reversed(self.layers)
+            layers = reversed(self.layer)
         
         if layers[0].material.service_life:
             repl_interval = layers[0].material.service_life
