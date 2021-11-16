@@ -169,7 +169,7 @@ class En15804LcaData(object):
     
     @ref_flow_value.setter
     def ref_flow_value(self, value):
-        self.ref_flow_value = value
+        self._ref_flow_value = value
         
     @property
     def ref_flow_unit(self):
@@ -177,7 +177,7 @@ class En15804LcaData(object):
     
     @ref_flow_unit.setter
     def ref_flow_unit(self, value):
-        self.ref_flow_unit = value
+        self._ref_flow_unit = value
         
     @property
     def fallback(self):
@@ -541,185 +541,187 @@ class En15804LcaData(object):
         else:      
             print("Addend must be an 'En15804LcaData'-Object!")
             
-        def load_lca_data_template(self, lca_id, data_class=self.parent.parent.parent.parent.data):
-            """LCA-data loader.
+    def load_lca_data_template(self, lca_id, data_class=None):
+        """LCA-data loader.
 
-            Loads LCA-data specified in the json.
+        Loads LCA-data specified in the json.
 
-            Parameters
-            ----------
+        Parameters
+        ----------
 
-            lca_id : str
-                LCA-data Identifier
+        lca_id : str
+            LCA-data Identifier
 
-            data_class : DataClass()
-                
-
-            """
-            #data_class = self.parent.parent.parent.parent.data
-  
-
-            lca_data_input.load_en15804_lca_data_id(lca_data=self,
-                                         lca_id=lca_id,
-                                         data_class=data_class)
+        data_class : DataClass()
             
-        def load_fallbacks(self, fallback_dictonarie, data_class):
-            if fallback_dictonarie:
-                self.fallback = {}
-                for stage in fallback_dictonarie:
-                    
-                    fallback_id = fallback_dictonarie["stage"]
-                    
-                    fallback_object = En15804LcaData()
-                    
-                    self.fallback[stage] = fallback_object
-                    
-                    self.fallback[stage].load_lca_data_fallback_template(fallback_id, data_class)
+
+        """
+        #data_class = self.parent.parent.parent.parent.data
+        if data_class == None:
+            data_class = self.parent.parent.parent.parent.data
+
+        lca_data_input.load_en15804_lca_data_id(lca_data=self,
+                                     lca_id=lca_id,
+                                     data_class=data_class)
         
-        def load_lca_data_fallback_tempalte(self, lca_id, data_class=self.parent.parent.parent.parent.data):
-            """LCA-data-fallback loader.
-
-            Loads LCA-data-fallbacks specified in the json.
-
-            Parameters
-            ----------
-
-            lca_id : str
-                LCA-Data Identifier
-
-            data_class : DataClass()
+    def load_fallbacks(self, fallback_dictonarie, data_class):
+        if fallback_dictonarie:
+            self.fallback = {}
+            for stage in fallback_dictonarie:
                 
-
-            """
-               #data_class = self.parent.parent.parent.parent.data
-
-
-            lca_data_input.load_en15804_lca_data_fallback_id(lca_data=self,
-                                         lca_id=lca_id,
-                                         data_class=data_class)
-            
-        def convert_ref_unit(self, target_unit, area = None, thickness = None, density = None):
-            
-            result = En15804LcaData()
-            
-            if target_unit == "pcs":
-
-                if self.ref_flow_unit == "m^3":
-                    scalar = (area * thickness)
-                    
-                elif self.ref_flow_unit == "kg":
-                    scalar = (area * thickness * density)
-
-                elif self.ref_flow_unit == "m^2":
-                    scalar = area
+                fallback_id = fallback_dictonarie["stage"]
                 
-                elif self.ref_flow_unit == "pcs":
-                    scalar = 1
-                    
-                else:
-                    scalar = 1
-                    target_unit = self.unit
-                    print("Unknown unit for reference flow!")
-            
-            #elif target_unit == "m^3":
+                fallback_object = En15804LcaData()
                 
-                scalar = scalar / self.ref_flow_value
-                result = self * scalar
-                result.ref_flow_unit = target_unit
-                result.ref_flow_value = 1
+                self.fallback[stage] = fallback_object
                 
-        def sum_to_b4(self):
-            """function to sum up all every stage indicators to stage
-            B4; replacement
+                self.fallback[stage].load_lca_data_fallback_template(fallback_id, data_class)
+    
+    def load_lca_data_fallback_tempalte(self, lca_id, data_class=None):
+        """LCA-data-fallback loader.
+
+        Loads LCA-data-fallbacks specified in the json.
+
+        Parameters
+        ----------
+
+        lca_id : str
+            LCA-Data Identifier
+
+        data_class : DataClass()
             
 
-            Returns
-            -------
-            result : En15804LcaData()
-                LCA-data with all stages sumed up in b4
+        """
+           #data_class = self.parent.parent.parent.parent.data
+        if data_class == None:
+            data_class = self.parent.parent.parent.parent.data
 
-            """
-            
-            result = En15804LcaData()
-            
-            values = {"pere": En15804IndicatorValue() ,
-                    "pert": En15804IndicatorValue(),
-                    "penre": En15804IndicatorValue(),
-                    "penrm": En15804IndicatorValue(),
-                    "penrt": En15804IndicatorValue(),
-                    "sm": En15804IndicatorValue(),
-                    "rsf": En15804IndicatorValue(),
-                    "nrsf": En15804IndicatorValue(),
-                    "fw": En15804IndicatorValue(),
-                    "hwd": En15804IndicatorValue(),
-                    "nhwd": En15804IndicatorValue(),
-                    "rwd": En15804IndicatorValue(),
-                    "cru": En15804IndicatorValue(),
-                    "mfr": En15804IndicatorValue(),
-                    "mer": En15804IndicatorValue(),
-                    "eee": En15804IndicatorValue(),
-                    "eet": En15804IndicatorValue(),
-                    "gwp": En15804IndicatorValue(),
-                    "odp": En15804IndicatorValue(),
-                    "pocp": En15804IndicatorValue(),
-                    "ap": En15804IndicatorValue(),
-                    "ep": En15804IndicatorValue(),
-                    "adpe": En15804IndicatorValue(),
-                    "adpf": En15804IndicatorValue(),
-                    "ref_flow_value": self.ref_flow_value,
-                    "ref_flow_unit": self.ref_flow_unit
-                }
-            
-            values["pere"].unit = self.pere.unit
-            values["pert"].unit = self.pert.unit
-            values["penre"].unit = self.penre.unit
-            values["penrm"].unit = self.penrm.unit
-            values["penrt"].unit = self.penrt.unit
-            values["sm"].unit = self.sm.unit
-            values["rsf"].unit = self.rsf.unit
-            values["nrsf"].unit = self.nrsf.unit
-            values["fw"].unit = self.fw.unit
-            values["hwd"].unit = self.hwd.unit
-            values["nhwd"].unit = self.nhwd.unit
-            values["rwd"].unit = self.rwd.unit
-            values["cru"].unit = self.cru.unit
-            values["mfr"].unit = self.mfr.unit
-            values["mer"].unit = self.mer.unit
-            values["eee"].unit = self.eee.unit
-            values["eet"].unit = self.eet.unit
-            values["gwp"].unit = self.gwp.unit
-            values["odp"].unit = self.odp.unit
-            values["pocp"].unit = self.pocp.unit
-            values["ap"].unit = self.ap.unit
-            values["ep"].unit = self.ep.unit
-            values["adpe"].unit = self.adpe.unit
-            values["adpf"].unit = self.adpf.unit
+        lca_data_input.load_en15804_lca_data_fallback_id(lca_data=self,
+                                     lca_id=lca_id,
+                                     data_class=data_class)
+        
+    def convert_ref_unit(self, target_unit, area = None, thickness = None, density = None):
+        
+        result = En15804LcaData()
+        
+        if target_unit == "pcs":
 
+            if self.ref_flow_unit == "m^3":
+                scalar = (area * thickness)
+                
+            elif self.ref_flow_unit == "kg":
+                scalar = (area * thickness * density)
+
+            elif self.ref_flow_unit == "m^2":
+                scalar = area
             
-            values["pere"].b4 = self.pere.sum_stages()
-            values["pert"].b4 = self.pert.sum_stages()
-            values["penre"].b4 = self.penre.sum_stages()
-            values["penrm"].b4 = self.penrm.sum_stages()
-            values["penrt"].b4 = self.penrt.sum_stages()
-            values["sm"].b4 = self.sm.sum_stages()
-            values["rsf"].b4 = self.rsf.sum_stages()
-            values["nrsf"].b4 = self.nrsf.sum_stages()
-            values["fw"].b4 = self.fw.sum_stages()
-            values["hwd"].b4 = self.hwd.sum_stages()
-            values["nhwd"].b4 = self.nhwd.sum_stages()
-            values["rwd"].b4 = self.rwd.sum_stages()
-            values["cru"].b4 = self.cru.sum_stages()
-            values["mfr"].b4 = self.mfr.sum_stages()
-            values["mer"].b4 = self.mer.sum_stages()
-            values["eee"].b4 = self.eee.sum_stages()
-            values["eet"].b4 = self.eet.sum_stages()
-            values["gwp"].b4 = self.gwp.sum_stages()
-            values["odp"].b4 = self.odp.sum_stages()
-            values["pocp"].b4 = self.pocp.sum_stages()
-            values["ap"].b4 = self.ap.sum_stages()
-            values["ep"].b4 = self.ep.sum_stages()
-            values["adpe"].b4 = self.adpe.sum_stages()
-            values["adpf"].b4 = self.adpf.sum_stages()
+            elif self.ref_flow_unit == "pcs":
+                scalar = 1
+                
+            else:
+                scalar = 1
+                target_unit = self.unit
+                print("Unknown unit for reference flow!")
+        
+        #elif target_unit == "m^3":
             
-            result.set_values(**values)
-            return result
+            scalar = scalar / self.ref_flow_value
+            result = self * scalar
+            result.ref_flow_unit = target_unit
+            result.ref_flow_value = 1
+            
+    def sum_to_b4(self):
+        """function to sum up all every stage indicators to stage
+        B4; replacement
+        
+
+        Returns
+        -------
+        result : En15804LcaData()
+            LCA-data with all stages sumed up in b4
+
+        """
+        
+        result = En15804LcaData()
+        
+        values = {"pere": En15804IndicatorValue() ,
+                "pert": En15804IndicatorValue(),
+                "penre": En15804IndicatorValue(),
+                "penrm": En15804IndicatorValue(),
+                "penrt": En15804IndicatorValue(),
+                "sm": En15804IndicatorValue(),
+                "rsf": En15804IndicatorValue(),
+                "nrsf": En15804IndicatorValue(),
+                "fw": En15804IndicatorValue(),
+                "hwd": En15804IndicatorValue(),
+                "nhwd": En15804IndicatorValue(),
+                "rwd": En15804IndicatorValue(),
+                "cru": En15804IndicatorValue(),
+                "mfr": En15804IndicatorValue(),
+                "mer": En15804IndicatorValue(),
+                "eee": En15804IndicatorValue(),
+                "eet": En15804IndicatorValue(),
+                "gwp": En15804IndicatorValue(),
+                "odp": En15804IndicatorValue(),
+                "pocp": En15804IndicatorValue(),
+                "ap": En15804IndicatorValue(),
+                "ep": En15804IndicatorValue(),
+                "adpe": En15804IndicatorValue(),
+                "adpf": En15804IndicatorValue(),
+                "ref_flow_value": self.ref_flow_value,
+                "ref_flow_unit": self.ref_flow_unit
+            }
+        
+        values["pere"].unit = self.pere.unit
+        values["pert"].unit = self.pert.unit
+        values["penre"].unit = self.penre.unit
+        values["penrm"].unit = self.penrm.unit
+        values["penrt"].unit = self.penrt.unit
+        values["sm"].unit = self.sm.unit
+        values["rsf"].unit = self.rsf.unit
+        values["nrsf"].unit = self.nrsf.unit
+        values["fw"].unit = self.fw.unit
+        values["hwd"].unit = self.hwd.unit
+        values["nhwd"].unit = self.nhwd.unit
+        values["rwd"].unit = self.rwd.unit
+        values["cru"].unit = self.cru.unit
+        values["mfr"].unit = self.mfr.unit
+        values["mer"].unit = self.mer.unit
+        values["eee"].unit = self.eee.unit
+        values["eet"].unit = self.eet.unit
+        values["gwp"].unit = self.gwp.unit
+        values["odp"].unit = self.odp.unit
+        values["pocp"].unit = self.pocp.unit
+        values["ap"].unit = self.ap.unit
+        values["ep"].unit = self.ep.unit
+        values["adpe"].unit = self.adpe.unit
+        values["adpf"].unit = self.adpf.unit
+
+        
+        values["pere"].b4 = self.pere.sum_stages()
+        values["pert"].b4 = self.pert.sum_stages()
+        values["penre"].b4 = self.penre.sum_stages()
+        values["penrm"].b4 = self.penrm.sum_stages()
+        values["penrt"].b4 = self.penrt.sum_stages()
+        values["sm"].b4 = self.sm.sum_stages()
+        values["rsf"].b4 = self.rsf.sum_stages()
+        values["nrsf"].b4 = self.nrsf.sum_stages()
+        values["fw"].b4 = self.fw.sum_stages()
+        values["hwd"].b4 = self.hwd.sum_stages()
+        values["nhwd"].b4 = self.nhwd.sum_stages()
+        values["rwd"].b4 = self.rwd.sum_stages()
+        values["cru"].b4 = self.cru.sum_stages()
+        values["mfr"].b4 = self.mfr.sum_stages()
+        values["mer"].b4 = self.mer.sum_stages()
+        values["eee"].b4 = self.eee.sum_stages()
+        values["eet"].b4 = self.eet.sum_stages()
+        values["gwp"].b4 = self.gwp.sum_stages()
+        values["odp"].b4 = self.odp.sum_stages()
+        values["pocp"].b4 = self.pocp.sum_stages()
+        values["ap"].b4 = self.ap.sum_stages()
+        values["ep"].b4 = self.ep.sum_stages()
+        values["adpe"].b4 = self.adpe.sum_stages()
+        values["adpf"].b4 = self.adpf.sum_stages()
+        
+        result.set_values(**values)
+        return result
