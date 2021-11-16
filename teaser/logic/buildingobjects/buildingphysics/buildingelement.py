@@ -870,7 +870,7 @@ class BuildingElement(object):
         if side:
             layers = self.layer
         else:
-            layers = reversed(self.layer)
+            layers = list(reversed(self.layer))
         
         if layers[0].material.service_life:
             repl_interval = layers[0].material.service_life
