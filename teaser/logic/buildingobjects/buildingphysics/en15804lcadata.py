@@ -577,7 +577,7 @@ class En15804LcaData(object):
                 
                 self.fallback[stage].load_lca_data_fallback_template(fallback_id, data_class)
     
-    def load_lca_data_fallback_tempalte(self, lca_id, data_class=None):
+    def load_lca_data_fallback_template(self, lca_id, data_class=None):
         """LCA-data-fallback loader.
 
         Loads LCA-data-fallbacks specified in the json.
