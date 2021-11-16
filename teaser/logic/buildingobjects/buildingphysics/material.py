@@ -374,11 +374,12 @@ class Material(object):
 
     @service_life.setter
     def service_life(self, value):
-        if not isinstance(value, int):
-            try:
-                value = int(value)
-            except:
-                raise ValueError("Service Life has to be integer")
-                
+        if value != None:
+            if not isinstance(value, int):
+                try:
+                    value = int(value)
+                except:
+                    raise ValueError("Service Life has to be integer")
+                      
                 
         self._service_life = value
