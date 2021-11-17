@@ -888,6 +888,6 @@ class BuildingElement(object):
             return repl_layers, repl_interval
             
         else:
-            return None
+            return [], -1
         
         
