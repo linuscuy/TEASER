@@ -357,7 +357,12 @@ class En15804IndicatorValue(object):
                     "c3": self._ignore_none_sum(self.c3, other.c3),
                     "c4": self._ignore_none_sum(self.c4, other.c4),
                     "d": self._ignore_none_sum(self.d, other.d),
-                    "unit": self.unit}
+                    }
+                
+                if self.unit:
+                    values["unit"] = self.unit
+                else:
+                    values["unit"] = other.unit
                 
                 new = En15804IndicatorValue()
                 new.set_values(**values)
