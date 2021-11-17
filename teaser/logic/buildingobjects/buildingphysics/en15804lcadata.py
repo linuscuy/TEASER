@@ -629,6 +629,8 @@ class En15804LcaData(object):
             result = self * scalar
             result.ref_flow_unit = target_unit
             result.ref_flow_value = 1
+        
+        return result
             
     def sum_to_b4(self):
         """function to sum up all every stage indicators to stage
