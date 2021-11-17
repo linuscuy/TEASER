@@ -720,7 +720,7 @@ class BuildingElement(object):
             lca_data.ref_flow_unit = "pcs"
             
             
-            if period_lca_scenario == None:
+            if period_lca_scenario is None:
                 try:
                     period_lca_scenario = self.parent.parent.parent.period_lca_scenario
                 except:
