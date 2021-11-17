@@ -66,28 +66,28 @@ class En15804IndicatorValue(object):
         self.parent = parent
         self._unit = None
         
-        self._a1 = 0
-        self._a2 = 0
-        self._a3 = 0
-        self._a1_a3 = 0
+        self._a1 = None
+        self._a2 = None
+        self._a3 = None
+        self._a1_a3 = None
         
-        self._a4 = 0
-        self._a5 = 0
+        self._a4 = None
+        self._a5 = None
         
-        self._b1 = 0
-        self._b2 = 0
-        self._b3 = 0
-        self._b4 = 0
-        self._b5 = 0
-        self._b6 = 0
-        self._b7 = 0
+        self._b1 = None
+        self._b2 = None
+        self._b3 = None
+        self._b4 = None
+        self._b5 = None
+        self._b6 = None
+        self._b7 = None
         
-        self._c1 = 0
-        self._c2 = 0
-        self._c3 = 0
-        self._c4 = 0
+        self._c1 = None
+        self._c2 = None
+        self._c3 = None
+        self._c4 = None
         
-        self._d = 0
+        self._d = None
         
     
         
@@ -126,11 +126,14 @@ class En15804IndicatorValue(object):
     
     @unit.setter
     def unit(self, value):
-        if isinstance(value, str):
-            self._unit = value
+        if value != None:
+            if isinstance(value, str):
+                self._unit = value
+            else:
+                print("En15804IndicatorValue.unit must be string!")
         else:
-            print("En15804IndicatorValue.unit must be string!")
-                  
+            self._unit = None
+
     @property
     def a1(self):
         return(self._a1)
@@ -334,7 +337,7 @@ class En15804IndicatorValue(object):
         """
         if isinstance(other, En15804IndicatorValue):
             
-            if self.unit == other.unit:
+            if self.unit == other.unit or not self.unit or not other.unit:
 
                 values = {"a1": self._ignore_none_sum(self.a1, other.a1),
                     "a2": self._ignore_none_sum(self.a2, other.a2),
