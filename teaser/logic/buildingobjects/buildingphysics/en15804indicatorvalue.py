@@ -516,6 +516,22 @@ class En15804IndicatorValue(object):
         return(stages)
 
     def add_stage(self, stage, other):
+        """Function which adds only a specific stage from an En15804Indicator-
+        Object to self
+        
+
+        Parameters
+        ----------
+        stage : str
+            Stage to add
+        other : TYPE
+            the other En15804IndicatorValue
+
+        Returns
+        -------
+        result En15804IndicatorValue
+
+        """
         result = En15804IndicatorValue()
         addend = En15804IndicatorValue()
         addend.unit = other.unit
