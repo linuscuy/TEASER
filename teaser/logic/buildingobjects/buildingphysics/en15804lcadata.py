@@ -728,3 +728,48 @@ class En15804LcaData(object):
         
         result.set_values(**values)
         return result
+    
+    def add_fallbacks(self):
+        
+        if self._fallback_added is False:
+            
+            #TODO: unit
+            #TODO: bugfix No value for Stage c4
+            
+            for stage in self.fallback:
+                try:
+                    print(stage, " ----> ", self.fallback[stage].pere.c4)
+                except:
+                    pass
+                
+
+                
+                
+                self.pere = self.pere.add_stage(stage, self.fallback[stage].pere)
+                self.pert = self.pert.add_stage(stage, self.fallback[stage].pert)
+                self.penre = self.penre.add_stage(stage, self.fallback[stage].penre)
+                self.penrm = self.penrm.add_stage(stage, self.fallback[stage].penrm)
+                self.penrt = self.penrt.add_stage(stage, self.fallback[stage].penrt)
+                self.sm = self.sm.add_stage(stage, self.fallback[stage].sm)
+                self.rsf = self.rsf.add_stage(stage, self.fallback[stage].rsf)
+                self.nrsf = self.nrsf.add_stage(stage, self.fallback[stage].nrsf)
+                self.fw = self.fw.add_stage(stage, self.fallback[stage].fw)
+                self.hwd = self.hwd.add_stage(stage, self.fallback[stage].hwd)
+                self.nhwd = self.nhwd.add_stage(stage, self.fallback[stage].nhwd)
+                self.rwd = self.rwd.add_stage(stage, self.fallback[stage].rwd)
+                self.cru = self.cru.add_stage(stage, self.fallback[stage].cru)
+                self.mfr = self.mfr.add_stage(stage, self.fallback[stage].mfr)
+                self.mer = self.mer.add_stage(stage, self.fallback[stage].mer)
+                self.eee = self.eee.add_stage(stage, self.fallback[stage].eee)
+                self.eet = self.eet.add_stage(stage, self.fallback[stage].eet)
+                self.gwp = self.gwp.add_stage(stage, self.fallback[stage].gwp)
+                self.odp = self.odp.add_stage(stage, self.fallback[stage].odp)
+                self.pocp = self.pocp.add_stage(stage, self.fallback[stage].pocp)
+                self.ap = self.ap.add_stage(stage, self.fallback[stage].ap)
+                self.ep = self.ep.add_stage(stage, self.fallback[stage].ep)
+                self.adpe = self.adpe.add_stage(stage, self.fallback[stage].adpe)
+                self.adpf = self.adpf.add_stage(stage, self.fallback[stage].adpf)
+                
+
+            
+            self._fallback_added = True
