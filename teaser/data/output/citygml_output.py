@@ -31,6 +31,7 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
     crs = "urn:adv:crs:ETRS89_UTM32*DE_DHHN2016_NH*GCG2016"
     print('crs:', crs)
 
+    global nsClass
     nsClass = cl.CGML2
 
     # creating new namespacemap
@@ -40,6 +41,7 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
     schemaLocation = "http://www.opengis.net/citygml/2.0 http://www.sig3d.org/citygml/2.0/energy/1.0/EnergyADE.xsd"
 
     # creating new root element
+    global nroot_E
     nroot_E = ET.Element(ET.QName(nsClass.core, 'CityModel'),attrib={"{" + nsClass.xsi + "}schemaLocation" : schemaLocation}, nsmap=newNSmap)
 
     # creating name element
@@ -53,7 +55,6 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
     # if u_GML_id != None:
     #     gmlID = u_GML_id
     # else:
-    gmlID = "e3D_CityBIT_" + str(uuid.uuid1())
 
     if ref_coordinates is not None:
 
@@ -67,6 +68,7 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
     materials = {}
 
     for i, bldg_count in enumerate(project.buildings):
+        gmlID = "e3D_TEASERplus_" + str(bldg_count.internal_id)
 
         if gml_copy is None or re.match(r"(\w+)bt_", bldg_count.name):
 
@@ -421,13 +423,13 @@ def _set_gml_floor_area_lxml(gml_bldg, nsClass,thermal_zone, ET):
 
 def _set_gml_thermal_zone_lxml(gml_bldg, nsClass, thermal_zone, ET):
 
-    thermal_zone_id = uuid.uuid1()
-    usage_zone_id = uuid.uuid1()
+    thermal_zone_id = str("GML_" + str(thermal_zone.internal_id))
+    usage_zone_id = str("GML_" + str(thermal_zone.use_conditions.internal_id))
     gml_thermal_zone = ET.SubElement(gml_bldg, ET.QName(nsClass.energy, 'thermalZone'))
     gml_Thermal_Zone = ET.SubElement(gml_thermal_zone, ET.QName(nsClass.energy, 'ThermalZone'),
-                                     attrib={ET.QName(nsClass.gml, 'id'): str("GML_" + str(thermal_zone_id))})
+                                     attrib={ET.QName(nsClass.gml, 'id'): thermal_zone_id})
     ET.SubElement(gml_Thermal_Zone, ET.QName(nsClass.energy, 'contains'),
-                  attrib={ET.QName(nsClass.xlink, 'href'): str('#' + "GML_" + str(usage_zone_id))})
+                  attrib={ET.QName(nsClass.xlink, 'href'): str('#'+usage_zone_id)})
     _set_gml_volume_lxml(gml_Thermal_Zone, nsClass, thermal_zone, ET)
     _set_gml_floor_area_lxml(gml_Thermal_Zone, nsClass, thermal_zone, ET)
     ET.SubElement(gml_Thermal_Zone, ET.QName(nsClass.energy, 'isCooled')).text = "false"
@@ -436,20 +438,32 @@ def _set_gml_thermal_zone_lxml(gml_bldg, nsClass, thermal_zone, ET):
     polyIDs, exteriorSurfaces = _set_composite_surface(gml_volume_geometry, nsClass, thermal_zone, ET)
 
     """Set boundary Surfaces"""
+
+    construction_id_windows = None
+
     for i in range(len(exteriorSurfaces)):
         if i == 0:
             surfaceType = 'WallSurface'
+            construction_id = None
+
         elif i == 1:
             surfaceType = 'RoofSurface'
+            construction_id = None
+
         elif i == 2:
             surfaceType = 'GroundSurface'
+            construction_id = None
+
 
         for surface in exteriorSurfaces[i]:
             thermal_openings = []
+
             for win_count in thermal_zone.windows:
                 if surface.orientation == win_count.orientation and surface.tilt == win_count.tilt:
                     thermal_openings.append(win_count)
-            _set_gml_thermal_boundary_lxml(gml_Thermal_Zone, surface, thermal_openings, nsClass)
+            construction_id, construction_id_windows = \
+                _set_gml_thermal_boundary_lxml(gml_Thermal_Zone, surface, thermal_openings,
+                                               nsClass, construction_id, construction_id_windows)
     return polyIDs
 
 
@@ -470,7 +484,7 @@ def _set_composite_surface(solid, nsClass, thermal_zone, ET):
     return polyIDs, exteriorSurfaces
 
 
-def _set_gml_thermal_boundary_lxml(gml_zone, wall, thermal_openings, nsClass):
+def _set_gml_thermal_boundary_lxml(gml_zone, wall, thermal_openings, nsClass, construction_id, construction_id_windows):
     """Control function to add a thermal boundary surface to the thermal zone
 
     The thermal zone instance of citygml is modified and thermal boundary
@@ -525,7 +539,7 @@ def _set_gml_thermal_boundary_lxml(gml_zone, wall, thermal_openings, nsClass):
 
     boundedBy_E = ET.SubElement(gml_zone, ET.QName(nsClass.energy, 'boundedBy'))
     thermal_boundary_E = ET.SubElement(boundedBy_E, ET.QName(nsClass.energy, 'ThermalBoundary'),
-                                     attrib={ET.QName(nsClass.gml, 'id'): str("GML_" + str(uuid.uuid1()))})
+                                       attrib={ET.QName(nsClass.gml, 'id'): str("GML_" + str(wall.internal_id))})
     ET.SubElement(thermal_boundary_E, ET.QName(nsClass.energy, "thermalBoundaryType")).text = \
         thermal_boundary_type_value
     ET.SubElement(thermal_boundary_E, ET.QName(nsClass.energy, "azimuth"), attrib={'uom': "deg"}).text = \
@@ -534,6 +548,43 @@ def _set_gml_thermal_boundary_lxml(gml_zone, wall, thermal_openings, nsClass):
         str(wall.tilt)
     ET.SubElement(thermal_boundary_E, ET.QName(nsClass.energy, "area"), attrib={'uom': "m2"}).text = \
         str(wall.area)
+    if construction_id is None:
+        construction_id = _set_gml_construction_lxml( wall)
+    else:
+        pass
+    print(construction_id)
+    ET.SubElement(thermal_boundary_E, ET.QName(nsClass.energy, "construction"), attrib={ET.QName(nsClass.xlink, 'href'):
+                                                                                        str("#" + str(construction_id))})
+
+    if thermal_openings is not None:
+        for thermal_opening in thermal_openings:
+            contains = ET.SubElement(thermal_boundary_E, ET.QName(nsClass.energy, "contains"))
+            thermal_opening_E = ET.SubElement(contains, ET.QName(nsClass.energy, "ThermalOpening"),
+                                              attrib={ET.QName(nsClass.gml, 'id'): str("GML_" + str(thermal_opening.internal_id))})
+            ET.SubElement(thermal_opening_E, ET.QName(nsClass.energy, "area"), attrib={'uom': "m2"}).text = \
+                str(thermal_opening.area)
+            if construction_id_windows is None:
+                construction_id_windows = _set_gml_construction_lxml(thermal_opening)
+            else:
+                pass
+            ET.SubElement(thermal_opening_E, ET.QName(nsClass.energy, "construction"),
+                          attrib={ET.QName(nsClass.xlink, 'href'): str("#" + construction_id_windows)})
+    return construction_id, construction_id_windows
+
+
+def _set_gml_construction_lxml(element):
+    construction_id = str("GML_" + str(uuid.uuid1()))
+    feature_member = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'feature_member'))
+    construction_gml = ET.SubElement(feature_member, ET.QName(nsClass.energy, 'Construction'),
+                                     attrib={ET.QName(nsClass.xlink, 'href'): str("#" + construction_id)})
+    ET.SubElement(construction_gml, ET.QName(nsClass.gml, "description")).text = \
+        str(type(element).__name__ +"_construction")
+    ET.SubElement(construction_gml, ET.QName(nsClass.gml, "name")).text = \
+        str(type(element).__name__ + "_construction")
+    ET.SubElement(construction_gml, ET.QName(nsClass.energy, "uValue"), attrib={'uom': "W/K*m2"}).text = \
+        str(element.ua_value / element.area)
+    return construction_id
+
 
 def _add_gml_boundary_lxml(boundary_surface, gml_id):
     """Adds a surface to the  LOD representation of the building

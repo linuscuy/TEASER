@@ -5,6 +5,7 @@
 """
 import inspect
 import random
+import uuid
 import re
 import warnings
 from teaser.logic.buildingobjects.calculation.aixlib import AixLib
@@ -143,7 +144,7 @@ class Building(object):
         self.internal_gains_mode = internal_gains_mode
         self.number_of_floors = None
         self.height_of_floors = None
-        self.internal_id = random.random()
+        self.internal_id = uuid.uuid1()
         self._year_of_retrofit = None
         self.type_of_building = type(self).__name__
         self.building_id = None

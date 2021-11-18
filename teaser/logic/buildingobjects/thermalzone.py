@@ -7,6 +7,7 @@ from __future__ import division
 import random
 import re
 import warnings
+import uuid
 from teaser.logic.buildingobjects.calculation.one_element import OneElement
 from teaser.logic.buildingobjects.calculation.two_element import TwoElement
 from teaser.logic.buildingobjects.calculation.three_element import ThreeElement
@@ -86,7 +87,7 @@ class ThermalZone(object):
 
         self.parent = parent
 
-        self.internal_id = random.random()
+        self.internal_id = uuid.uuid1()
         self.name = None
         self._area = None
         self._volume = None

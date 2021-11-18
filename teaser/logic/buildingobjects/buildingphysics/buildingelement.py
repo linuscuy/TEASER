@@ -6,6 +6,7 @@ import teaser.data.input.buildingelement_input_json as buildingelement_input
 import numpy as np
 import random
 import re
+import uuid
 
 
 class BuildingElement(object):
@@ -117,7 +118,7 @@ class BuildingElement(object):
 
         self.parent = parent
 
-        self.internal_id = random.random()
+        self.internal_id = uuid.uuid1()
 
         self.name = None
         self._construction_type = None
