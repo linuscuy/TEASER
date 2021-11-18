@@ -513,7 +513,7 @@ class En15804IndicatorValue(object):
         if self.c4: stages.append("c4")
         if self.d: stages.append("d")
         
-        return(stages)
+        return stages
 
     def add_stage(self, stage, other):
         """Function which adds only a specific stage from an En15804Indicator-
