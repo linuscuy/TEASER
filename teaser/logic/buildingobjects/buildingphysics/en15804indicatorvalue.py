@@ -514,6 +514,77 @@ class En15804IndicatorValue(object):
         if self.d: stages.append("d")
         
         return(stages)
+
+    def add_stage(self, stage, other):
+        result = En15804IndicatorValue()
+        addend = En15804IndicatorValue()
+        addend.unit = other.unit
+        if isinstance(other, En15804IndicatorValue):
+            other_stages = other.stages()
+            if stage in other_stages:
+                if len(other_stages) != 1:
+                    if stage == "a1":
+                        addend.a1 = other.a1
+                    elif stage == "a2":
+                        addend.a2 = other.a2
+                    elif stage == "a3":
+                        addend.a3 = other.a3
+                    elif stage == "a1_a3":
+                        addend.a1_a3 = other.a1_a3
+                    elif stage == "a4":
+                        addend.a4 = other.a4
+                    elif stage == "a5":
+                        addend.a5 = other.a5
+                    elif stage == "b1":
+                        addend.b1 = other.b1
+                    elif stage == "b2":
+                        addend.b2 = other.b2
+                    elif stage == "b3":
+                        addend.b3 = other.b3
+                    elif stage == "b4":
+                        addend.b4 = other.b4
+                    elif stage == "b5":
+                        addend.b5 = other.b5
+                    elif stage == "b6":
+                        addend.b6 = other.b6
+                    elif stage == "b7":
+                        addend.b7 = other.b7
+                    elif stage == "c1":
+                        addend.c1 = other.c1
+                    elif stage == "c2":
+                        addend.c2 = other.c2
+                    elif stage == "c3":
+                        addend.c3 = other.c3
+                    elif stage == "c4":
+                        addend.c4 = other.c4
+                    elif stage == "d":
+                        addend.d = other.d
+
+                else:
+                    addend = other
+
+                    
+                    #print(vars(other))
+                    #other = other.set_values(**{stage: vars(other)[stage]})
+                result = self + addend
+            else:
+                print("No value for Stage {}".format(stage))
+                result = self
+        
+        else:
+            print("Addend must be an 'En15804IndicatorValue'-Object!")
+                
+        
+        return(result)
+                    
+
+           
+                
+                    
+            
+            
+       
+                
                 
     
         
