@@ -116,6 +116,7 @@ class En15804LcaData(object):
         self._adpf = En15804IndicatorValue()
         
         self._fallback = None
+        self._fallback_added = False
         
         
     def _check_unit(self, unit, unit_expected, var_name = None):
