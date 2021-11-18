@@ -747,7 +747,7 @@ class ThermalZone(object):
         for building_element in building_elements:
             try:
                 building_element.calc_lca_data(use_b4, period_lca_scenario)
-                lca_data = self.lca_data + building_element.lca_data
+                lca_data = lca_data + building_element.lca_data
             except:
                 print("Error while adding {}".format(type(building_element).__name__))
             

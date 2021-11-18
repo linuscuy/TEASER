@@ -937,7 +937,7 @@ class Building(object):
             
             try:
                 thermal_zone.calc_lca_data(use_b4, period_lca_scenario)
-                lca_data = self.lca_data + thermal_zone.lca_data
+                lca_data = lca_data + thermal_zone.lca_data
             except:
                 print("Error while adding lca-data from thermal zone")
             
