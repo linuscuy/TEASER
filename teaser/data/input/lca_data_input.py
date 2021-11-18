@@ -124,7 +124,7 @@ def load_en15804_lca_data_id(lca_data, lca_id, data_class):
                     
                     lca_data.add_fallbacks()
                 else:
-                    lca_data.fallback = None
+                    lca_data.fallback = []
                         
 
 def load_en15804_lca_data_fallback_id(lca_data, lca_id, data_class):
