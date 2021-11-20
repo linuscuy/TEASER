@@ -734,7 +734,6 @@ class En15804LcaData(object):
         if self._fallback_added is False:
             
             #TODO: unit
-            #TODO: bugfix No value for Stage c4
             
             for stage in self.fallback:
                 try:
