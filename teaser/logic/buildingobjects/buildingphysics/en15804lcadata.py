@@ -625,12 +625,17 @@ class En15804LcaData(object):
                 target_unit = self.unit
                 print("Unknown unit for reference flow!")
         
-        #elif target_unit == "m^3":
+        elif target_unit == "kg":
             
-            scalar = scalar / self.ref_flow_value
-            result = self * scalar
-            result.ref_flow_unit = target_unit
-            result.ref_flow_value = 1
+            if self.ref_flow_unit == "m^3":
+                scalar = 1 / density
+            elif self.ref_flow_unit == "m^2":
+                scalar = thickness / density
+            
+        scalar = scalar / self.ref_flow_value
+        result = self * scalar
+        result.ref_flow_unit = target_unit
+        result.ref_flow_value = 1
         
         return result
             
@@ -734,16 +739,78 @@ class En15804LcaData(object):
         
         if self._fallback_added is False:
             
-            #TODO: unit
+            pere_backup = self.pere
+            pert_backup = self.pert
+            penre_backup = self.penre
+            penrm_backup = self.penrm
+            penrt_backup = self.penrt
+            sm_backup = self.sm
+            rsf_backup = self.rsf
+            nrsf_backup = self.nrsf
+            fw_backup = self.fw
+            hwd_backup = self.hwd
+            nhwd_backup = self.nhwd
+            rwd_backup = self.rwd
+            cru_backup = self.cru
+            mfr_backup = self.mfr
+            mer_backup = self.mer
+            eee_backup = self.eee
+            eet_backup = self.eet
+            gwp_backup = self.gwp
+            odp_backup = self.odp
+            pocp_backup = self.pocp
+            ap_backup = self.ap
+            ep_backup = self.ep
+            adpe_backup = self.adpe
+            adpf_backup = self.adpf
+
+
+            self._fallback_added = True
             
             for stage in self.fallback:
-                try:
-                    print(stage, " ----> ", self.fallback[stage].pere.c4)
-                except:
-                    pass
                 
+                if self.fallback[stage].ref_flow_unit != self.ref_flow_unit:
+                    try:
+                    
+                        self.fallback[stage].convert_ref_unit(
+                            target_unit = self.ref_flow_unit,
+                            density = self.parent.density                            
+                            )
+                        
+                    except:
+                        print("Error while trying to convert fallback reference unit",
+                              "{} to {}".format(self.fallback[stage].ref_flow_unit, self.ref_flow_unit))
+                        
+                        self.pere = pere_backup
+                        self.pert = pert_backup
+                        self.penre = penre_backup
+                        self.penrm = penrm_backup
+                        self.penrt = penrt_backup
+                        self.sm = sm_backup
+                        self.rsf = rsf_backup
+                        self.nrsf = nrsf_backup
+                        self.fw = fw_backup
+                        self.hwd = hwd_backup
+                        self.nhwd = nhwd_backup
+                        self.rwd = rwd_backup
+                        self.cru = cru_backup
+                        self.mfr = mfr_backup
+                        self.mer = mer_backup
+                        self.eee = eee_backup
+                        self.eet = eet_backup
+                        self.gwp = gwp_backup
+                        self.odp = odp_backup
+                        self.pocp = pocp_backup
+                        self.ap = ap_backup
+                        self.ep = ep_backup
+                        self.adpe = adpe_backup
+                        self.adpf = adpf_backup
+                        
+                        self.fallback_added = False
+                        break
+                      
 
-                
+                    
                 
                 self.pere = self.pere.add_stage(stage, self.fallback[stage].pere)
                 self.pert = self.pert.add_stage(stage, self.fallback[stage].pert)
@@ -772,4 +839,3 @@ class En15804LcaData(object):
                 
 
             
-            self._fallback_added = True
