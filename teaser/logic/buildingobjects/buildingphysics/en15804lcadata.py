@@ -573,7 +573,7 @@ class En15804LcaData(object):
                 
                 fallback_id = fallback_dictonarie[stage]
                 
-                fallback_object = En15804LcaData()
+                fallback_object = En15804LcaData(self.parent)
                 
                 self.fallback[stage] = fallback_object
                 
