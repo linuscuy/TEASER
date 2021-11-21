@@ -85,6 +85,7 @@ class En15804LcaData(object):
         self.lca_data_id = str(uuid.uuid1())
         
         self._name = None
+        self.parent = parent
         
         self._ref_flow_value = None
         self._ref_flow_unit = None
