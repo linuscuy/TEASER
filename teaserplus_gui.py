@@ -287,7 +287,7 @@ class enrichment(QtWidgets.QWidget):
         self.vbox = QtWidgets.QVBoxLayout(self)
         self.setLayout(self.vbox)
 
-        gf.load_banner(self, os.path.join(pypath, r'pictures\e3dHeader.png'), sizefactor)
+        gf.load_banner(self, os.path.join(pypath, r'pictures\TEASER+_header.png'), sizefactor)
 
         self.uGrid = QtWidgets.QGridLayout()
 
