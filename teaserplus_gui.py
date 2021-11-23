@@ -61,7 +61,7 @@ class mainWindow(QtWidgets.QWidget):
         self.setLayout(self.vbox)
 
         # Loading banner
-        gf.load_banner(self, os.path.join(pypath, r'pictures\e3dHeader.png'), sizefactor)
+        gf.load_banner(self, os.path.join(pypath, r'pictures\TEASER+_header.png'), sizefactor)
 
         #Setting Layout
         self.uGrid = QtWidgets.QGridLayout()
