@@ -79,6 +79,10 @@ class En15804LcaData(object):
             Abiotic depletion potential for non fossil resources
         adpf : En15804IndicatorValue [MJ]
             Abiotic depletion potential for fossil resources 
+        fallback : dict
+            Dictonarie with stages as key and LCA-Datasets as values
+        _fallback_added : boolean
+            is True if the fallbacks allready added to "lca_data"
     """
     def __init__(self, parent = None):
       
@@ -558,7 +562,7 @@ class En15804LcaData(object):
             
 
         """
-        #data_class = self.parent.parent.parent.parent.data
+        
         if data_class == None:
             data_class = self.parent.parent.parent.parent.data
 
@@ -594,7 +598,7 @@ class En15804LcaData(object):
             
 
         """
-           #data_class = self.parent.parent.parent.parent.data
+
         if data_class == None:
             data_class = self.parent.parent.parent.parent.data
 
@@ -603,7 +607,27 @@ class En15804LcaData(object):
                                      data_class=data_class)
         
     def convert_ref_unit(self, target_unit, area = None, thickness = None, density = None):
+        """converts the values of the environmental indicators to a new unit.
+        All parameters are optional and used only, if necessary for the conversion. 
         
+
+        Parameters
+        ----------
+        target_unit : str
+            target unit of the conversion
+        area : float, optional
+            area (e.g. area of a buildingelement / a layer)
+        thickness : float, optional
+            thickness (e.g. thickness of a layer). The default is None.
+        density : float, optional
+            density (e.g. the density of a material). The default is None.
+
+        Returns
+        -------
+        result : En15804LcaData
+            LCA-Data in new unit.
+
+        """
         result = En15804LcaData()
         
         if target_unit == "pcs":
@@ -623,7 +647,7 @@ class En15804LcaData(object):
             else:
                 scalar = 1
                 target_unit = self.unit
-                print("Unknown unit for reference flow!")
+                raise ValueError("Unable to convert unit into target unit!")
         
         elif target_unit == "kg":
             
@@ -631,6 +655,11 @@ class En15804LcaData(object):
                 scalar = 1 / density
             elif self.ref_flow_unit == "m^2":
                 scalar = thickness / density
+            
+            else:
+                scalar = 1
+                target_unit = self.unit
+                raise ValueError("Unable to convert unit into target unit!")
             
         scalar = scalar / self.ref_flow_value
         result = self * scalar
@@ -736,6 +765,14 @@ class En15804LcaData(object):
         return result
     
     def add_fallbacks(self):
+        """adds the lca-data-fallbacks to the attribute "lca_data". The
+        attribute "_fallback_added" is True, if the fallbacks are allready added
+
+        Returns
+        -------
+        None.
+
+        """
         
         if self._fallback_added is False:
             
