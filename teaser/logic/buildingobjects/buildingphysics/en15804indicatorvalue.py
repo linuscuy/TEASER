@@ -288,6 +288,13 @@ class En15804IndicatorValue(object):
 
         """
         
+        if "a1_a3" not in values or values["a1_a3"] is not None:
+            if "a1" in values and "a2" in values and "a3" in values:
+                if values["a1"] is not None or values["a2"] is not None or values["a3"] is not None:
+                    a1_a3 = self._ignore_none_sum(self._ignore_none_sum(values["a1"], values["a2"]), values["a3"])
+                    
+                    values["a1_a3"] = a1_a3
+
         for attr, value in values.items():
             setattr(self, attr, value)
 
