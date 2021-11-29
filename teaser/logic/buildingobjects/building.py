@@ -940,5 +940,8 @@ class Building(object):
                 lca_data = lca_data + thermal_zone.lca_data
             except:
                 print("Error while adding lca-data from thermal zone")
+                
+        if self.additional_lca_data is not None:
+            lca_data = lca_data + self.additional_lca_data
             
         self.lca_data = lca_data
