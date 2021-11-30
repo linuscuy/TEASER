@@ -685,12 +685,13 @@ class BuildingElement(object):
     
     @service_life.setter
     def service_life(self, value):
-        if not isinstance(value, int):
-            try:
-                value = int(value)
-            except ValueError:
-                print("Service life has to be integer")
-                
+        if value is not None:
+            if not isinstance(value, int):
+                try:
+                    value = int(value)
+                except TypeError:
+                    print("Service life has to be integer")
+                      
                 
         self._service_life = value
     
