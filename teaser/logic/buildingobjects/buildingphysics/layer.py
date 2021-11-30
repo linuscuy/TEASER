@@ -3,6 +3,7 @@
 
 
 import random
+import uuid
 
 
 class Layer(object):
@@ -35,7 +36,7 @@ class Layer(object):
 
         """
         self.parent = parent
-        self.internal_id = random.random()
+        self.internal_id = uuid.uuid1()
         self.id = id
         self._material = None
         self._thickness = 0.0

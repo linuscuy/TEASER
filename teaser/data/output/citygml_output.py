@@ -576,13 +576,44 @@ def _set_gml_construction_lxml(element):
     construction_id = str("GML_" + str(uuid.uuid1()))
     feature_member = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'feature_member'))
     construction_gml = ET.SubElement(feature_member, ET.QName(nsClass.energy, 'Construction'),
-                                     attrib={ET.QName(nsClass.xlink, 'href'): str("#" + construction_id)})
+                                     attrib={ET.QName(nsClass.gml, 'id'): str(construction_id)})
     ET.SubElement(construction_gml, ET.QName(nsClass.gml, "description")).text = \
         str(type(element).__name__ +"_construction")
     ET.SubElement(construction_gml, ET.QName(nsClass.gml, "name")).text = \
         str(type(element).__name__ + "_construction")
     ET.SubElement(construction_gml, ET.QName(nsClass.energy, "uValue"), attrib={'uom': "W/K*m2"}).text = \
         str(element.ua_value / element.area)
+
+
+    for layer_count in element.layer:
+        layer_gml = ET.SubElement(construction_gml, ET.QName(nsClass.energy, "layer"))
+        Layer_gml = ET.SubElement(layer_gml, ET.QName(nsClass.energy, "Layer"),
+                                  attrib={ET.QName(nsClass.gml, 'id'): str("GML_" + str(layer_count.internal_id))})
+        layer_comp = ET.SubElement(Layer_gml, ET.QName(nsClass.energy, "layerComponent"))
+        Layer_comp = ET.SubElement(layer_comp, ET.QName(nsClass.energy, "Layer"),
+                                  attrib={ET.QName(nsClass.gml, 'id'):
+                                              str("GML_" + str(layer_count.internal_id) + "_1")})
+        ET.SubElement(Layer_comp, ET.QName(nsClass.energy, "areaFraction"), attrib={'uom': "scale"}).text = str(1)
+        ET.SubElement(Layer_comp, ET.QName(nsClass.energy, "thickness"), attrib={'uom': "m"}).text = \
+            str(layer_count.thickness)
+        ET.SubElement(Layer_comp, ET.QName(nsClass.energy, 'material'),
+                                         attrib={ET.QName(nsClass.xlink, 'href'):
+                                                     str("#" + "GML_" + layer_count.material.material_id)})
+
+        feature_member_material = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'feature_member'))
+        material_gml = ET.SubElement(feature_member_material, ET.QName(nsClass.energy, 'SolidMaterial'),
+                                         attrib={ET.QName(nsClass.gml, 'id'):
+                                                     str("GML_" + layer_count.material.material_id)})
+        ET.SubElement(material_gml, ET.QName(nsClass.gml, "description")).text = \
+            str(layer_count.material.name)
+        ET.SubElement(material_gml, ET.QName(nsClass.gml, "name")).text = \
+            str(layer_count.material.name)
+        ET.SubElement(material_gml, ET.QName(nsClass.energy, "conductivity"), attrib={'uom': "W/K*m"}).text = \
+            str(layer_count.material.thermal_conduc)
+        ET.SubElement(material_gml, ET.QName(nsClass.energy, "density"), attrib={'uom': "kg/m3"}).text = \
+            str(layer_count.material.density)
+        ET.SubElement(material_gml, ET.QName(nsClass.energy, "specificHeat"), attrib={'uom': "kJ/K*kg"}).text = \
+            str(layer_count.material.heat_capac)
     return construction_id
 
 
