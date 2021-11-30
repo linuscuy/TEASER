@@ -18,7 +18,7 @@ import pyxb.namespace
 import pyxb.bundles
 import pyxb.binding as bd
 import pyxb.bundles.common.raw.xlink as xlink
-
+import pandas as pd
 
 def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=None):
     """Based on CityGML Building export from CityBIT"""
@@ -630,19 +630,19 @@ def _set_usage_zone_lxml(thermal_zone, gml_bldg, usage_zone_id):
 
     """Heating"""
     heating_schedule = ET.SubElement(gml_Usage_Zone, ET.QName(nsClass.energy, 'heatingSchedule'))
-    _set_schedule(usage_zone, heating_schedule)
+    _set_schedule(heating_schedule, usage_zone,  usage_zone_id, "heating")
 
     """Cooling"""
     # TODO: Check together with isCooled if AHU is used and set cooling
 
     """Ventilation"""
-    ventilation_schedule = ET.SubElement(gml_Usage_Zone, ET.QName(nsClass.energy, 'ventilationSchedule'))
-    _set_schedule(usage_zone, ventilation_schedule)
+    # ventilation_schedule = ET.SubElement(gml_Usage_Zone, ET.QName(nsClass.energy, 'ventilationSchedule'))
+    # _set_schedule(usage_zone, ventilation_schedule, usage_zone_id, "ventilation")
 
     """Occupiedby"""
     occupied_by = ET.SubElement(gml_Usage_Zone, ET.QName(nsClass.energy, 'occupiedBy'))
     occupants = ET.SubElement(occupied_by, ET.QName(nsClass.energy, 'Occupants'),
-                              attrib={ET.QName(nsClass.gml, 'id'): ("Occupants_" + usage_zone_id)})
+                              attrib={ET.QName(nsClass.gml, 'id'): (usage_zone_id + "_Occupants")})
     heat_dissipation = ET.SubElement(occupants, ET.QName(nsClass.energy, 'heatDissipation'))
     heat_exchange_type = ET.SubElement(heat_dissipation, ET.QName(nsClass.energy, 'HeatExchangeType'))
     ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'convectionFraction'), attrib={'uom': "scale"}).text = \
@@ -653,12 +653,12 @@ def _set_usage_zone_lxml(thermal_zone, gml_bldg, usage_zone_id):
         str(usage_zone.fixed_heat_flow_rate_persons)
     ET.SubElement(occupants, ET.QName(nsClass.energy, 'Persons')).text = str(int(usage_zone.persons*thermal_zone.area))
     occupancy_rate = ET.SubElement(occupants, ET.QName(nsClass.energy, 'occupancyRate'))
-    _set_schedule(usage_zone, occupancy_rate)
+    _set_schedule(occupancy_rate, usage_zone, usage_zone_id, "persons")
 
     """Machines"""
     equipped_with = ET.SubElement(gml_Usage_Zone, ET.QName(nsClass.energy, 'equippedWith'))
     electrical_app = ET.SubElement(equipped_with, ET.QName(nsClass.energy, 'ElectricalAppliances'),
-                              attrib={ET.QName(nsClass.gml, 'id'): ("Machines_" + usage_zone_id)})
+                              attrib={ET.QName(nsClass.gml, 'id'): (usage_zone_id + "_Machines")})
     heat_dissipation = ET.SubElement(electrical_app, ET.QName(nsClass.energy, 'heatDissipation'))
     heat_exchange_type = ET.SubElement(heat_dissipation, ET.QName(nsClass.energy, 'HeatExchangeType'))
     ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'convectionFraction'), attrib={'uom': "scale"}).text = \
@@ -669,12 +669,12 @@ def _set_usage_zone_lxml(thermal_zone, gml_bldg, usage_zone_id):
         str(usage_zone.machines)
 
     opperation_schedule = ET.SubElement(electrical_app, ET.QName(nsClass.energy, 'operationSchedule'))
-    _set_schedule(usage_zone, opperation_schedule)
+    _set_schedule(opperation_schedule, usage_zone, usage_zone_id, "machines")
 
     """Lighting"""
     equipped_with = ET.SubElement(gml_Usage_Zone, ET.QName(nsClass.energy, 'equippedWith'))
     electrical_app = ET.SubElement(equipped_with, ET.QName(nsClass.energy, 'LightingFacilities'),
-                              attrib={ET.QName(nsClass.gml, 'id'): ("Lighting_" + usage_zone_id)})
+                              attrib={ET.QName(nsClass.gml, 'id'): (usage_zone_id + "_Lighting")})
     heat_dissipation = ET.SubElement(electrical_app, ET.QName(nsClass.energy, 'heatDissipation'))
     heat_exchange_type = ET.SubElement(heat_dissipation, ET.QName(nsClass.energy, 'HeatExchangeType'))
     ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'convectionFraction'), attrib={'uom': "scale"}).text = \
@@ -684,10 +684,58 @@ def _set_usage_zone_lxml(thermal_zone, gml_bldg, usage_zone_id):
     ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'totalValue'), attrib={'uom': "W/m2"}).text = \
         str(usage_zone.lighting_power)
     opperation_schedule = ET.SubElement(electrical_app, ET.QName(nsClass.energy, 'operationSchedule'))
-    _set_schedule(usage_zone, opperation_schedule)
+    _set_schedule(opperation_schedule, usage_zone, usage_zone_id, "lighting")
 
 
-def _set_schedule(schedule_type, usage_zone):
+def _set_schedule(schedule_type, usage_zone, usage_zone_id, type_name):
+    daily_pattern = ET.SubElement(schedule_type, ET.QName(nsClass.energy, 'DailyPatternSchedule'),
+                                  attrib={ET.QName(nsClass.gml, 'id'): str(usage_zone_id + f"{type_name}_schedule")})
+    ET.SubElement(daily_pattern, ET.QName(nsClass.gml, "name")).text = str(type_name)
+    period_of_year = ET.SubElement(daily_pattern, ET.QName(nsClass.energy, 'periodOfYear'))
+    Period_of_year = ET.SubElement(period_of_year, ET.QName(nsClass.energy, 'PeriodOfYear'))
+    period = ET.SubElement(Period_of_year, ET.QName(nsClass.energy, 'period'))
+
+    time_period = ET.SubElement(period, ET.QName(nsClass.gml, 'TimePeriod'))
+    ET.SubElement(time_period, ET.QName(nsClass.gml, 'beginPosition')).text = str("2023-01-01T00:00:00")
+    ET.SubElement(time_period, ET.QName(nsClass.gml, 'endPosition')).text = str("2023-12-31T00:00:00")
+
+    daily_schedule = ET.SubElement(Period_of_year, ET.QName(nsClass.energy, 'dailySchedule'))
+    Daily_schedule = ET.SubElement(daily_schedule, ET.QName(nsClass.energy, 'DailySchedule'))
+
+    for day_type in ["weekDay", "weekEnd"]:
+        ET.SubElement(Daily_schedule, ET.QName(nsClass.energy, 'dayType')).text = str(day_type)
+        schedule = ET.SubElement(Daily_schedule, ET.QName(nsClass.energy, 'schedule'))
+        regular_ts = ET.SubElement(schedule, ET.QName(nsClass.energy, 'RegularTimeSeries'))
+
+        variable_props = ET.SubElement(regular_ts, ET.QName(nsClass.energy, 'variableProperties'))
+        time_value_prop = ET.SubElement(variable_props, ET.QName(nsClass.energy, 'TimeValuesProperties'))
+        ET.SubElement(time_value_prop, ET.QName(nsClass.energy, 'acquisitionMethod')).text = str("estimation")
+        ET.SubElement(time_value_prop, ET.QName(nsClass.energy, 'interpolationType')).text = \
+            str("averageInSucceedingInterval")
+        ET.SubElement(time_value_prop, ET.QName(nsClass.energy, 'thematicDescription')).text = str("Nominal" + type_name)
+
+        temporal_extant = ET.SubElement(regular_ts, ET.QName(nsClass.energy, 'temporalExtent'))
+        time_period = ET.SubElement(temporal_extant, ET.QName(nsClass.gml, 'TimePeriod'))
+        ET.SubElement(time_period, ET.QName(nsClass.gml, 'beginPosition')).text = str("00:00:00")
+        ET.SubElement(time_period, ET.QName(nsClass.gml, 'endPosition')).text = str("00:00:23")
+
+        ET.SubElement(regular_ts, ET.QName(nsClass.energy, 'timeInterval'), attrib={'unit': "hour"}).text = str(1)
+
+        if type_name == "heating" or "type"=="cooling":
+            uom = "K"
+        if type_name == "ventilation":
+            uom = "1/h"
+        else:
+            uom = "scale"
+
+        if day_type is "weekDay":
+
+            ET.SubElement(regular_ts, ET.QName(nsClass.energy, 'values'), attrib={'uom': uom}).text = str(usage_zone.schedules[f"{type_name}_profile"].iloc[0:23].values).strip('[]')
+
+        if day_type is "weekEnd":
+
+            ET.SubElement(regular_ts, ET.QName(nsClass.energy, 'values'), attrib={'uom': uom}).text = str(usage_zone.schedules[f"{type_name}_profile"].iloc[120:143].values).strip('[]')
+
     return
 
 
