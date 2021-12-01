@@ -388,26 +388,29 @@ def get_gml_surfaces(bldg, city_object, namespace):
                 # modelling option 1
                 if surf_member.tag == "{http://www.opengis.net/gml}exterior":
                     for surf_pos in surf_member.iter():
-                        if surf_pos.tag == "{http://www.opengis.net/gml}posList":
-                            a_list = surf_pos.text.split()
-                            map_object = map(float, a_list)
-                            coord_list = list(map_object)
-                            help = SurfaceGML(coord_list)
-                            if help.surface_area > 1:
-                                bldg.gml_surfaces.append(help)
-
-                        # modelling option 2
-                        elif surf_pos.tag == "{http://www.opengis.net/gml}LinearRing":
-                            position_list_help = []
-                            for pos in surf_pos.iter():
-                                a_list = pos.text.split()
+                        if "{http://www.opengis.net/gml}posList" in surf_member:
+                            if surf_pos.tag == "{http://www.opengis.net/gml}posList":
+                                a_list = surf_pos.text.split()
                                 map_object = map(float, a_list)
                                 coord_list = list(map_object)
-                                position_list_help.extend(coord_list)
-                            help = SurfaceGML(position_list_help)
-                            if help.surface_area > 1:
-                                bldg.gml_surfaces.append(help)
+                                help = SurfaceGML(coord_list)
+                                if help.surface_area > 1:
+                                    bldg.gml_surfaces.append(help)
 
+                                print(help.surface_area, "modelling1")
+                        # modelling option 2
+                        else:
+                            if surf_pos.tag == "{http://www.opengis.net/gml}LinearRing":
+                                position_list_help = []
+                                for pos in surf_pos.iter():
+                                    a_list = pos.text.split()
+                                    map_object = map(float, a_list)
+                                    coord_list = list(map_object)
+                                    position_list_help.extend(coord_list)
+                                help = SurfaceGML(position_list_help)
+                                if help.surface_area > 1:
+                                    bldg.gml_surfaces.append(help)
+                                print(help.surface_area, "modelling2")
     if lod == 3 or lod == 4:
         openings_name = "Window"
         for bound_surf in boundary_surfaces:
@@ -419,29 +422,29 @@ def get_gml_surfaces(bldg, city_object, namespace):
                     for openings in surf_member.iter():
                         if openings.tag == "{http://www.opengis.net/gml}exterior":
                             for openings_pos in openings.iter():
-
-                                # modelling option 1
-                                if openings_pos.tag == "{http://www.opengis.net/gml}posList":
-                                    a_list = openings_pos.text.split()
-                                    map_object = map(float, a_list)
-                                    coord_list = list(map_object)
-                                    opening = SurfaceGML(coord_list)
-                                    opening.name = openings_name
-                                    # print(opening.surface_area)
-                                    bldg.gml_surfaces.append(opening)
-
-                                # modelling option 2
-                                elif openings_pos.tag == "{http://www.opengis.net/gml}LinearRing":
-                                    position_list_help = []
-                                    for pos in openings_pos.iter():
-                                        a_list = pos.text.split()
+                                if "{http://www.opengis.net/gml}posList" in surf_member:
+                                    # modelling option 1
+                                    if openings_pos.tag == "{http://www.opengis.net/gml}posList":
+                                        a_list = openings_pos.text.split()
                                         map_object = map(float, a_list)
                                         coord_list = list(map_object)
-                                        position_list_help.extend(coord_list)
-                                    help = SurfaceGML(position_list_help)
-                                    help.name = openings_name
-                                    # print(help.surface_area)
-                                    bldg.gml_surfaces.append(help)
+                                        opening = SurfaceGML(coord_list)
+                                        opening.name = openings_name
+                                        # print(opening.surface_area)
+                                        bldg.gml_surfaces.append(opening)
+                                else:
+                                    # modelling option 2
+                                    if openings_pos.tag == "{http://www.opengis.net/gml}LinearRing":
+                                        position_list_help = []
+                                        for pos in openings_pos.iter():
+                                            a_list = pos.text.split()
+                                            map_object = map(float, a_list)
+                                            coord_list = list(map_object)
+                                            position_list_help.extend(coord_list)
+                                        help = SurfaceGML(position_list_help)
+                                        help.name = openings_name
+                                        # print(help.surface_area)
+                                        bldg.gml_surfaces.append(help)
 
 
 def get_lod(city_object):
