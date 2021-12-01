@@ -973,4 +973,28 @@ class Building(object):
         self._estimate_elec_demand = q_el_ges_a
     
     def add_lca_data_elec(self, lca_data):
-        pass
+        if self._estimate_elec_demand is None:
+            self.est_elec_demand()
+        
+        if lca_data.ref_flow_unit != "MJ":
+            try:
+                lca_data = lca_data.convert_ref_unit("MJ")
+            except:
+                print("Unit of the reference flow has to be MJ!")
+        
+        lca_data = lca_data * self._estimate_elec_demand
+        
+    
+    def add_lca_data_heationg(self, efficiency, annual_heat_load, lca_data):
+        
+        if lca_data.ref_flow_unit != "MJ":
+            try:
+                lca_data = lca_data.convert_ref_unit("MJ")
+            except:
+                print("Unit of the reference flow has to be MJ!")
+                            
+        
+        lca_data = efficiency * annual_heat_load * lca_data
+        lca_data.unit = "pcs"
+        
+        self.lca_data = self.lca_data + lca_data
