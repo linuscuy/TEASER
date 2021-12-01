@@ -120,6 +120,8 @@ class Building(object):
         one building
     additional_lca_data : En15804LcaData
         additional environmental indicators to the indicators from the thermalzones
+    _estimate_elec_demand : float [MJ]
+        estimate annual electric demand of the building (without heating)
 
     """
 
@@ -173,6 +175,8 @@ class Building(object):
         
         self._lca_data = None
         self._additional_lca_data = None
+        
+        self._estimate_elec_demand = None
 
         self.library_attr = None
     def set_height_gml(self):
@@ -942,3 +946,26 @@ class Building(object):
                 print("Error while adding lca-data from thermal zone")
             
         self.lca_data = lca_data
+        
+    def est_elec_demand(self):
+        """roughly estimates the electricity demand of the building due to it´s
+        size, without electricity used for heating (e.g. for heat pumps)
+        
+        """
+        
+        q_el_ges_a = None
+        d_a = 365 #days in a year
+        q_el_b = 63 #Wh/(m^2 d) DIN 18599-10
+        a_ngf = self.net_leased_area
+        h_B = 8 #hours lighting per day estimate from DIN 18599-10
+        q_el_B = 20 * a_ngf*d_a * h_B * 0.001 #estimate from DIN 18599-4
+        q_el_wp = 0
+        
+        q_el_ges_a = d_a * q_el_b * a_ngf * 0.001 + q_el_B + q_el_wp
+        
+        q_el_ges_a = q_el_ges_a * 3.6 #conversion kWh -> MJ       
+        
+        self._estimate_elec_demand = q_el_ges_a
+    
+    def add_lca_data_elec(self, lca_data):
+        pass
