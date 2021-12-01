@@ -944,6 +944,11 @@ class Building(object):
                 lca_data = lca_data + thermal_zone.lca_data
             except:
                 print("Error while adding lca-data from thermal zone")
+                
+        if self.additional_lca_data is not None:
+            if self.additional_lca_data.ref_flow_unit == "pcs":
+                scalar = self.additional_lca_data.ref_flow_value
+                lca_data = lca_data + self.additional_lca_data * scalar
             
         self.lca_data = lca_data
         
