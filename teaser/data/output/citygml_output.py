@@ -20,6 +20,7 @@ import pyxb.binding as bd
 import pyxb.bundles.common.raw.xlink as xlink
 import pandas as pd
 
+
 def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=None):
     """Based on CityGML Building export from CityBIT"""
 
@@ -101,10 +102,21 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
             _set_lod_2_lxml(gml_bldg, building_length, building_width, building_height, bldg_center, nsClass, None)
 
         else:
-            for e in range(0, len(gml_copy)):
-                # if gml_copy[e].Feature.id == bldg_count.name:
-                gml_out.featureMember.append(gml_copy[e])
-                gml_bldg = gml_copy[e].Feature
+            print(gml_copy, "here")
+            cityObjectMember_E.append(gml_copy[i])
+            tree = ET.ElementTree(nroot_E)
+
+            # writing file
+            print('writing file temp file')
+            print(tree)
+            tree.write(os.path.join(path), pretty_print=True, xml_declaration=True,
+                       encoding='utf-8', standalone='yes', method="xml")
+            with open(path, 'r') as xml_file:
+                parser = ET.XMLParser(remove_blank_text=True)
+                tree = ET.parse(xml_file, parser=parser)
+                nroot_E = tree.getroot()
+                namespace = nroot_E.nsmap
+                gml_bldg = nroot_E.findall('core:cityObjectMember/bldg:Building', namespace)[0]
 
             if results is not None:
                 _save_simulation_results(gml_bldg, results=results)
@@ -114,16 +126,16 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
             PolyIDs = _set_gml_thermal_zone_lxml(gml_bldg, nsClass, zone_count, ET)
             # gml_usage = _set_gml_usage(zone_count, zone_count.use_conditions)
 
+            if gml_copy is None:
+                tree = ET.ElementTree(nroot_E)
 
-        tree = ET.ElementTree(nroot_E)
-
-        # writing file
-        print('writing file')
-        print(tree)
-        print(os.path.normpath(os.path.join(path, "test.gml")))
-        print(str(os.path.join(path, "test.gml")))
-        tree.write(os.path.join(path), pretty_print=True, xml_declaration=True,
-                   encoding='utf-8', standalone='yes', method="xml")
+            # writing file
+            print('writing file')
+            print(tree)
+            # print(os.path.normpath(os.path.join(path, "test.gml")))
+            # print(str(os.path.join(path, "test.gml")))
+            tree.write(os.path.join(path), pretty_print=True, xml_declaration=True,
+                       encoding='utf-8', standalone='yes', method="xml")
 
 
 def _set_gml_building_lxml(gml_bldg, nsClass, teaser_building, ET):
@@ -651,7 +663,7 @@ def _set_usage_zone_lxml(thermal_zone, gml_bldg, usage_zone_id):
         str(1 - usage_zone.ratio_conv_rad_persons)
     ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'totalValue'), attrib={'uom': "W"}).text = \
         str(usage_zone.fixed_heat_flow_rate_persons)
-    ET.SubElement(occupants, ET.QName(nsClass.energy, 'Persons')).text = str(int(usage_zone.persons*thermal_zone.area))
+    ET.SubElement(occupants, ET.QName(nsClass.energy, 'numberOfOccupants')).text = str(int(usage_zone.persons*thermal_zone.area))
     occupancy_rate = ET.SubElement(occupants, ET.QName(nsClass.energy, 'occupancyRate'))
     _set_schedule(occupancy_rate, usage_zone, usage_zone_id, "persons")
 

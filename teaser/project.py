@@ -1091,6 +1091,7 @@ internal_gains_mode: int [1, 2, 3]
             user's selection
 
         """
+        gml_copy = None
         if energyade is True:
             energyade_in.load_ade_lxml(path, self)
         elif gml_bldg_names is not None:
@@ -1103,7 +1104,8 @@ internal_gains_mode: int [1, 2, 3]
             chosen_gmls=citygml_in.choose_gml_lxml(path, bldg_addresses=gml_bldg_addresses)
             citygml_in.load_gml_lxml(path, self, method=method, chosen_gmls=chosen_gmls)
         else:
-            citygml_in.load_gml_lxml(path, self, method=method, chosen_gmls=None)
+            gml_copy = citygml_in.load_gml_lxml(path, self, method=method, chosen_gmls=None)
+        return gml_copy
 
     def export_aixlib(
         self,
