@@ -983,6 +983,7 @@ class Building(object):
                 print("Unit of the reference flow has to be MJ!")
         
         lca_data = lca_data * self._estimate_elec_demand
+        self.lca_data = self.lca_data + lca_data
         
     
     def add_lca_data_heationg(self, efficiency, annual_heat_load, lca_data):
