@@ -24,11 +24,6 @@ import pandas as pd
 def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=None):
     """Based on CityGML Building export from CityBIT"""
 
-    # if path.endswith("gml"):
-    #     out_file = open(path, 'w')
-    # else:
-    #     out_file = open(path + ".gml", 'w')
-
     crs = "urn:adv:crs:ETRS89_UTM32*DE_DHHN2016_NH*GCG2016"
     print('crs:', crs)
 
@@ -51,12 +46,8 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
 
     """create new cityObjectMember here"""
     cityObjectMember_E = ET.SubElement(nroot_E, ET.QName(nsClass.core, 'cityObjectMember'))
-
-    # setting gml:id
-    # if u_GML_id != None:
-    #     gmlID = u_GML_id
-    # else:
-
+    
+    """set boundary box"""
     if ref_coordinates is not None:
 
         gml_out = _set_reference_boundary(cityObjectMember_E,
@@ -65,8 +56,6 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
     else:
         bldg_center = [0, 0, 0]
         pass
-
-    materials = {}
 
     for i, bldg_count in enumerate(project.buildings):
         gmlID = "e3D_TEASERplus_" + str(bldg_count.internal_id)
@@ -124,16 +113,13 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
         for zone_count in bldg_count.thermal_zones:
             _set_gml_volume_lxml(gml_bldg, nsClass, zone_count, ET)
             PolyIDs = _set_gml_thermal_zone_lxml(gml_bldg, nsClass, zone_count, ET)
-            # gml_usage = _set_gml_usage(zone_count, zone_count.use_conditions)
 
             if gml_copy is None:
                 tree = ET.ElementTree(nroot_E)
 
-            # writing file
+            """writing file"""
             print('writing file')
             print(tree)
-            # print(os.path.normpath(os.path.join(path, "test.gml")))
-            # print(str(os.path.join(path, "test.gml")))
             tree.write(os.path.join(path), pretty_print=True, xml_declaration=True,
                        encoding='utf-8', standalone='yes', method="xml")
 
@@ -166,7 +152,7 @@ def _set_gml_building_lxml(gml_bldg, nsClass, teaser_building, ET):
     # building attributes
     ET.SubElement(gml_bldg, ET.QName(nsClass.gml, 'name')).text = teaser_building.name
     ET.SubElement(gml_bldg, ET.QName(nsClass.core, 'creationDate')).text = str(date.today())
-    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'buildingFunction')).text = str(teaser_building.type_of_building)
+    ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'function')).text = str(teaser_building.type_of_building)
     ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'yearOfConstruction')).text = \
         str(teaser_building.year_of_construction)
     ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'roofType'), attrib={
@@ -630,6 +616,7 @@ def _set_gml_construction_lxml(element):
             str(layer_count.material.density)
         ET.SubElement(material_gml, ET.QName(nsClass.energy, "specificHeat"), attrib={'uom': "kJ/K*kg"}).text = \
             str(layer_count.material.heat_capac)
+
     return construction_id
 
 
@@ -657,7 +644,7 @@ def _set_usage_zone_lxml(thermal_zone, gml_bldg, usage_zone_id):
                               attrib={ET.QName(nsClass.gml, 'id'): (usage_zone_id + "_Occupants")})
     heat_dissipation = ET.SubElement(occupants, ET.QName(nsClass.energy, 'heatDissipation'))
     heat_exchange_type = ET.SubElement(heat_dissipation, ET.QName(nsClass.energy, 'HeatExchangeType'))
-    ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'convectionFraction'), attrib={'uom': "scale"}).text = \
+    ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'convectiveFraction'), attrib={'uom': "scale"}).text = \
         str(usage_zone.ratio_conv_rad_persons)
     ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'radiantFraction'), attrib={'uom': "scale"}).text = \
         str(1 - usage_zone.ratio_conv_rad_persons)
@@ -673,7 +660,7 @@ def _set_usage_zone_lxml(thermal_zone, gml_bldg, usage_zone_id):
                               attrib={ET.QName(nsClass.gml, 'id'): (usage_zone_id + "_Machines")})
     heat_dissipation = ET.SubElement(electrical_app, ET.QName(nsClass.energy, 'heatDissipation'))
     heat_exchange_type = ET.SubElement(heat_dissipation, ET.QName(nsClass.energy, 'HeatExchangeType'))
-    ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'convectionFraction'), attrib={'uom': "scale"}).text = \
+    ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'convectiveFraction'), attrib={'uom': "scale"}).text = \
         str(usage_zone.ratio_conv_rad_machines)
     ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'radiantFraction'), attrib={'uom': "scale"}).text = \
         str(1 - usage_zone.ratio_conv_rad_machines)
@@ -689,7 +676,7 @@ def _set_usage_zone_lxml(thermal_zone, gml_bldg, usage_zone_id):
                               attrib={ET.QName(nsClass.gml, 'id'): (usage_zone_id + "_Lighting")})
     heat_dissipation = ET.SubElement(electrical_app, ET.QName(nsClass.energy, 'heatDissipation'))
     heat_exchange_type = ET.SubElement(heat_dissipation, ET.QName(nsClass.energy, 'HeatExchangeType'))
-    ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'convectionFraction'), attrib={'uom': "scale"}).text = \
+    ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'convectiveFraction'), attrib={'uom': "scale"}).text = \
         str(usage_zone.ratio_conv_rad_lighting)
     ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'radiantFraction'), attrib={'uom': "scale"}).text = \
         str(1 - usage_zone.ratio_conv_rad_lighting)
