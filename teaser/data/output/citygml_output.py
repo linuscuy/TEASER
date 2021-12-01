@@ -163,7 +163,7 @@ def _set_gml_building_lxml(gml_bldg, nsClass, teaser_building, ET):
     ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'measuredHeight'), attrib={'uom': "m"}).text = \
         str(teaser_building.number_of_floors * teaser_building.height_of_floors)
     ET.SubElement(gml_bldg, ET.QName(nsClass.bldg, 'storeysAboveGround')).text = \
-        str(teaser_building.height_of_floors)
+        str(teaser_building.number_of_floors)
 
 
 def _set_reference_boundary(gml_out, lower_coords, upper_coords):
@@ -396,7 +396,7 @@ def _add_surface_lxml(multi_surface, nsClass, coords, polyID):
         input_list.append(value)
 
     stringed = [str(j) for j in input_list]
-    ET.SubElement(linearRing_E, ET.QName(nsClass.gml, 'pos')).text = ' '.join(stringed)
+    ET.SubElement(linearRing_E, ET.QName(nsClass.gml, 'posList')).text = ' '.join(stringed)
 
 
 def _set_gml_volume_lxml(gml_bldg, nsClass, thermal_zone, ET):
@@ -578,7 +578,7 @@ def _set_gml_thermal_boundary_lxml(gml_zone, wall, thermal_openings, nsClass, co
 
 def _set_gml_construction_lxml(element):
     construction_id = str("GML_" + str(uuid.uuid1()))
-    feature_member = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'feature_member'))
+    feature_member = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'featureMember'))
     construction_gml = ET.SubElement(feature_member, ET.QName(nsClass.energy, 'Construction'),
                                      attrib={ET.QName(nsClass.gml, 'id'): str(construction_id)})
     ET.SubElement(construction_gml, ET.QName(nsClass.gml, "description")).text = \
@@ -594,7 +594,7 @@ def _set_gml_construction_lxml(element):
         Layer_gml = ET.SubElement(layer_gml, ET.QName(nsClass.energy, "Layer"),
                                   attrib={ET.QName(nsClass.gml, 'id'): str("GML_" + str(layer_count.internal_id))})
         layer_comp = ET.SubElement(Layer_gml, ET.QName(nsClass.energy, "layerComponent"))
-        Layer_comp = ET.SubElement(layer_comp, ET.QName(nsClass.energy, "Layer"),
+        Layer_comp = ET.SubElement(layer_comp, ET.QName(nsClass.energy, "LayerComponent"),
                                   attrib={ET.QName(nsClass.gml, 'id'):
                                               str("GML_" + str(layer_count.internal_id) + "_1")})
         ET.SubElement(Layer_comp, ET.QName(nsClass.energy, "areaFraction"), attrib={'uom': "scale"}).text = str(1)
@@ -604,7 +604,7 @@ def _set_gml_construction_lxml(element):
                                          attrib={ET.QName(nsClass.xlink, 'href'):
                                                      str("#" + "GML_" + layer_count.material.material_id)})
 
-        feature_member_material = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'feature_member'))
+        feature_member_material = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'featureMember'))
         material_gml = ET.SubElement(feature_member_material, ET.QName(nsClass.energy, 'SolidMaterial'),
                                          attrib={ET.QName(nsClass.gml, 'id'):
                                                      str("GML_" + layer_count.material.material_id)})

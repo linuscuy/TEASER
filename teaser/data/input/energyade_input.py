@@ -158,7 +158,6 @@ def _get_construction(construction_members):
             constr_dict[constr_id].append(layer_dict)
         except:
             pass
-    print(constr_dict)
     return constr_dict, constr_win_dict
 
 

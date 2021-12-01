@@ -14,7 +14,7 @@
 /results
 # temporary boundary condition files #
 ######################################
-simulate.py
+
 testing_teaserplus_lxml.py
 #TEASER+_Gui.py
 #gui_functions.py
