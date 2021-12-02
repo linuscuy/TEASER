@@ -777,11 +777,16 @@ class SingleFamilyHouse(Residential):
             if surface.name is None:  # LoD0-2
                 if surface.surface_tilt != 0 and surface.surface_orientation != -2 \
                         and surface.surface_orientation != -1:  # Walls/Windows
-                    self.set_outer_wall_area(surface.surface_area *
-                                             (1 - self.facade_estimation_factors[self.building_age_group]['win1']),
+                    # self.set_outer_wall_area(surface.surface_area *
+                    #                          (1 - self.facade_estimation_factors[self.building_age_group]['win1']),
+                    #                          surface.surface_orientation)
+                    self.set_outer_wall_area(surface.surface_area,
                                              surface.surface_orientation)
+                    # self.set_window_area(
+                    #     surface.surface_area * self.facade_estimation_factors[self.building_age_group]['win1'],
+                    #     surface.surface_orientation)
                     self.set_window_area(
-                        surface.surface_area * self.facade_estimation_factors[self.building_age_group]['win1'],
+                        surface.surface_area,
                         surface.surface_orientation)
                 else:  # Ground/Floor
                     self.set_outer_wall_area(surface.surface_area,

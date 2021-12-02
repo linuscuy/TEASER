@@ -262,58 +262,10 @@ class Building(object):
                 raise Exception('The calculated net leased area is under 50m²')
                 # self.net_leased_area = 50.0
 
-    def set_outer_wall_area(
-            self,
-            new_area,
-            orientation):
-        """Outer area wall setter
-
-        sets the outer wall area of all walls of one direction and weights
-        them according to zone size. This function covers OuterWalls,
-        Rooftops, GroundFloors.
-
-        Parameters
-        ----------
-        new_area : float
-            new_area of all outer walls of one orientation
-        orientation : float
-            orientation of the obtained walls
-        """
-
-        for zone in self.thermal_zones:
-            for wall in zone.outer_walls:
-                if wall.orientation == orientation:
-                    wall.area = ((new_area / self.net_leased_area) * zone.area)
-                    # Addition for LoD3 and LoD4
-                    for win in zone.windows:
-                        if win.area is not None and win.orientation == wall.orientation:
-                            wall.area -= win.area
-            for roof in zone.rooftops:
-                if roof.orientation == orientation:
-                    roof.area = ((new_area / self.net_leased_area) * zone.area)
-                    # Addition for LoD3 and LoD4
-                    for win in zone.windows:
-                        if win.area is not None and win.orientation == roof.orientation and win.tilt == roof.tilt:
-                            roof.area -= win.area
-                            print(roof.area, "roof-window")
-            for ground in zone.ground_floors:
-                if ground.orientation == orientation and new_area > 50:
-                # TODO: find a better way, using the surfacemember type class and if statement
-                # if ground.orientation == orientation and new_area > 1:
-                # if ground.orientation == orientation:
-                    if new_area < 1:
-                        raise Exception('ground')
-                    else:
-                        ground.area = ((new_area / self.net_leased_area) * zone.area)
-                        print(ground.area, 'ground')
-            for door in zone.doors:
-                if door.orientation == orientation:
-                    door.area = (
-                            ((new_area / self.net_leased_area) * zone.area) /
-                            sum(count.orientation == orientation for count in
-                                zone.doors))
-
-    # def set_outer_wall_area(self, new_area, orientation):
+    # def set_outer_wall_area(
+    #         self,
+    #         new_area,
+    #         orientation):
     #     """Outer area wall setter
     #
     #     sets the outer wall area of all walls of one direction and weights
@@ -331,27 +283,76 @@ class Building(object):
     #     for zone in self.thermal_zones:
     #         for wall in zone.outer_walls:
     #             if wall.orientation == orientation:
-    #                 wall.area = ((new_area / self.net_leased_area) * zone.area) / sum(
-    #                     count.orientation == orientation for count in zone.outer_walls
-    #                 )
-    #
+    #                 wall.area = ((new_area / self.net_leased_area) * zone.area)
+    #                 print(new_area, "new area")
+    #                 # Addition for LoD3 and LoD4
+    #                 # for win in zone.windows:
+    #                 #     if win.area is not None and win.orientation == wall.orientation:
+    #                 #         wall.area -= win.area
     #         for roof in zone.rooftops:
     #             if roof.orientation == orientation:
-    #                 roof.area = ((new_area / self.net_leased_area) * zone.area) / sum(
-    #                     count.orientation == orientation for count in zone.rooftops
-    #                 )
-    #
+    #                 roof.area = ((new_area / self.net_leased_area) * zone.area)
+    #                 # Addition for LoD3 and LoD4
+    #                 # for win in zone.windows:
+    #                 #     if win.area is not None and win.orientation == roof.orientation and win.tilt == roof.tilt:
+    #                 #         roof.area -= win.area
+    #                 #         print(roof.area, "roof-window")
     #         for ground in zone.ground_floors:
-    #             if ground.orientation == orientation:
-    #                 ground.area = ((new_area / self.net_leased_area) * zone.area) / sum(
-    #                     count.orientation == orientation for count in zone.ground_floors
-    #                 )
-    #
+    #             if ground.orientation == orientation and new_area > 50:
+    #             # TODO: find a better way, using the surfacemember type class and if statement
+    #             # if ground.orientation == orientation and new_area > 1:
+    #             # if ground.orientation == orientation:
+    #                 if new_area < 1:
+    #                     raise Exception('ground')
+    #                 else:
+    #                     ground.area = ((new_area / self.net_leased_area) * zone.area)
+    #                     print(ground.area, 'ground')
     #         for door in zone.doors:
     #             if door.orientation == orientation:
-    #                 door.area = ((new_area / self.net_leased_area) * zone.area) / sum(
-    #                     count.orientation == orientation for count in zone.doors
-    #                 )
+    #                 door.area = (
+    #                         ((new_area / self.net_leased_area) * zone.area) /
+    #                         sum(count.orientation == orientation for count in
+    #                             zone.doors))
+
+    def set_outer_wall_area(self, new_area, orientation):
+        """Outer area wall setter
+
+        sets the outer wall area of all walls of one direction and weights
+        them according to zone size. This function covers OuterWalls,
+        Rooftops, GroundFloors.
+
+        Parameters
+        ----------
+        new_area : float
+            new_area of all outer walls of one orientation
+        orientation : float
+            orientation of the obtained walls
+        """
+
+        for zone in self.thermal_zones:
+            for wall in zone.outer_walls:
+                if wall.orientation == orientation:
+                    wall.area = ((new_area / self.net_leased_area) * zone.area) / sum(
+                        count.orientation == orientation for count in zone.outer_walls
+                    )
+
+            for roof in zone.rooftops:
+                if roof.orientation == orientation:
+                    roof.area = ((new_area / self.net_leased_area) * zone.area) / sum(
+                        count.orientation == orientation for count in zone.rooftops
+                    )
+
+            for ground in zone.ground_floors:
+                if ground.orientation == orientation:
+                    ground.area = ((new_area / self.net_leased_area) * zone.area) / sum(
+                        count.orientation == orientation for count in zone.ground_floors
+                    )
+
+            for door in zone.doors:
+                if door.orientation == orientation:
+                    door.area = ((new_area / self.net_leased_area) * zone.area) / sum(
+                        count.orientation == orientation for count in zone.doors
+                    )
 
     def set_window_area(self, new_area, orientation):
         """Window area setter
@@ -393,16 +394,11 @@ class Building(object):
         sum_area = 0.0
         for zone_count in self.thermal_zones:
             for wall_count in zone_count.outer_walls:
-                if (
-                    wall_count.orientation == orientation
-                    and wall_count.area is not None
-                ):
+                if wall_count.orientation == orientation and wall_count.area is not None:
                     sum_area += wall_count.area
+                    print(sum_area, "summed area")
             for roof_count in zone_count.rooftops:
-                if (
-                    roof_count.orientation == orientation
-                    and roof_count.area is not None
-                ):
+                if roof_count.orientation == orientation and roof_count.area is not None:
                     sum_area += roof_count.area
             for ground_count in zone_count.ground_floors:
                 if (

@@ -38,24 +38,23 @@ def save_gml_lxml(project, path, gml_copy=None, ref_coordinates=None, results=No
 
     # creating new root element
     global nroot_E
-    nroot_E = ET.Element(ET.QName(nsClass.core, 'CityModel'),attrib={"{" + nsClass.xsi + "}schemaLocation" : schemaLocation}, nsmap=newNSmap)
+    nroot_E = ET.Element(ET.QName(nsClass.core, 'CityModel'),
+                         attrib={"{" + nsClass.xsi + "}schemaLocation":schemaLocation}, nsmap=newNSmap)
 
     # creating name element
     name_E = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'name'), nsmap={'gml': nsClass.gml})
     name_E.text = 'created using the e3D TEASERplus'
 
-    """create new cityObjectMember here"""
-    cityObjectMember_E = ET.SubElement(nroot_E, ET.QName(nsClass.core, 'cityObjectMember'))
-    
     """set boundary box"""
     if ref_coordinates is not None:
-
-        gml_out = _set_reference_boundary(cityObjectMember_E,
-                                          ref_coordinates[0],
-                                          ref_coordinates[1])
+        boundedBy = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'boundedBy'), nsmap={'gml': nsClass.gml})
+        boundedBy.append(ref_coordinates)
     else:
         bldg_center = [0, 0, 0]
         pass
+
+    """create new cityObjectMember here"""
+    cityObjectMember_E = ET.SubElement(nroot_E, ET.QName(nsClass.core, 'cityObjectMember'))
 
     for i, bldg_count in enumerate(project.buildings):
         gmlID = "e3D_TEASERplus_" + str(bldg_count.internal_id)

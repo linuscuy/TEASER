@@ -123,6 +123,7 @@ def load_gml_lxml(path, prj, method, chosen_gmls=None, yoc_list=None):
             root = tree.getroot()
             namespace = root.nsmap
             buildings = root.findall('core:cityObjectMember/bldg:Building', namespace)
+            boundary_box = root.find("gml:boundedBy/gml:Envelope", namespace)
     else:
         buildings, namespace = chosen_gmls
 
@@ -177,7 +178,7 @@ def load_gml_lxml(path, prj, method, chosen_gmls=None, yoc_list=None):
             print(f"{bldg.name} bldg.generate_from_gml() did not work")
             pass
 
-    return gml_copy_list
+    return gml_copy_list, boundary_box
 
 
 def load_gml_buildingparts_lxml(prj, gml_bldg, namespace, bldg_name, method, yoc=None, calc_sep=True):
