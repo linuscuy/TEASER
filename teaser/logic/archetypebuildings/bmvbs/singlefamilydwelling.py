@@ -537,15 +537,14 @@ class SingleFamilyDwelling(Residential):
         for key, value in self.zone_area_factors.items():
             zone = ThermalZone(self)
             zone.area = type_bldg_area * value[0]
-            # print(zone.area)
             zone.name = key
             use_cond = UseCond(zone)
             use_cond.load_use_conditions(value[1],
                                          data_class=self.parent.data)
             zone.use_conditions = use_cond
             zone.use_conditions.with_ahu = False
-            zone.use_conditions.persons *= zone.area * 0.01
-            zone.use_conditions.machines *= zone.area * 0.01
+            # zone.use_conditions.persons *= zone.area * 0.01
+            # zone.use_conditions.machines *= zone.area * 0.01
 
             # TODO: fix with or without Windows scenario 2
 
@@ -557,17 +556,15 @@ class SingleFamilyDwelling(Residential):
                             year=self.year_of_construction,
                             construction=self.construction_type,
                             data_class=self.parent.data)
-                        # print(outer_wall.layer)
                         outer_wall.name = surface.name
                         outer_wall.tilt = surface.surface_tilt
                         outer_wall.orientation = surface.surface_orientation
-
                         window = Window(zone)
                         window.load_type_element(self.year_of_construction,
                                                  "Kunststofffenster, "
                                                  "Isolierverglasung",
                                                  data_class=self.parent.data)
-                        window.name = "asd" + str(surface.surface_tilt)
+                        window.name = "window" + str(surface.surface_tilt)
                         window.tilt = surface.surface_tilt
                         window.orientation = surface.surface_orientation
 
@@ -591,7 +588,6 @@ class SingleFamilyDwelling(Residential):
                         outer_wall.name = surface.name
                         outer_wall.tilt = surface.surface_tilt
                         outer_wall.orientation = surface.surface_orientation
-
                 # If Window / Interior Wall area is provided separately
 
                 else:
@@ -717,32 +713,31 @@ class SingleFamilyDwelling(Residential):
                     pass
             else:
                 pass
+
         for surface in self.gml_surfaces:
             if surface.name is None:                                                       # LoD0-2
                 if surface.surface_tilt != 0 and surface.surface_orientation != -2 \
-                        and surface.surface_orientation != -1:                             # Walls/Windows
-                    print(surface.surface_area, "surface area")
+                        and surface.surface_orientation != -1:                              # Walls/Windows
                     # self.set_outer_wall_area(surface.surface_area *
                     #                          (1 - self.est_factor_win_area),
                     #                          surface.surface_orientation)
                     self.set_outer_wall_area(surface.surface_area,
-                                             surface.surface_orientation)
+                                             surface.surface_orientation, surface.surface_tilt)
                     self.set_window_area(surface.surface_area*self.est_factor_win_area,
                                          surface.surface_orientation)
                     # self.set_window_area(surface.surface_area,
                     #                      surface.surface_orientation)
                 else:                                                                      # Ground/Floor
                     self.set_outer_wall_area(surface.surface_area,
-                                             surface.surface_orientation)
+                                             surface.surface_orientation, surface.surface_tilt)
             else:                                                                          # LoD3-4
                 if surface.name != "Window" and surface.name != "InnerWall":
-                    self.set_outer_wall_area(surface.surface_area, surface.surface_orientation)
+                    self.set_outer_wall_area(surface.surface_area, surface.surface_orientation, surface.surface_tilt)
                 elif surface.name == "Window":
 
                     # TODO: fix window area calc in here or in building.py: sum before attribution!?
 
                     self.set_window_area(surface.surface_area, surface.surface_orientation)
-                    # print(surface.surface_area)
                 elif surface.name == "InnerWall":
                     self.set_inner_wall_area_lod4(surface.surface_area, surface.surface_orientation)
 

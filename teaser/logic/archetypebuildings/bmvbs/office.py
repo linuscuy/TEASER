@@ -697,7 +697,7 @@ class Office(NonResidential):
                         and surface.surface_orientation != -1:                             # Walls/Windows
                     self.set_outer_wall_area(surface.surface_area *
                                              (1 - self.est_factor_win_area),
-                                             surface.surface_orientation)
+                                             surface.surface_orientation, surface.surface_tilt)
                     self.set_window_area(surface.surface_area*self.est_factor_win_area,
                                          surface.surface_orientation)
                 # else:                                                                      # Ground/Floor
@@ -706,7 +706,7 @@ class Office(NonResidential):
             else:                                                                          # LoD3-4
                 if surface.name != "Window" and surface.name != "InnerWall" and surface.surface_tilt != 0 and surface.surface_orientation != -2 \
                         and surface.surface_orientation != -1:
-                    self.set_outer_wall_area(surface.surface_area, surface.surface_orientation)
+                    self.set_outer_wall_area(surface.surface_area, surface.surface_orientation, surface.surface_tilt)
                 elif surface.name == "Window":
 
                     # TODO: fix window area calc in here or in building.py: sum before attribution!?

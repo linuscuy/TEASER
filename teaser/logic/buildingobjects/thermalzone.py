@@ -242,7 +242,6 @@ class ThermalZone(object):
         for i in self.rooftops:
             if i.orientation == orientation and i.tilt == tilt:
                 elements.append(i)
-                print(i.area, "find rts")
             else:
                 pass
         return elements

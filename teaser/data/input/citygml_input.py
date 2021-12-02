@@ -64,7 +64,6 @@ def choose_gml_lxml(path, bldg_ids=None, bldg_names=None, bldg_addresses=None):
     if bldg_ids is not None:
 
         for building_lxml in buildings_in_file:
-            # print(building_lxml.values()[0])
             if building_lxml.attrib['{http://www.opengis.net/gml}id'] is not None and \
                     building_lxml.attrib['{http://www.opengis.net/gml}id'] in bldg_ids:
                 chosen_gmls.append(building_lxml)
@@ -72,7 +71,6 @@ def choose_gml_lxml(path, bldg_ids=None, bldg_names=None, bldg_addresses=None):
     if bldg_names is not None:
 
         for building_lxml in buildings_in_file:
-            # print(building_lxml.find('gml:name', namespace))
             if building_lxml.find('core:externalReference/core:externalObject/core:name', namespace) is not None and \
             building_lxml.find('core:externalReference/core:externalObject/core:name', namespace).text in bldg_names:
                 chosen_gmls.append(building_lxml)
@@ -91,7 +89,6 @@ def choose_gml_lxml(path, bldg_ids=None, bldg_names=None, bldg_addresses=None):
                     in bldg_addresses:
 
                 chosen_gmls.append(building_lxml)
-    print(chosen_gmls)
     return chosen_gmls, namespace
 
 
@@ -292,7 +289,6 @@ def assign_archetype(prj, building_lxml, namespace, bldg_name, method):
 
     if building_lxml.find('bldg:function', namespace) is not None:
         bldg_function = building_lxml.find('bldg:function', namespace).text
-        print(building_lxml.find('bldg:function', namespace).text)
 
         if bldg_function in alkis_sfh_codes:  # Single Family Buildings
             if method == "tabula_de":
@@ -383,8 +379,8 @@ def get_gml_surfaces(bldg, city_object, namespace):
         for bound_surf in boundary_surfaces:
             for surf_member in bound_surf.iter():
 
-                if surf_member.tag == "{http://www.opengis.net/gml}name":
-                    print("Surface Name:", surf_member.text)
+                # if surf_member.tag == "{http://www.opengis.net/gml}name":
+                #     print("Surface Name:", surf_member.text)
 
                 # modelling option 1
                 if surf_member.tag == "{http://www.opengis.net/gml}exterior":
@@ -398,7 +394,6 @@ def get_gml_surfaces(bldg, city_object, namespace):
                                 if help.surface_area > 1:
                                     bldg.gml_surfaces.append(help)
 
-                                print(help.surface_area, "modelling1")
                         # modelling option 2
                         else:
                             if surf_pos.tag == "{http://www.opengis.net/gml}LinearRing":
@@ -411,7 +406,6 @@ def get_gml_surfaces(bldg, city_object, namespace):
                                 help = SurfaceGML(position_list_help)
                                 if help.surface_area > 1:
                                     bldg.gml_surfaces.append(help)
-                                print(help.surface_area, "modelling2")
     if lod == 3 or lod == 4:
         openings_name = "Window"
         for bound_surf in boundary_surfaces:
@@ -514,7 +508,6 @@ def _set_attributes(bldg, gml_bldg, namespace, bldg_name, gml_bldg_part=None, bl
         print("no name specified in gml file")
         pass
     try:
-        print(gml_bldg.find(".//bldg:storeysAboveGround", namespace).text)
         bldg.number_of_floors = int(gml_bldg.find(".//bldg:storeysAboveGround", namespace).text)
     except (UserWarning, AttributeError):
         print("no storeysAboveGround specified in gml file")

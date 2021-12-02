@@ -781,7 +781,7 @@ class SingleFamilyHouse(Residential):
                     #                          (1 - self.facade_estimation_factors[self.building_age_group]['win1']),
                     #                          surface.surface_orientation)
                     self.set_outer_wall_area(surface.surface_area,
-                                             surface.surface_orientation)
+                                             surface.surface_orientation, surface.surface_tilt)
                     # self.set_window_area(
                     #     surface.surface_area * self.facade_estimation_factors[self.building_age_group]['win1'],
                     #     surface.surface_orientation)
@@ -790,10 +790,10 @@ class SingleFamilyHouse(Residential):
                         surface.surface_orientation)
                 else:  # Ground/Floor
                     self.set_outer_wall_area(surface.surface_area,
-                                             surface.surface_orientation)
+                                             surface.surface_orientation, surface.surface_tilt)
             else:  # LoD3-4
                 if surface.name != "Window" and surface.name != "InnerWall":
-                    self.set_outer_wall_area(surface.surface_area, surface.surface_orientation)
+                    self.set_outer_wall_area(surface.surface_area, surface.surface_orientation, surface.surface_tilt)
                 elif surface.name == "Window":
 
                     # TODO: fix window area calc in here or in building.py: sum before attribution!?
