@@ -167,6 +167,7 @@ class Building(object):
         self._used_library_calc = "AixLib"
 
         self.library_attr = None
+
     def set_height_gml(self):
         """Calculates the height of a building from CityGML data
 

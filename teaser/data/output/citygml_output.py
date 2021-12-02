@@ -427,11 +427,14 @@ def _set_gml_thermal_zone_lxml(gml_bldg, nsClass, thermal_zone, ET):
                                      attrib={ET.QName(nsClass.gml, 'id'): thermal_zone_id})
     ET.SubElement(gml_Thermal_Zone, ET.QName(nsClass.energy, 'contains'),
                   attrib={ET.QName(nsClass.xlink, 'href'): str('#'+usage_zone_id)})
-    _set_gml_volume_lxml(gml_Thermal_Zone, nsClass, thermal_zone, ET)
     _set_gml_floor_area_lxml(gml_Thermal_Zone, nsClass, thermal_zone, ET)
+    _set_gml_volume_lxml(gml_Thermal_Zone, nsClass, thermal_zone, ET)
     ET.SubElement(gml_Thermal_Zone, ET.QName(nsClass.energy, 'isCooled')).text = "false"
     ET.SubElement(gml_Thermal_Zone, ET.QName(nsClass.energy, 'isHeated')).text = "true"
     gml_volume_geometry = ET.SubElement(gml_Thermal_Zone, ET.QName(nsClass.energy, 'volumeGeometry'))
+    # solid = ET.SubElement(gml_volume_geometry, ET.QName(nsClass.gml, 'Solid'),
+    #                                  attrib={ET.QName(nsClass.gml, 'id'): str(thermal_zone_id + "_solid")})
+
     polyIDs, exteriorSurfaces = _set_composite_surface(gml_volume_geometry, nsClass, thermal_zone, ET)
 
     """Set Usage zone for thermal zone"""
@@ -440,6 +443,7 @@ def _set_gml_thermal_zone_lxml(gml_bldg, nsClass, thermal_zone, ET):
     """Set boundary Surfaces"""
 
     construction_id_windows = None
+    material_ids = []
 
     for i in range(len(exteriorSurfaces)):
         if i == 0:
@@ -462,8 +466,8 @@ def _set_gml_thermal_zone_lxml(gml_bldg, nsClass, thermal_zone, ET):
                 if surface.orientation == win_count.orientation and surface.tilt == win_count.tilt:
                     thermal_openings.append(win_count)
             construction_id, construction_id_windows = \
-                _set_gml_thermal_boundary_lxml(gml_Thermal_Zone, surface, thermal_openings,
-                                               nsClass, construction_id, construction_id_windows)
+                _set_gml_thermal_boundary_lxml(gml_Thermal_Zone, surface, thermal_openings, nsClass, construction_id,
+                                               construction_id_windows, material_ids, thermal_zone_id)
 
     return polyIDs
 
@@ -479,13 +483,14 @@ def _set_composite_surface(solid, nsClass, thermal_zone, ET):
             ID = "PolyID" + str(UUID) + '_' + str(n)
             polyIDs.append(ID)
             hashtagedID = '#' + ID
-            ET.SubElement(solid, ET.QName(nsClass.gml, 'surfaceMember'),
-                          attrib={ET.QName(nsClass.xlink, 'href'): hashtagedID})
+            # ET.SubElement(solid, ET.QName(nsClass.gml, 'surfaceMember'),
+            #               attrib={ET.QName(nsClass.xlink, 'href'): hashtagedID})
             n -= - 1
     return polyIDs, exteriorSurfaces
 
 
-def _set_gml_thermal_boundary_lxml(gml_zone, wall, thermal_openings, nsClass, construction_id, construction_id_windows):
+def _set_gml_thermal_boundary_lxml(gml_zone, wall, thermal_openings, nsClass, construction_id,
+                                   construction_id_windows, material_ids, thermal_zone_id):
     """Control function to add a thermal boundary surface to the thermal zone
 
     The thermal zone instance of citygml is modified and thermal boundary
@@ -550,7 +555,7 @@ def _set_gml_thermal_boundary_lxml(gml_zone, wall, thermal_openings, nsClass, co
     ET.SubElement(thermal_boundary_E, ET.QName(nsClass.energy, "area"), attrib={'uom': "m2"}).text = \
         str(wall.area)
     if construction_id is None:
-        construction_id = _set_gml_construction_lxml( wall)
+        construction_id = _set_gml_construction_lxml(wall, material_ids)
     else:
         pass
     print(construction_id)
@@ -565,15 +570,19 @@ def _set_gml_thermal_boundary_lxml(gml_zone, wall, thermal_openings, nsClass, co
             ET.SubElement(thermal_opening_E, ET.QName(nsClass.energy, "area"), attrib={'uom': "m2"}).text = \
                 str(thermal_opening.area)
             if construction_id_windows is None:
-                construction_id_windows = _set_gml_construction_lxml(thermal_opening)
+                construction_id_windows = _set_gml_construction_lxml(thermal_opening, material_ids)
             else:
                 pass
             ET.SubElement(thermal_opening_E, ET.QName(nsClass.energy, "construction"),
                           attrib={ET.QName(nsClass.xlink, 'href'): str("#" + construction_id_windows)})
+
+    ET.SubElement(thermal_boundary_E, ET.QName(nsClass.energy, "delimits"),
+                  attrib={ET.QName(nsClass.xlink, 'href'): str("#" + str(str(thermal_zone_id)))})
+
     return construction_id, construction_id_windows
 
 
-def _set_gml_construction_lxml(element):
+def _set_gml_construction_lxml(element, material_ids):
     construction_id = str("GML_" + str(uuid.uuid1()))
     feature_member = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'featureMember'))
     construction_gml = ET.SubElement(feature_member, ET.QName(nsClass.energy, 'Construction'),
@@ -584,6 +593,7 @@ def _set_gml_construction_lxml(element):
         str(type(element).__name__ + "_construction")
     ET.SubElement(construction_gml, ET.QName(nsClass.energy, "uValue"), attrib={'uom': "W/K*m2"}).text = \
         str(element.ua_value / element.area)
+
 
 
     for layer_count in element.layer:
@@ -598,23 +608,28 @@ def _set_gml_construction_lxml(element):
         ET.SubElement(Layer_comp, ET.QName(nsClass.energy, "thickness"), attrib={'uom': "m"}).text = \
             str(layer_count.thickness)
         ET.SubElement(Layer_comp, ET.QName(nsClass.energy, 'material'),
-                                         attrib={ET.QName(nsClass.xlink, 'href'):
-                                                     str("#" + "GML_" + layer_count.material.material_id)})
+                      attrib={ET.QName(nsClass.xlink, 'href'):
+                                  str("#" + "GML_" + layer_count.material.material_id)})
 
-        feature_member_material = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'featureMember'))
-        material_gml = ET.SubElement(feature_member_material, ET.QName(nsClass.energy, 'SolidMaterial'),
-                                         attrib={ET.QName(nsClass.gml, 'id'):
-                                                     str("GML_" + layer_count.material.material_id)})
-        ET.SubElement(material_gml, ET.QName(nsClass.gml, "description")).text = \
-            str(layer_count.material.name)
-        ET.SubElement(material_gml, ET.QName(nsClass.gml, "name")).text = \
-            str(layer_count.material.name)
-        ET.SubElement(material_gml, ET.QName(nsClass.energy, "conductivity"), attrib={'uom': "W/K*m"}).text = \
-            str(layer_count.material.thermal_conduc)
-        ET.SubElement(material_gml, ET.QName(nsClass.energy, "density"), attrib={'uom': "kg/m3"}).text = \
-            str(layer_count.material.density)
-        ET.SubElement(material_gml, ET.QName(nsClass.energy, "specificHeat"), attrib={'uom': "kJ/K*kg"}).text = \
-            str(layer_count.material.heat_capac)
+        if layer_count.material.material_id in material_ids:
+            pass
+        else:
+            material_ids.append(layer_count.material.material_id)
+
+            feature_member_material = ET.SubElement(nroot_E, ET.QName(nsClass.gml, 'featureMember'))
+            material_gml = ET.SubElement(feature_member_material, ET.QName(nsClass.energy, 'SolidMaterial'),
+                                             attrib={ET.QName(nsClass.gml, 'id'):
+                                                         str("GML_" + layer_count.material.material_id)})
+            ET.SubElement(material_gml, ET.QName(nsClass.gml, "description")).text = \
+                str(layer_count.material.name)
+            ET.SubElement(material_gml, ET.QName(nsClass.gml, "name")).text = \
+                str(layer_count.material.name)
+            ET.SubElement(material_gml, ET.QName(nsClass.energy, "conductivity"), attrib={'uom': "W/K*m"}).text = \
+                str(layer_count.material.thermal_conduc)
+            ET.SubElement(material_gml, ET.QName(nsClass.energy, "density"), attrib={'uom': "kg/m3"}).text = \
+                str(layer_count.material.density)
+            ET.SubElement(material_gml, ET.QName(nsClass.energy, "specificHeat"), attrib={'uom': "kJ/K*kg"}).text = \
+                str(layer_count.material.heat_capac)
 
     return construction_id
 
@@ -624,11 +639,13 @@ def _set_usage_zone_lxml(thermal_zone, gml_bldg, usage_zone_id):
     gml_usage_zone = ET.SubElement(gml_bldg, ET.QName(nsClass.energy, 'usageZone'))
     gml_Usage_Zone = ET.SubElement(gml_usage_zone, ET.QName(nsClass.energy, 'UsageZone'),
                                    attrib={ET.QName(nsClass.gml, 'id'): usage_zone_id})
-    ET.SubElement(gml_Usage_Zone, ET.QName(nsClass.energy, 'usageZoneType')).text = str(usage_zone.usage)
 
     """Heating"""
     heating_schedule = ET.SubElement(gml_Usage_Zone, ET.QName(nsClass.energy, 'heatingSchedule'))
     _set_schedule(heating_schedule, usage_zone,  usage_zone_id, "heating")
+
+    """type"""
+    ET.SubElement(gml_Usage_Zone, ET.QName(nsClass.energy, 'usageZoneType')).text = str(usage_zone.usage)
 
     """Cooling"""
     # TODO: Check together with isCooled if AHU is used and set cooling
@@ -657,6 +674,10 @@ def _set_usage_zone_lxml(thermal_zone, gml_bldg, usage_zone_id):
     equipped_with = ET.SubElement(gml_Usage_Zone, ET.QName(nsClass.energy, 'equippedWith'))
     electrical_app = ET.SubElement(equipped_with, ET.QName(nsClass.energy, 'ElectricalAppliances'),
                               attrib={ET.QName(nsClass.gml, 'id'): (usage_zone_id + "_Machines")})
+
+    opperation_schedule = ET.SubElement(electrical_app, ET.QName(nsClass.energy, 'operationSchedule'))
+    _set_schedule(opperation_schedule, usage_zone, usage_zone_id, "machines")
+
     heat_dissipation = ET.SubElement(electrical_app, ET.QName(nsClass.energy, 'heatDissipation'))
     heat_exchange_type = ET.SubElement(heat_dissipation, ET.QName(nsClass.energy, 'HeatExchangeType'))
     ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'convectiveFraction'), attrib={'uom': "scale"}).text = \
@@ -666,13 +687,16 @@ def _set_usage_zone_lxml(thermal_zone, gml_bldg, usage_zone_id):
     ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'totalValue'), attrib={'uom': "W/m2"}).text = \
         str(usage_zone.machines)
 
-    opperation_schedule = ET.SubElement(electrical_app, ET.QName(nsClass.energy, 'operationSchedule'))
-    _set_schedule(opperation_schedule, usage_zone, usage_zone_id, "machines")
+
 
     """Lighting"""
     equipped_with = ET.SubElement(gml_Usage_Zone, ET.QName(nsClass.energy, 'equippedWith'))
     electrical_app = ET.SubElement(equipped_with, ET.QName(nsClass.energy, 'LightingFacilities'),
                               attrib={ET.QName(nsClass.gml, 'id'): (usage_zone_id + "_Lighting")})
+
+    opperation_schedule = ET.SubElement(electrical_app, ET.QName(nsClass.energy, 'operationSchedule'))
+    _set_schedule(opperation_schedule, usage_zone, usage_zone_id, "lighting")
+
     heat_dissipation = ET.SubElement(electrical_app, ET.QName(nsClass.energy, 'heatDissipation'))
     heat_exchange_type = ET.SubElement(heat_dissipation, ET.QName(nsClass.energy, 'HeatExchangeType'))
     ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'convectiveFraction'), attrib={'uom': "scale"}).text = \
@@ -681,13 +705,14 @@ def _set_usage_zone_lxml(thermal_zone, gml_bldg, usage_zone_id):
         str(1 - usage_zone.ratio_conv_rad_lighting)
     ET.SubElement(heat_exchange_type, ET.QName(nsClass.energy, 'totalValue'), attrib={'uom': "W/m2"}).text = \
         str(usage_zone.lighting_power)
-    opperation_schedule = ET.SubElement(electrical_app, ET.QName(nsClass.energy, 'operationSchedule'))
-    _set_schedule(opperation_schedule, usage_zone, usage_zone_id, "lighting")
+
+
+    # _set_gml_floor_area_lxml(gml_Usage_Zone, nsClass, thermal_zone, ET)
 
 
 def _set_schedule(schedule_type, usage_zone, usage_zone_id, type_name):
     daily_pattern = ET.SubElement(schedule_type, ET.QName(nsClass.energy, 'DailyPatternSchedule'),
-                                  attrib={ET.QName(nsClass.gml, 'id'): str(usage_zone_id + f"{type_name}_schedule")})
+                                  attrib={ET.QName(nsClass.gml, 'id'): str(usage_zone_id + f"_{type_name}_schedule")})
     ET.SubElement(daily_pattern, ET.QName(nsClass.gml, "name")).text = str(type_name)
     period_of_year = ET.SubElement(daily_pattern, ET.QName(nsClass.energy, 'periodOfYear'))
     Period_of_year = ET.SubElement(period_of_year, ET.QName(nsClass.energy, 'PeriodOfYear'))
@@ -697,10 +722,9 @@ def _set_schedule(schedule_type, usage_zone, usage_zone_id, type_name):
     ET.SubElement(time_period, ET.QName(nsClass.gml, 'beginPosition')).text = str("2023-01-01T00:00:00")
     ET.SubElement(time_period, ET.QName(nsClass.gml, 'endPosition')).text = str("2023-12-31T00:00:00")
 
-    daily_schedule = ET.SubElement(Period_of_year, ET.QName(nsClass.energy, 'dailySchedule'))
-    Daily_schedule = ET.SubElement(daily_schedule, ET.QName(nsClass.energy, 'DailySchedule'))
-
     for day_type in ["weekDay", "weekEnd"]:
+        daily_schedule = ET.SubElement(Period_of_year, ET.QName(nsClass.energy, 'dailySchedule'))
+        Daily_schedule = ET.SubElement(daily_schedule, ET.QName(nsClass.energy, 'DailySchedule'))
         ET.SubElement(Daily_schedule, ET.QName(nsClass.energy, 'dayType')).text = str(day_type)
         schedule = ET.SubElement(Daily_schedule, ET.QName(nsClass.energy, 'schedule'))
         regular_ts = ET.SubElement(schedule, ET.QName(nsClass.energy, 'RegularTimeSeries'))
