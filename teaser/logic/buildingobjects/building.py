@@ -923,6 +923,19 @@ class Building(object):
         self._additional_lca_data = value
         
     def calc_lca_data(self, use_b4 = None, period_lca_scenario = None):
+        """calculates the LCA-data of each thermalzone and set it to the
+        attribute lca_data
+        
+
+        Parameters
+        ----------
+        use_b4 : bool, optional
+            if true environmental indicators of replaced buildingelements are added
+            to stage B4. Otherwise they are added seperatly to the other stages
+        period_lca_scenario : TYPE, optional
+            period which is taken into account for LCA. The default is None.
+
+        """
         lca_data = En15804LcaData()
         
         if use_b4 is None:
@@ -973,6 +986,15 @@ class Building(object):
         self._estimate_elec_demand = q_el_ges_a
     
     def add_lca_data_elec(self, lca_data):
+        """Calculates the electric enviromental indicators 
+
+        Parameters
+        ----------
+        lca_data : En15804LcaData
+            energy carrier LCA Dataset.
+
+        """
+        
         if self._estimate_elec_demand is None:
             self.est_elec_demand()
         
@@ -986,7 +1008,19 @@ class Building(object):
         self.lca_data = self.lca_data + lca_data
         
     
-    def add_lca_data_heationg(self, efficiency, annual_heat_load, lca_data):
+    def add_lca_data_heating(self, efficiency, annual_heat_load, lca_data):
+        """Calculates the heating enviromental indicators 
+
+        Parameters
+        ----------
+        efficiency : float
+            overall efficiency of the building.
+        annual_heat_load : float [MJ]
+            heat load of the building over a year.
+        lca_data : En15804LcaData
+            energy carrier LCA Dataset.
+
+        """
         
         if lca_data.ref_flow_unit != "MJ":
             try:
@@ -995,7 +1029,48 @@ class Building(object):
                 print("Unit of the reference flow has to be MJ!")
                             
         
-        lca_data = efficiency * annual_heat_load * lca_data
+        lca_data = lca_data * efficiency * annual_heat_load
         lca_data.unit = "pcs"
-        
+                
         self.lca_data = self.lca_data + lca_data
+        
+    def print_be_information(self):
+        """prints area and gwp of all buildingelements from the building.
+
+        """
+        outer_walls = {"area": 0, "gwp": None }
+        doors = {"area": 0, "gwp": None }
+        rooftops = {"area": 0, "gwp": None }
+        ground_floors = {"area": 0, "gwp": None }
+        windows = {"area": 0, "gwp": None }
+        inner_walls = {"area": 0, "gwp": None }
+        floors = {"area": 0, "gwp": None }
+        ceilings = {"area": 0, "gwp": None }
+        
+        for tz in self.thermal_zones:
+            for ow in tz.outer_walls:
+                outer_walls["area"] = outer_walls["area"] + ow.area
+            for do in tz.doors:
+                doors["area"] = doors["area"] + ow.area
+            for rt in tz.rooftops:
+                rooftops["area"] = rooftops["area"] + rt.area
+            for gf in tz.ground_floors:
+                ground_floors["area"] = ground_floors["area"] + gf.area
+            for wn in tz.windows:
+                windows["area"] = windows["areas"] + wn.area
+            for iw in tz.inner_walls:
+                inner_walls["area"] = inner_walls["area"] + iw.area
+            for fl in tz.floors:
+                floors["area"] = floors["area"] + fl.area
+            for ce in tz.ceilings:
+                ceilings["area"] = ceilings["area"] + ce.area
+                
+                
+        print("outer walls area: {}".format(outer_walls["areas"]))
+        print("doors area: {}".format(doors["areas"]))
+        print("rooftops area: {}".format(rooftops["areas"]))
+        print("ground_floors area: {}".format(ground_floors["areas"]))
+        print("windows area: {}".format(windows["areas"]))
+        print("inner_walls area: {}".format(inner_walls["areas"]))
+        print("floors area: {}".format(floors["areas"]))
+        print("ceilings area: {}".format(ceilings["areas"]))
