@@ -51,6 +51,7 @@ def load_type_element(element, year, construction, data_class):
                     material = Material(layer)
                     mat_input.load_material_id(
                         material, layer_in["material"]["material_id"], data_class
+                    
                     )
 
 
@@ -82,6 +83,8 @@ def _set_basic_data(element, element_in):
         element.inner_convection = element_in["inner_convection"]
         element.outer_radiation = element_in["outer_radiation"]
         element.outer_convection = element_in["outer_convection"]
+        element.lca_data = element_in["lca_data"]
+        element.service_life = element_in["service_life"]
 
     elif type(element).__name__ == "Window":
 
@@ -91,3 +94,6 @@ def _set_basic_data(element, element_in):
         element.a_conv = element_in["a_conv"]
         element.shading_g_total = element_in["shading_g_total"]
         element.shading_max_irr = element_in["shading_max_irr"]
+        element.lca_data = element_in["lca_data"]
+        element.service_life = element_in["service_life"]
+        

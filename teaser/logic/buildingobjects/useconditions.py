@@ -3,6 +3,7 @@ import random
 import teaser.data.input.usecond_input as usecond_input
 import teaser.data.output.usecond_output as usecond_output
 import pandas as pd
+import uuid
 from itertools import cycle, islice
 from collections import OrderedDict
 from teaser.logic.utilities import division_from_json
@@ -123,7 +124,7 @@ class UseConditions(object):
         of the lighting [convective/radiative]. Default values are derived from
         :cite:`DiLaura.2011`.
         AixLib: Used in Zone record for internal gains, lighting
-    lighting_profil : [float]
+    lighting_profile : [float]
         Relative presence of lighting 0-1 (e.g. 0.5 means that 50% of the total
         lighting power are currently used). Typically given for 24h. This is
         aligned to the user profile.
@@ -186,7 +187,7 @@ class UseConditions(object):
 
     def __init__(self, parent=None):
         """Construct UseConditions."""
-        self.internal_id = random.random()
+        self.internal_id = uuid.uuid1()
 
         self.parent = parent
         self.usage = "Single office"

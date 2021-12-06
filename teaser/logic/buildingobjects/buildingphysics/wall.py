@@ -6,7 +6,6 @@ from teaser.logic.buildingobjects.buildingphysics.material import Material
 import numpy as np
 import warnings
 
-
 class Wall(BuildingElement):
     """Wall class
 
