@@ -987,7 +987,11 @@ class Building(object):
                 print("Unit of the reference flow has to be MJ!")
         
         lca_data = lca_data * self._estimate_elec_demand
-        self.lca_data = self.lca_data + lca_data
+        
+        if self.lca_data is not None:
+            self.lca_data = self.lca_data + lca_data
+        else:
+            self.lca_data = lca_data
         
     
     def add_lca_data_heating(self, efficiency, annual_heat_load, lca_data):
@@ -1014,7 +1018,20 @@ class Building(object):
         lca_data = lca_data * efficiency * annual_heat_load
         lca_data.unit = "pcs"
                 
-        self.lca_data = self.lca_data + lca_data
+        if self.lca_data is not None:
+            self.lca_data = self.lca_data + lca_data
+        else:
+            self.lca_data = lca_data
+        
+    def add_lca_data_template(self, lca_data_id, amount):
+        lca_data = En15804LcaData()
+        
+        lca_data.load_lca_data_template(lca_data_id, data_class = self.parent.data)
+        
+        if self.lca_data is not None:
+            self.lca_data = self.lca_data + lca_data * amount
+        else:
+            self.lca_data = lca_data * amount
         
     def print_be_information(self):
         """prints area and gwp of all buildingelements from the building.
@@ -1039,7 +1056,7 @@ class Building(object):
             for gf in tz.ground_floors:
                 ground_floors["area"] = ground_floors["area"] + gf.area
             for wn in tz.windows:
-                windows["area"] = windows["areas"] + wn.area
+                windows["area"] = windows["area"] + wn.area
             for iw in tz.inner_walls:
                 inner_walls["area"] = inner_walls["area"] + iw.area
             for fl in tz.floors:
@@ -1048,11 +1065,11 @@ class Building(object):
                 ceilings["area"] = ceilings["area"] + ce.area
                 
                 
-        print("outer walls area: {}".format(outer_walls["areas"]))
-        print("doors area: {}".format(doors["areas"]))
-        print("rooftops area: {}".format(rooftops["areas"]))
-        print("ground_floors area: {}".format(ground_floors["areas"]))
-        print("windows area: {}".format(windows["areas"]))
-        print("inner_walls area: {}".format(inner_walls["areas"]))
-        print("floors area: {}".format(floors["areas"]))
-        print("ceilings area: {}".format(ceilings["areas"]))
+        print("outer walls area: {}".format(outer_walls["area"]))
+        print("doors area: {}".format(doors["area"]))
+        print("rooftops area: {}".format(rooftops["area"]))
+        print("ground_floors area: {}".format(ground_floors["area"]))
+        print("windows area: {}".format(windows["area"]))
+        print("inner_walls area: {}".format(inner_walls["area"]))
+        print("floors area: {}".format(floors["area"]))
+        print("ceilings area: {}".format(ceilings["area"]))
