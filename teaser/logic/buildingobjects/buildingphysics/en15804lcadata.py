@@ -815,12 +815,14 @@ class En15804LcaData(object):
                     
                         self.fallback[stage].convert_ref_unit(
                             target_unit = self.ref_flow_unit,
-                            density = self.parent.density                            
+                            density = self.parent.density,
+                            thickness = self.parent.parent.thickness                           
                             )
-                        
+                    
                     except:
-                        print("Error while trying to convert fallback reference unit",
-                              "{} to {}".format(self.fallback[stage].ref_flow_unit, self.ref_flow_unit))
+                        
+                        print("Error while trying to convert fallback {} of {} reference unit".format(self.fallback[stage].lca_data_id, self.lca_data_id),
+                             "{} to {}".format( self.fallback[stage].ref_flow_unit, self.ref_flow_unit))
                         
                         self.pere = pere_backup
                         self.pert = pert_backup
