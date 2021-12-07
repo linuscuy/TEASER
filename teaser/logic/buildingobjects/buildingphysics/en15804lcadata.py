@@ -660,6 +660,10 @@ class En15804LcaData(object):
                 scalar = 1
                 target_unit = self.unit
                 raise ValueError("Unable to convert unit into target unit!")
+        
+        elif target_unit == "m^2":
+            if self.ref_flow_unit == "m^3":
+                scalar = 1/thickness
             
         scalar = scalar / self.ref_flow_value
         result = self * scalar
