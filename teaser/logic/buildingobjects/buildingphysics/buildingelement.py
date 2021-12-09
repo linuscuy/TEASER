@@ -791,7 +791,12 @@ class BuildingElement(object):
                                     )
             
             lca_data_be = lca_data_be + lca_data_layer
-        
+        if self.additional_lca_data is not None:
+            if self.additional_lca_data.ref_flow_unit != "pcs":
+                self.additional_lca_data = self.additional_lca_data.convert_ref_unit("pcs", area=self.area)
+
+            lca_data_be = lca_data_be + self.additional_lca_data
+            
         return lca_data_be
         
     def _calc_lca_data_layer_repl(self, ref_period=80):
