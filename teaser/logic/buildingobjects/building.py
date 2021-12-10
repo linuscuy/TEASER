@@ -1042,6 +1042,8 @@ class Building(object):
             energy carrier LCA Dataset.
 
         """
+        if annual_heat_energy is None:
+            annual_heat_energy = self._calc_simulated_annual_heat_energy()
         
         if lca_data.ref_flow_unit != "MJ":
             try:
