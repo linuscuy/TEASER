@@ -957,7 +957,7 @@ class Building(object):
             
         self.lca_data = lca_data
         
-    def est_elec_demand(self):
+    def est_elec_demand(self, q_el_B = None):
         """roughly estimates the electricity demand of the building due to it´s
         size, without electricity used for heating (e.g. for heat pumps)
         
@@ -968,7 +968,8 @@ class Building(object):
         q_el_b = 63 #Wh/(m^2 d) DIN 18599-10
         a_ngf = self.net_leased_area
         h_B = 8 #hours lighting per day estimate from DIN 18599-10
-        q_el_B = 20 * a_ngf*d_a * h_B * 0.001 #estimate from DIN 18599-4
+        if q_el_B is None:
+            q_el_B = 10 * a_ngf*d_a * h_B * 0.001 #estimate from DIN 18599-4
         q_el_wp = 0
         
         q_el_ges_a = d_a * q_el_b * a_ngf * 0.001 + q_el_B + q_el_wp
