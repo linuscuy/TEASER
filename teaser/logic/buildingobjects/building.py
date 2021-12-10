@@ -1003,9 +1003,33 @@ class Building(object):
             self.lca_data = self.lca_data + lca_data
         else:
             self.lca_data = lca_data
-        
     
-    def add_lca_data_heating(self, efficiency, annual_heat_load, lca_data):
+    def _calc_simulated_annual_heat_energy(self):
+        """calculates the annual heating energy with the simulated heatload
+
+        Returns
+        -------
+        result : Float
+            annual heating energy.
+
+        """
+        if self.simulated_heat_load is not None:
+            previous_ts = None
+            
+            result = 0
+            
+            for data_tp in self.simulated_heat_load:
+                if previous_ts is not None:
+                    result = result + data_tp[1] * (data_tp[0] - previous_ts)
+                previous_ts = data_tp[0]
+            
+            result = result * 0.000001
+            
+            return result
+                
+                
+    
+    def add_lca_data_heating(self, efficiency, lca_data, annual_heat_energy = None):
         """Calculates the heating enviromental indicators 
 
         Parameters
