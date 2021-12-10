@@ -178,6 +178,7 @@ class Building(object):
         self._additional_lca_data = None
         
         self._estimate_elec_demand = None
+        self._simulated_heat_load = None
 
         self.library_attr = None
 
@@ -903,6 +904,15 @@ class Building(object):
     @additional_lca_data.setter
     def additional_lca_data(self, value):
         self._additional_lca_data = value
+        
+    @property
+    def simulated_heat_load(self):
+        return self._simulated_heat_load
+    
+    @simulated_heat_load.setter
+    def simulated_heat_load(self, value):
+        self._simulated_heat_load = value
+        
         
     def calc_lca_data(self, use_b4 = None, period_lca_scenario = None):
         """calculates the LCA-data of each thermalzone and set it to the
