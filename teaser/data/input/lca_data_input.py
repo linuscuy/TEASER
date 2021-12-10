@@ -130,10 +130,6 @@ def load_en15804_lca_data_id(lca_data, lca_id, data_class):
                 else:
                     lca_data.fallback = []
                     
-                
-                
-                print("load:", lca_data.gwp.b6)
-                        
 
 def load_en15804_lca_data_fallback_id(lca_data, lca_id, data_class):
     """LCA-data-fallback loader with id as identification.
