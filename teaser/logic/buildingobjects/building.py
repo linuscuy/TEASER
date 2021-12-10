@@ -1051,6 +1051,7 @@ class Building(object):
                             
         
         lca_data = lca_data * efficiency * annual_heat_load
+        lca_data = lca_data * (1/efficiency) * annual_heat_energy * self.parent.period_lca_scenario
         lca_data.unit = "pcs"
                 
         if self.lca_data is not None:
