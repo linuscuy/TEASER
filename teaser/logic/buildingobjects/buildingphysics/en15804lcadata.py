@@ -502,7 +502,8 @@ class En15804LcaData(object):
                 "ap": self._ignore_none_mul(self.ap , scalar),
                 "ep": self._ignore_none_mul(self.ep , scalar),
                 "adpe": self._ignore_none_mul(self.adpe , scalar),
-                "adpf": self._ignore_none_mul(self.adpf , scalar)
+                "adpf": self._ignore_none_mul(self.adpf , scalar),
+                "unit": self.ref_flow_unit
                 }
         
         new = En15804LcaData()
