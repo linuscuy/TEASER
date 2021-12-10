@@ -1050,9 +1050,6 @@ class Building(object):
                 lca_data = lca_data.convert_ref_unit("MJ")
             except:
                 print("Unit of the reference flow has to be MJ!")
-                            
-        
-        lca_data = lca_data * efficiency * annual_heat_load
         lca_data = lca_data * (1/efficiency) * annual_heat_energy * self.parent.period_lca_scenario
         lca_data.unit = "pcs"
                 
