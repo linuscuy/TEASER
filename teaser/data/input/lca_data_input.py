@@ -167,7 +167,7 @@ def load_en15804_lca_data_fallback_id(lca_data, lca_id, data_class):
                 lca_data.lca_data_id = id
                 lca_data.name = data["name"]
 
-                ref_flow_value = data["ref_flow"]["value"]
+                lca_data.ref_flow_value = data["ref_flow"]["value"]
                 lca_data.ref_flow_unit = data["ref_flow"]["unit"]
                 
                 pere = En15804IndicatorValue()
