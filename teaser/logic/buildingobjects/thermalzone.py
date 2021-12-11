@@ -713,6 +713,7 @@ class ThermalZone(object):
         building_elements.extend(self.inner_walls)
         building_elements.extend(self.floors)
         building_elements.extend(self.windows)
+        building_elements.extend(self.ceilings)
         
         return building_elements
 
