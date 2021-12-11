@@ -647,8 +647,8 @@ class En15804LcaData(object):
                 
             else:
                 scalar = 1
-                target_unit = self.unit
-                raise ValueError("Unable to convert unit into target unit!")
+                target_unit = self.ref_flow_unit
+                raise ValueError("Unable to convert {} into {}!".format(self.ref_flow_unit, target_unit))
         
         elif target_unit == "kg":
             
