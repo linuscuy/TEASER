@@ -599,6 +599,52 @@ class En15804IndicatorValue(object):
                 
         
         return(result)
+    
+    def get_values_as_dict(self):
+        return_dict = {}
+        
+        if self.a1 is not None:
+            return_dict["a1"] = self.a1
+        if self.a2 is not None:
+            return_dict["a2"] = self.a2
+        if self.a3 is not None:
+            return_dict["a3"] = self.a3
+        if self.a1_a3 is not None:
+            return_dict["a1_a3"] = self.a1_a3
+        if self.a4 is not None:
+            return_dict["a4"] = self.a4
+        if self.a5 is not None:
+            return_dict["a5"] = self.a5
+            
+        if self.b1 is not None:
+            return_dict["b1"] = self.b1
+        if self.b2 is not None:
+            return_dict["b2"] = self.b2
+        if self.b3 is not None:
+            return_dict["b3"] = self.b3
+        if self.b4 is not None:
+            return_dict["b4"] = self.b4
+        if self.b5 is not None:
+            return_dict["b5"] = self.b5
+        if self.b6 is not None:
+            return_dict["b6"] = self.b6
+        if self.b7 is not None:
+            return_dict["b7"] = self.b7
+            
+        if self.c1 is not None:
+            return_dict["c1"] = self.c1
+        if self.c2 is not None:
+            return_dict["c2"] = self.c2
+        if self.c3 is not None:
+            return_dict["c3"] = self.c3
+        if self.c3 is not None:
+            return_dict["c4"] = self.c4
+        if self.d is not None:
+            return_dict["d"] = self.d
+
+        return_dict["unit"] = self.unit
+        
+        return(return_dict)
                     
 
            
