@@ -121,7 +121,7 @@ class mainWindow(QtWidgets.QWidget):
 
         self.btn_teasereco = QtWidgets.QPushButton('TEASEREco')
         self.lGrid.addWidget(self.btn_teasereco, 0, 2, 1, 1)
-        self.btn_teasereco.setEnabled(False)
+        self.btn_teasereco.setEnabled(True)
 
         self.btn_about = QtWidgets.QPushButton('About')
         self.lGrid.addWidget(self.btn_about, 1, 0, 1, 1)
@@ -212,6 +212,10 @@ class mainWindow(QtWidgets.QWidget):
 
     def func_eco(self):
         self.btn_teasereco.setEnabled(True)
+        
+        global posx, posy
+        posx, posy = gf.dimensions(self)
+        gf.next_window(self, eco(), False)
 
     def onStateChanged(self):
         """gets called when a checkbox for a building is (un)checked to update the buildingDict"""
@@ -536,6 +540,7 @@ class about(QtWidgets.QWidget):
 
     def initUI(self):
         global posx, posy, width, height, sizefactor
+        
 
         gf.windowSetup(self, posx + 10, posy + 10, width, height, pypath, 'CityBIT - About')
 
@@ -551,6 +556,76 @@ class about(QtWidgets.QWidget):
         with open(os.path.join(pypath, 'about/about.txt'), 'r') as file:
             text = file.read()
         self.textwidget.setText(text)
+
+        self.lGrid = QtWidgets.QGridLayout()
+
+        self.btn_repo = QtWidgets.QPushButton('Open repository')
+        self.lGrid.addWidget(self.btn_repo, 0, 0, 1, 1)
+
+        self.btn_close = QtWidgets.QPushButton('Close')
+        self.lGrid.addWidget(self.btn_close, 0, 1, 1, 1)
+
+        self.vbox.addLayout(self.lGrid)
+
+        self.btn_repo.clicked.connect(self.open_repo)
+        self.btn_close.clicked.connect(self.close_about)
+
+    def open_repo(self):
+        os.startfile('www.e3d.rwth-aachen.de')
+
+    def close_about(self):
+        self.hide()
+        
+class eco(QtWidgets.QWidget):
+    def __init__(self):
+        super(eco, self).__init__()
+        self.initUI()
+
+    def initUI(self):
+        global posx, posy, width, height, sizefactor
+        
+        
+
+        gf.windowSetup(self, posx + 10, posy + 10, width, height, pypath, 'Teaser+eco')
+
+        # creating main layout
+        self.vbox = QtWidgets.QVBoxLayout(self)
+        self.setLayout(self.vbox)
+
+        gf.load_banner(self, os.path.join(pypath, r'pictures\e3dHeader.png'), sizefactor)
+        
+        self.gB_buildings = QtWidgets.QGroupBox('')
+        self.vbox.addWidget(self.gB_buildings)
+        
+        self.btn_add_bldg = QtWidgets.QPushButton('Add building')
+        self.vbox.addWidget(self.btn_add_bldg)
+        
+        self.btn_rem_bldg = QtWidgets.QPushButton('Remove Building')
+        self.vbox.addWidget(self.btn_rem_bldg)
+
+        self.bGrid = QtWidgets.QGridLayout()
+        self.gB_buildings.setLayout(self.bGrid)
+        
+        
+        
+        self.tbl_buildings = QtWidgets.QTableWidget()
+        self.tbl_buildings.setColumnCount(5)
+        self.tbl_buildings.setHorizontalHeaderLabels(['Name', 'type', 'Year','net leased area','Quantity'])
+        self.tbl_buildings.verticalHeader().hide()
+        # self.tbl_buildings.horizontalHeader().hide()
+        self.tbl_buildings.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.tbl_buildings.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        self.tbl_buildings.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+        self.tbl_buildings.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)        
+        self.bGrid.addWidget(self.tbl_buildings, 1, 0, 1, 6)
+        
+        """
+        self.textwidget = QtWidgets.QTextBrowser()
+        self.vbox.addWidget(self.textwidget)
+        self.textwidget.setFontPointSize(14)
+        text = "Testtext"
+        self.textwidget.setText(text)
+        """
 
         self.lGrid = QtWidgets.QGridLayout()
 
