@@ -21,6 +21,9 @@ import PySide2
 from PySide2 import QtWidgets, QtGui
 import gui_functions as gf
 import tplusselection as sel
+from teaser.project import Project
+import simulate as sim
+from teaser.logic.buildingobjects.buildingphysics.en15804lcadata import En15804LcaData
 
 
 # setting environment variable for PySide2
@@ -578,21 +581,27 @@ class about(QtWidgets.QWidget):
         
 class eco(QtWidgets.QWidget):
     def __init__(self):
+                
         super(eco, self).__init__()
+        self.prj = Project()
+        self.prj.used_library_calc = "AixLib"
         self.initUI()
-
+        
+        self.building_groups = []
+        
     def initUI(self):
         global posx, posy, width, height, sizefactor
         
         
 
         gf.windowSetup(self, posx + 10, posy + 10, width, height, pypath, 'Teaser+eco')
+        
 
         # creating main layout
         self.vbox = QtWidgets.QVBoxLayout(self)
         self.setLayout(self.vbox)
 
-        gf.load_banner(self, os.path.join(pypath, r'pictures\e3dHeader.png'), sizefactor)
+        
         
         self.gB_buildings = QtWidgets.QGroupBox('')
         self.vbox.addWidget(self.gB_buildings)
@@ -602,21 +611,23 @@ class eco(QtWidgets.QWidget):
         
         self.btn_rem_bldg = QtWidgets.QPushButton('Remove Building')
         self.vbox.addWidget(self.btn_rem_bldg)
-
+        
         self.bGrid = QtWidgets.QGridLayout()
         self.gB_buildings.setLayout(self.bGrid)
         
         
         
         self.tbl_buildings = QtWidgets.QTableWidget()
-        self.tbl_buildings.setColumnCount(5)
-        self.tbl_buildings.setHorizontalHeaderLabels(['Name', 'type', 'Year','net leased area','Quantity'])
+        self.tbl_buildings.setColumnCount(6)
+        self.tbl_buildings.setHorizontalHeaderLabels(['#', 'Name', 'type', 'Year','net leased area', 'Quantity'])
         self.tbl_buildings.verticalHeader().hide()
         # self.tbl_buildings.horizontalHeader().hide()
-        self.tbl_buildings.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        self.tbl_buildings.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        
+        self.tbl_buildings.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         self.tbl_buildings.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
-        self.tbl_buildings.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)        
+        self.tbl_buildings.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        
+
         self.bGrid.addWidget(self.tbl_buildings, 1, 0, 1, 6)
         
         """
@@ -629,23 +640,645 @@ class eco(QtWidgets.QWidget):
 
         self.lGrid = QtWidgets.QGridLayout()
 
-        self.btn_repo = QtWidgets.QPushButton('Open repository')
-        self.lGrid.addWidget(self.btn_repo, 0, 0, 1, 1)
+        self.btn_start = QtWidgets.QPushButton('Start simulation')
+        self.lGrid.addWidget(self.btn_start, 0, 0, 1, 1)
 
         self.btn_close = QtWidgets.QPushButton('Close')
         self.lGrid.addWidget(self.btn_close, 0, 1, 1, 1)
 
         self.vbox.addLayout(self.lGrid)
-
-        self.btn_repo.clicked.connect(self.open_repo)
+        
+        self.btn_add_bldg.clicked.connect(self.add_building)
+        self.btn_start.clicked.connect(self.start)
         self.btn_close.clicked.connect(self.close_about)
+        
+    def add_building(self):
+        
+        global posx, posy
+        posx, posy = gf.dimensions(self)
+        gf.next_window(self, addBuilding(self.prj, self), False)
 
-    def open_repo(self):
-        os.startfile('www.e3d.rwth-aachen.de')
+    def start(self):
+        global posx, posy
+        posx, posy = gf.dimensions(self)
+        gf.next_window(self, startSimulation(self.prj, self), False)
 
     def close_about(self):
         self.hide()
 
+class addBuilding(QtWidgets.QWidget):
+    def __init__(self, prj, parent):
+        #initiate the parent
+        self.prj = prj
+        self.parent = parent
+        super(addBuilding, self).__init__()
+        self.initUI()
+        
+
+    def initUI(self):
+        global posx, posy, width, height, sizefactor, sizer
+        gf.windowSetup(self, posx + width+10, posy, 300, 400, pypath, 'Add building')
+        
+        self.only_int = QtGui.QIntValidator()
+        self.only_double = QtGui.QDoubleValidator()
+        
+        self.vbox = QtWidgets.QVBoxLayout(self)
+        self.setLayout(self.vbox)
+        
+        self.gB_parameters = QtWidgets.QGroupBox('Enrichment')
+        self.vbox.addWidget(self.gB_parameters)
+        
+        self.pGrid = QtWidgets.QGridLayout()
+        self.gB_parameters.setLayout(self.pGrid)
+        
+        self.lbl_method = QtWidgets.QLabel('Method:')
+        self.pGrid.addWidget(self.lbl_method, 0, 1, 1, 1)
+        
+        self.cb_method = QtWidgets.QComboBox()
+        self.pGrid.addWidget(self.cb_method, 0, 2, 1, 1)
+        self.cb_method.addItems(["", 'iwu', 'urbanrenet', 'tabula_de'])
+        
+        self.lbl_usage = QtWidgets.QLabel('Usage:')
+        self.pGrid.addWidget(self.lbl_usage, 1, 1, 1, 1)
+        
+        self.cb_usage = QtWidgets.QComboBox()
+        self.pGrid.addWidget(self.cb_usage, 1, 2, 1, 1)
+        self.cb_usage.addItems([""])
+        self.cb_usage.setEnabled(False)
+        
+        self.lbl_year = QtWidgets.QLabel('Year of construction:')
+        self.pGrid.addWidget(self.lbl_year, 2, 1, 1, 1)
+        
+        self.led_year = QtWidgets.QLineEdit('')
+        self.pGrid.addWidget(self.led_year, 2, 2, 1, 1)
+        self.led_year.setValidator(self.only_int)
+        
+        self.lbl_numb_flr = QtWidgets.QLabel('Number of floors:')
+        self.pGrid.addWidget(self.lbl_numb_flr, 3, 1, 1, 1)
+        
+        self.led_numb_flr = QtWidgets.QLineEdit('')
+        self.pGrid.addWidget(self.led_numb_flr, 3, 2, 1, 1)
+        self.led_numb_flr.setValidator(self.only_int)
+        
+        self.lbl_height_flr = QtWidgets.QLabel('Height of floors:')
+        self.pGrid.addWidget(self.lbl_height_flr, 4, 1, 1, 1)
+        
+        self.led_height_flr = QtWidgets.QLineEdit('')
+        self.pGrid.addWidget(self.led_height_flr, 4, 2, 1, 1)
+        self.led_height_flr.setValidator(self.only_double)
+        
+        self.lbl_name = QtWidgets.QLabel('Name:')
+        self.pGrid.addWidget(self.lbl_name, 5, 1, 1, 1)
+        
+        self.led_name = QtWidgets.QLineEdit('')
+        self.pGrid.addWidget(self.led_name, 5, 2, 1, 1)
+        
+        self.lbl_nla = QtWidgets.QLabel('Net leased area:')
+        self.pGrid.addWidget(self.lbl_nla, 6, 1, 1, 1)
+        
+        self.led_nla = QtWidgets.QLineEdit('')
+        self.pGrid.addWidget(self.led_nla, 6, 2, 1, 1)
+        
+        self.lbl_quantity = QtWidgets.QLabel('Quantity:')
+        self.pGrid.addWidget(self.lbl_quantity, 7, 1, 1, 1)
+        
+        self.led_quantity = QtWidgets.QLineEdit('1')
+        self.pGrid.addWidget(self.led_quantity, 7, 2, 1, 1)
+        self.led_quantity.setValidator(self.only_int)
+                
+        self.gB_add_lca = QtWidgets.QGroupBox('Additional LCA-Data')
+        self.vbox.addWidget(self.gB_add_lca)
+        
+        self.lBox =QtWidgets.QVBoxLayout(self)
+        self.gB_add_lca.setLayout(self.lBox)
+        
+        self.tbl_lca = QtWidgets.QTableWidget()
+        self.tbl_lca.setColumnCount(2)
+        self.tbl_lca.setHorizontalHeaderLabels(['Name', 'Quantity'])
+        self.tbl_lca.verticalHeader().hide()
+        # self.tbl_lca.horizontalHeader().hide()
+        self.tbl_lca.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.tbl_lca.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        self.tbl_lca.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)     
+        self.lBox.addWidget(self.tbl_lca)
+        
+        self.btn_add_lca = QtWidgets.QPushButton('Add LCA-Data')
+        self.lBox.addWidget(self.btn_add_lca)
+        
+        self.btn_add = QtWidgets.QPushButton('Add')
+        self.vbox.addWidget(self.btn_add)
+        
+        self.cb_method.currentTextChanged.connect(self.method_changed)
+        self.btn_add.clicked.connect(self.add)
+        self.btn_add_lca.clicked.connect(self.add_lca)
+        
+        self.additonal_lca_data = [] #list with LCA-Data IDs
+        
+    def method_changed(self, value):
+
+        self.cb_usage.clear()
+        
+        if value == "":
+            self.cb_usage.addItem("")
+            self.cb_usage.setEnabled(False)
+        else:
+            self.cb_usage.setEnabled(True)
+            if value == "iwu":
+                self.cb_usage.addItem('single_family_dwelling')
+            elif value == "urbanrenet":
+                self.cb_usage.addItems(['est1a', 'est1b', 'est2', 'est3', 'est4a', 'est4b', 'est5' 'est6', 'est7', 'est8a', 'est8b'])
+            elif value == "tabula_de":
+                self.cb_usage.addItems(["single_family_house","terraced_house","multi_family_house","apartment_block"])
+                    
+    def add(self):
+        
+        method = self.cb_method.currentText()
+        usage = self.cb_usage.currentText()
+        year_of_construction = self.led_year.text()
+        number_of_floors = self.led_numb_flr.text()
+        height_of_floors = self.led_height_flr.text()
+        name = self.led_name.text()
+        net_leased_area = self.led_nla.text()
+        building_quantity = self.led_quantity.text()
+        
+        if method != "" and usage != "" and year_of_construction != "" and number_of_floors != "" and height_of_floors != "" and name != "" and building_quantity != "" and net_leased_area != "":
+            building_quantity = int(building_quantity)
+            net_leased_area = float(net_leased_area)
+        
+            for i in range(building_quantity):
+
+                if i == 0:
+                    first_index = len(self.prj.buildings)              
+                
+                self.prj.add_residential(method = method,
+                                     usage = usage,
+                                     name = name,
+                                     year_of_construction = year_of_construction,
+                                     number_of_floors = number_of_floors,
+                                     height_of_floors = height_of_floors,
+                                     net_leased_area = net_leased_area)
+                
+                for j in range(self.tbl_lca.rowCount()):
+                    self.prj.buildings[i].add_lca_data_template(self.tbl_lca.item(j,0).text(), float(self.tbl_lca.item(j,1).text()))
+                
+                
+                   
+            if building_quantity == 1:
+                index = str(first_index)
+            else:
+                index = f"{first_index} - {len(self.prj.buildings)-1}"
+            
+            rowPosition = self.parent.tbl_buildings.rowCount()
+            self.parent.tbl_buildings.insertRow(rowPosition)
+    
+            self.parent.tbl_buildings.setItem(rowPosition , 0, QtWidgets.QTableWidgetItem(index))
+            self.parent.tbl_buildings.setItem(rowPosition , 1, QtWidgets.QTableWidgetItem(name))
+            self.parent.tbl_buildings.setItem(rowPosition , 2, QtWidgets.QTableWidgetItem(f"{method} {usage}"))
+            self.parent.tbl_buildings.setItem(rowPosition , 3, QtWidgets.QTableWidgetItem(str(year_of_construction)))
+            self.parent.tbl_buildings.setItem(rowPosition , 4, QtWidgets.QTableWidgetItem(str(net_leased_area)))
+            self.parent.tbl_buildings.setItem(rowPosition , 5, QtWidgets.QTableWidgetItem(str(building_quantity)))
+            
+            self.parent.building_groups.append([first_index, len(self.prj.buildings)-1])
+            
+    def add_lca(self):
+        global posx, posy
+        posx, posy = gf.dimensions(self)
+        gf.next_window(self, addLca(self.prj, self), False)
+
+class addLca(QtWidgets.QWidget):
+    def __init__(self,prj,parent):
+        self.prj = prj
+        self.parent = parent
+        super(addLca, self).__init__()
+        self.initUI()
+        
+    def initUI(self):   
+        global posx, posy, width, height, sizefactor, sizer
+        gf.windowSetup(self, posx + 300, posy , 300, 400, pypath, 'Add LCA-data')
+        
+        self.only_double = QtGui.QDoubleValidator()
+        
+        self.vbox = QtWidgets.QVBoxLayout(self)
+        self.setLayout(self.vbox)
+        
+        self.gB_lca = QtWidgets.QGroupBox('LCA-data')
+        self.vbox.addWidget(self.gB_lca)
+        
+        self.lGrid = QtWidgets.QGridLayout()
+        self.gB_lca.setLayout(self.lGrid)
+        
+        self.only_double = QtGui.QDoubleValidator()
+        
+        self.lbl_uuid = QtWidgets.QLabel('LCA-data id')
+        self.lGrid.addWidget(self.lbl_uuid, 0, 1, 1, 1)
+        
+        self.led_uuid = QtWidgets.QLineEdit('')
+        self.lGrid.addWidget(self.led_uuid, 0, 2, 1, 1)
+        
+        self.lbl_amount = QtWidgets.QLabel('Amount')
+        self.lGrid.addWidget(self.lbl_amount, 1, 1, 1, 1)
+        
+        self.led_amount = QtWidgets.QLineEdit('')
+        self.lGrid.addWidget(self.led_amount, 1, 2, 1, 1)
+        self.led_amount.setValidator(self.only_double)
+        
+        self.btn_add = QtWidgets.QPushButton('Add')
+        self.vbox.addWidget(self.btn_add)
+        
+        self.btn_add.clicked.connect(self.add)
+    
+    def add(self):
+        lca_id = self.led_uuid.text()
+        amount = self.led_amount.text()
+        
+        rowPosition = self.parent.tbl_lca.rowCount()
+        self.parent.tbl_lca.insertRow(rowPosition)
+
+        self.parent.tbl_lca.setItem(rowPosition , 0, QtWidgets.QTableWidgetItem(lca_id))
+        self.parent.tbl_lca.setItem(rowPosition , 1, QtWidgets.QTableWidgetItem(amount))
+        
+        self.parent.tbl_lca.resizeRowsToContents()
+   
+    
+        
+    
+class startSimulation(QtWidgets.QWidget):
+    def __init__(self, prj, parent):
+
+        self.prj = prj
+        self.parent = parent
+        super(startSimulation, self).__init__()
+        self.initUI()
+        
+
+    def initUI(self):           
+        global posx, posy, width, height, sizefactor, sizer
+        gf.windowSetup(self, posx + width+10, posy+300, 500, 200, pypath, 'Start Simulation')
+        
+        self.dGrid = QtWidgets.QGridLayout()
+        self.setLayout(self.dGrid)
+
+        self.btn_selDir_out = QtWidgets.QPushButton('Select TEASEROurput folder')
+        self.dGrid.addWidget(self.btn_selDir_out, 0, 0, 1, 1)
+
+        self.txtB_inPath_out = QtWidgets.QLineEdit()
+        self.txtB_inPath_out.setPlaceholderText('Path to file or folder')
+        self.txtB_inPath_out.setReadOnly(True)
+        self.dGrid.addWidget(self.txtB_inPath_out, 0, 1, 1, 4)
+        
+        self.btn_selDir_csv = QtWidgets.QPushButton('Select Result csv path')
+        self.dGrid.addWidget(self.btn_selDir_csv, 1, 0, 1, 1)
+
+        self.txtB_inPath_csv = QtWidgets.QLineEdit()
+        self.txtB_inPath_csv.setPlaceholderText('Path to file or folder')
+        self.txtB_inPath_csv.setReadOnly(True)
+        self.dGrid.addWidget(self.txtB_inPath_csv, 1, 1, 1, 4)
+        
+        
+        self.lbl_elec_lca = QtWidgets.QLabel('Select EPD for electric energy')
+        self.dGrid.addWidget(self.lbl_elec_lca, 2, 0, 1, 1)
+        
+        self.led_elec_lca = QtWidgets.QLineEdit('')
+        self.dGrid.addWidget(self.led_elec_lca, 2, 1, 1, 4)
+        
+        self.lbl_heat_lca = QtWidgets.QLabel('Select EPD for heating')
+        self.dGrid.addWidget(self.lbl_heat_lca, 3, 0, 1, 1)
+        
+        self.led_heat_lca = QtWidgets.QLineEdit('')
+        self.dGrid.addWidget(self.led_heat_lca, 3, 1, 1, 4)
+        
+        self.lbl_eff = QtWidgets.QLabel('Energy conversion efficiency')
+        self.dGrid.addWidget(self.lbl_eff, 4, 0, 1, 1)
+        
+        self.led_eff = QtWidgets.QLineEdit('')
+        self.dGrid.addWidget(self.led_eff, 4, 1, 1, 4)
+        
+        self.lbl_time = QtWidgets.QLabel('Time')
+        self.dGrid.addWidget(self.lbl_time, 5, 0, 1, 1)
+        
+        self.led_time = QtWidgets.QLineEdit('50')
+        self.dGrid.addWidget(self.led_time, 5, 1, 1, 4)
+        
+        self.btn_start = QtWidgets.QPushButton('Start')
+        self.dGrid.addWidget(self.btn_start, 6, 0, 1, 1)
+        
+        
+        
+        self.btn_selDir_out.clicked.connect(self.func_selectDir_out)
+        self.btn_selDir_csv.clicked.connect(self.func_selectDir_csv)
+        self.btn_start.clicked.connect(self.start_simulation)
+        
+    def start_simulation(self):
+        
+        if self.led_time != "" and self.led_eff != "" and self.txtB_inPath_csv != "" and self.txtB_inPath_out != "" and self.led_elec_lca != "" and self.led_heat_lca != "":
+        
+            self.prj.calc_all_buildings()
+            self.prj.export_aixlib(path = self.txtB_inPath_out.text())
+            
+            self.prj.period_lca_scenario = int(self.led_time.text())
+            
+            sim.simulate(path = self.txtB_inPath_out.text(), prj = self.prj, loading_time = 3600, result_path = self.txtB_inPath_csv.text())
+            
+            lca_data_elec = En15804LcaData()
+            lca_data_elec.load_lca_data_template(self.led_elec_lca.text(), self.prj.data)
+            
+            lca_data_heat = En15804LcaData()
+            lca_data_heat.load_lca_data_template(self.led_heat_lca.text(), self.prj.data)
+            
+            for building in self.prj.buildings:
+                
+                building.calc_lca_data(False, int(self.led_time.text()))
+                
+                building.add_lca_data_elec(lca_data_elec)
+                building.add_lca_data_heating(float(self.led_eff.text()), lca_data_heat)
+                
+                print("b6: ", building.lca_data.gwp.b6)
+            
+        
+        global posx, posy
+        posx, posy = gf.dimensions(self)
+        gf.next_window(self, result(self.prj, self.parent), False)
+                
+        
+        
+
+    
+        
+    def func_selectDir_out(self):
+        dirpath = QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory")       
+        self.txtB_inPath_out.setText(dirpath)
+        
+    
+    def func_selectDir_csv(self):
+        dirpath = QtWidgets.QFileDialog.getSaveFileName(self, 'Select .csv file')
+        self.txtB_inPath_csv.setText(dirpath[0])
+
+class result(QtWidgets.QWidget):
+    def __init__(self, prj, parent):
+
+        self.prj = prj
+        self.parent = parent
+        super(result, self).__init__()
+        self.initUI()
+        
+
+    def initUI(self):           
+        global posx, posy, width, height, sizefactor, sizer
+        gf.windowSetup(self, posx + width+10, posy+300, 1500, 400, pypath, 'Result')
+        
+        self.vbox = QtWidgets.QVBoxLayout(self)
+        self.setLayout(self.vbox)
+                
+        self.cb_indicator = QtWidgets.QComboBox()
+        self.vbox.addWidget(self.cb_indicator)
+        self.cb_indicator.addItems(["pere",
+                                    "pert",
+                                    "penre",
+                                    "penrm",
+                                    "penrt",
+                                    "sm",
+                                    "rsf",
+                                    "nrsf",
+                                    "fw",
+                                    "hwd",
+                                    "nhwd",
+                                    "rwd",
+                                    "cru",
+                                    "mfr",
+                                    "mer",
+                                    "eee",
+                                    "eet",
+                                    "gwp",
+                                    "odp",
+                                    "pocp",
+                                    "ap",
+                                    "ep",
+                                    "adpe",
+                                    "adpf"
+                                    ])
+        
+       
+        self.tbl_lca = QtWidgets.QTableWidget()
+        self.tbl_lca.setColumnCount(22)
+        self.tbl_lca.setHorizontalHeaderLabels(['Building', 
+                                                "amount", 
+                                                "a1",
+                                                "a2",
+                                                "a3",
+                                                "a1_a3",
+                                                "a4",
+                                                "a5",
+                                                "b1",
+                                                "b2",
+                                                "b3",
+                                                "b4",
+                                                "b5",
+                                                "b6",
+                                                "b7",
+                                                "c1",
+                                                "c2",
+                                                "c3",
+                                                "c4",
+                                                "d",
+                                                "sum",
+                                                "sum wd"
+                                                ])
+        self.tbl_lca.verticalHeader().hide()
+        # self.tbl_lca.horizontalHeader().hide()
+        self.tbl_lca.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.tbl_lca.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        self.tbl_lca.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)     
+        self.vbox.addWidget(self.tbl_lca)
+              
+        
+        self.cGrid = QtWidgets.QGridLayout()
+
+        self.btn_copy = QtWidgets.QPushButton('Copy csv to Clipboard')
+        self.cGrid.addWidget(self.btn_copy, 0, 0, 1, 1)
+        
+        self.checkbox_ger = QtWidgets.QCheckBox("'German Excel'")
+        self.cGrid.addWidget(self.checkbox_ger, 0, 1, 1, 1)
+        
+        self.vbox.addLayout(self.cGrid)
+        
+        
+        self.select_lca("pere")
+        
+        self.btn_copy.clicked.connect(self.copy_to_clipboard)
+        
+        self.cb_indicator.currentTextChanged.connect(self.select_lca)
+    
+    def select_lca(self, indicator):
+        
+        
+        while (self.tbl_lca.rowCount() > 0):
+            self.tbl_lca.removeRow(0)
+            
+        
+        for building_group in self.parent.building_groups:
+            
+            amount = building_group[1] - building_group[0] + 1
+             
+            building = self.prj.buildings[building_group[0]]
+            
+            lca_data = building.lca_data*amount
+                
+            lca_data_dict = self.lca_data_to_dict(lca_data)
+            
+            
+            content = [building.name, amount]
+            
+            if indicator == "pere": content.extend(lca_data_dict["pere"])
+            elif indicator == "pert": content.extend(lca_data_dict["pert"])
+            elif indicator == "penre": content.extend(lca_data_dict["penre"])
+            elif indicator == "penrm": content.extend(lca_data_dict["penrm"])
+            elif indicator == "penrt": content.extend(lca_data_dict["penrt"])
+            elif indicator == "sm": content.extend(lca_data_dict["sm"])
+            elif indicator == "rsf": content.extend(lca_data_dict["rsf"])
+            elif indicator == "nrsf": content.extend(lca_data_dict["nrsf"])
+            elif indicator == "fw": content.extend(lca_data_dict["fw"])
+            elif indicator == "hwd": content.extend(lca_data_dict["hwd"])
+            elif indicator == "nhwd": content.extend(lca_data_dict["nhwd"])
+            elif indicator == "rwd": content.extend(lca_data_dict["rwd"])
+            elif indicator == "cru": content.extend(lca_data_dict["cru"])
+            elif indicator == "mfr": content.extend(lca_data_dict["mfr"])
+            elif indicator == "mer": content.extend(lca_data_dict["mer"])
+            elif indicator == "eee": content.extend(lca_data_dict["eee"])
+            elif indicator == "eet": content.extend(lca_data_dict["eet"])
+            elif indicator == "gwp": content.extend(lca_data_dict["gwp"])
+            elif indicator == "odp": content.extend(lca_data_dict["odp"])
+            elif indicator == "pocp": content.extend(lca_data_dict["pocp"])
+            elif indicator == "ap": content.extend(lca_data_dict["ap"])
+            elif indicator == "ep": content.extend(lca_data_dict["ep"])
+            elif indicator == "adpe": content.extend(lca_data_dict["adpe"])
+            elif indicator == "adpf": content.extend(lca_data_dict["adpf"])
+              
+            self.add_lca_row(content)
+                    
+        
+    def lca_data_to_dict(self, lca_data):
+        
+        result = {}
+        
+        result['pere'] = self.indicator_to_list(lca_data.pere)
+        result['pert'] = self.indicator_to_list(lca_data.pert)
+        result['penre'] = self.indicator_to_list(lca_data.penre)
+        result['penrm'] = self.indicator_to_list(lca_data.penrm)
+        result['penrt'] = self.indicator_to_list(lca_data.penrt)
+        result['sm'] = self.indicator_to_list(lca_data.sm)
+        result['rsf'] = self.indicator_to_list(lca_data.rsf)
+        result['nrsf'] = self.indicator_to_list(lca_data.nrsf)
+        result['fw'] = self.indicator_to_list(lca_data.fw)
+        result['hwd'] = self.indicator_to_list(lca_data.hwd)
+        result['nhwd'] = self.indicator_to_list(lca_data.nhwd)
+        result['rwd'] = self.indicator_to_list(lca_data.rwd)
+        result['cru'] = self.indicator_to_list(lca_data.cru)
+        result['mfr'] = self.indicator_to_list(lca_data.mfr)
+        result['mer'] = self.indicator_to_list(lca_data.mer)
+        result['eee'] = self.indicator_to_list(lca_data.eee)
+        result['eet'] = self.indicator_to_list(lca_data.eet)
+        result['gwp'] = self.indicator_to_list(lca_data.gwp)
+        result['odp'] = self.indicator_to_list(lca_data.odp)
+        result['pocp'] = self.indicator_to_list(lca_data.pocp)
+        result['ap'] = self.indicator_to_list(lca_data.ap)
+        result['ep'] = self.indicator_to_list(lca_data.ep)
+        result['adpe'] = self.indicator_to_list(lca_data.adpe)
+        result['adpf'] = self.indicator_to_list(lca_data.adpf)
+        
+        return result
+    
+    def indicator_to_list(self, indicator):
+        
+        result = []
+        
+        result.append(indicator.a1)
+        result.append(indicator.a2)
+        result.append(indicator.a3)
+        result.append(indicator.a1_a3)
+        result.append(indicator.a4)
+        result.append(indicator.a5)
+        result.append(indicator.b1)
+        result.append(indicator.b2)
+        result.append(indicator.b3)
+        result.append(indicator.b4)
+        result.append(indicator.b5)
+        result.append(indicator.b6)
+        result.append(indicator.b7)
+        result.append(indicator.c1)
+        result.append(indicator.c2)
+        result.append(indicator.c3)
+        result.append(indicator.c4)
+        result.append(indicator.d)
+        result.append(indicator.sum_stages(False))
+        result.append(indicator.sum_stages(True))
+
+        return result
+
+        
+    
+    def add_lca_row(self, row):
+        
+        rowPosition = self.tbl_lca.rowCount()
+        self.tbl_lca.insertRow(rowPosition)
+
+        self.tbl_lca.setItem(rowPosition , 0, QtWidgets.QTableWidgetItem(str(row[0])))
+        self.tbl_lca.setItem(rowPosition , 1, QtWidgets.QTableWidgetItem(str(row[1])))
+        self.tbl_lca.setItem(rowPosition , 2, QtWidgets.QTableWidgetItem(str(row[2])))
+        self.tbl_lca.setItem(rowPosition , 3, QtWidgets.QTableWidgetItem(str(row[3])))
+        self.tbl_lca.setItem(rowPosition , 4, QtWidgets.QTableWidgetItem(str(row[4])))
+        self.tbl_lca.setItem(rowPosition , 5, QtWidgets.QTableWidgetItem(str(row[5])))
+        self.tbl_lca.setItem(rowPosition , 6, QtWidgets.QTableWidgetItem(str(row[6])))
+        self.tbl_lca.setItem(rowPosition , 7, QtWidgets.QTableWidgetItem(str(row[7])))
+        self.tbl_lca.setItem(rowPosition , 8, QtWidgets.QTableWidgetItem(str(row[8])))
+        self.tbl_lca.setItem(rowPosition , 9, QtWidgets.QTableWidgetItem(str(row[9])))
+        self.tbl_lca.setItem(rowPosition , 10, QtWidgets.QTableWidgetItem(str(row[10])))
+        self.tbl_lca.setItem(rowPosition , 11, QtWidgets.QTableWidgetItem(str(row[11])))
+        self.tbl_lca.setItem(rowPosition , 12, QtWidgets.QTableWidgetItem(str(row[12])))
+        self.tbl_lca.setItem(rowPosition , 13, QtWidgets.QTableWidgetItem(str(row[13])))
+        self.tbl_lca.setItem(rowPosition , 14, QtWidgets.QTableWidgetItem(str(row[14])))
+        self.tbl_lca.setItem(rowPosition , 15, QtWidgets.QTableWidgetItem(str(row[15])))
+        self.tbl_lca.setItem(rowPosition , 16, QtWidgets.QTableWidgetItem(str(row[16])))
+        self.tbl_lca.setItem(rowPosition , 17, QtWidgets.QTableWidgetItem(str(row[17])))
+        self.tbl_lca.setItem(rowPosition , 18, QtWidgets.QTableWidgetItem(str(row[18])))
+        self.tbl_lca.setItem(rowPosition , 19, QtWidgets.QTableWidgetItem(str(row[19])))
+        self.tbl_lca.setItem(rowPosition , 20, QtWidgets.QTableWidgetItem(str(row[20])))
+        self.tbl_lca.setItem(rowPosition , 21, QtWidgets.QTableWidgetItem(str(row[21])))
+        
+    def copy_to_clipboard(self):
+        
+        self.clipboard = QtGui.QClipboard()
+        
+        self.clipboard.setText(self.tbl_to_csv(self.checkbox_ger.isChecked()))
+        
+       
+    def tbl_to_csv(self, german = False):
+      
+        
+       csv = "Building,amount,a1,a2,a3,a1_a3,a4,a5,b1,b2,b3,b4,b5,b6,b7,c1,c2,c3,c4,d,sum,sum+d\n"
+       
+       for row in range(self.tbl_lca.rowCount()):
+           for column in range(self.tbl_lca.columnCount()):
+               
+
+               csv += self.tbl_lca.item(row, column).text()
+               csv += ","
+                              
+           csv += "\n"
+           
+       csv.replace("None", "")
+       
+       if german is True:
+           csv = csv.replace(",", ";")
+           csv = csv.replace(".", ",")
+           
+       return csv
+               
+               
+            
+
+            
+        
+        
 
 if __name__ == "__main__":
     
@@ -658,3 +1291,4 @@ if __name__ == "__main__":
     widget = mainWindow()
     widget.show()
     sys.exit(app.exec_())
+    
