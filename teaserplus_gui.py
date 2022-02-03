@@ -818,8 +818,10 @@ class addBuilding(QtWidgets.QWidget):
                                      height_of_floors = height_of_floors,
                                      net_leased_area = net_leased_area)
                 
+
                 for j in range(self.tbl_lca.rowCount()):
-                    self.prj.buildings[i].add_lca_data_template(self.tbl_lca.item(j,0).text(), float(self.tbl_lca.item(j,1).text()))
+
+                    self.prj.buildings[-1].add_lca_data_template(self.tbl_lca.item(j,0).text(), float(self.tbl_lca.item(j,1).text()))
                 
                 
                    
@@ -992,7 +994,6 @@ class startSimulation(QtWidgets.QWidget):
                 building.add_lca_data_elec(lca_data_elec)
                 building.add_lca_data_heating(float(self.led_eff.text()), lca_data_heat)
                 
-                print("b6: ", building.lca_data.gwp.b6)
             
         
         global posx, posy
