@@ -113,12 +113,12 @@ class BuildingElement(object):
     wf_out : float
         Weightfactor of building element ua_value/ua_value_zone
     lca_data : En15804LcaData
-        enviromental indicator of the buildingelement. The data referencing
-        one buildingelement
+        enviromental indicators of the building element. The data referencing
+        one building element
     additional_lca_data : En15804LcaData
         additional environmental indicators to the indicators from the materials
     service_life : int [a]
-        service_life of the building_element in years
+        service_life of the building element in years
     """
 
     def __init__(self, parent=None):
@@ -766,15 +766,15 @@ class BuildingElement(object):
         
 
     def _calc_lca_data_no_repl(self):
-        """calculates the LCA-data of the buildingelement without any
-        replacements
+        """calculates the environmental indicators of the buildingelement 
+        without any replacements
         
 
         Returns
         -------
         lca_data_be : En15804LcaData
-            LCA-data of the buildingelement without any replacements
-
+            environmental indicators of the buildingelement without any
+            replacements
         """
         
         lca_data_be = En15804LcaData()
@@ -806,13 +806,13 @@ class BuildingElement(object):
 
         Parameters
         ----------
-        ref_period : int, optional
-            reference time period. The default is 80.
+        ref_period : int, optional [a]
+            reference time period. The default is 80 years.
 
         Returns
         -------
         lca_data_repl_layers : En15804LcaData
-            LCA-data caused by layer replacement in a specific time period
+            environmental indicators from layer replacement
 
         """
         

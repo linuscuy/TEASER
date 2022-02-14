@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""This module contains function to save lca_data classes."""
+"""This module contains functions to save lca_data and lca_data_fallback objects."""
 import warnings
 import json
 import teaser.logic.utilities as utilities
@@ -10,7 +10,7 @@ import collections
 def save_lca_data(lca_data, data_class):
     """lca data saver.
 
-    Saves lca data and their properties into the JSON file.
+    Appends given LCA-dataset and its properties to the LCA-data-JSON file.
 
     Parameters
     ----------
@@ -18,7 +18,7 @@ def save_lca_data(lca_data, data_class):
         instance of TEASERS En15804LcaData class to be saved
 
     data_class : DataClass()
-        DataClass containing the bindings for En15804MainLcaData, TypeBuildingElement and
+        DataClass containing the bindings for LCA-Data, TypeBuildingElement and
         Material (typically this is the data class stored in prj.data,
         but the user can individually change that.
 
@@ -86,15 +86,15 @@ def save_lca_data(lca_data, data_class):
 def save_lca_data_fallback(lca_data, data_class):
     """lca data fallback saver.
 
-    Saves lca data and their properties into the fallback JSON file.
-
+    Appends given LCA-dataset and its properties to the LCA-data-fallback-JSON file.
+    
     Parameters
     ----------
     lca_data : En15804LcaData()
         instance of TEASERS En15804LcaData class to be saved
 
     data_class : DataClass()
-        DataClass containing the bindings for En15804LcaData, TypeBuildingElement and
+        DataClass containing the bindings for LCA-Data, TypeBuildingElement and
         Material (typically this is the data class stored in prj.data,
         but the user can individually change that.
 

@@ -117,12 +117,16 @@ class Building(object):
         Classes with specific functions and attributes for building models in
         IBPSA and AixLib. Python classes can be found in calculation package.
     lca_data : En15804LcaData
-        enviromental indicator of the building. The data referencing
+        enviromental indicators of the building. The data referencing to
         one building
     additional_lca_data : En15804LcaData
-        additional environmental indicators to the indicators from the thermalzones
+        additional environmental indicators to the indicators from the 
+        buildingelements (e.g.central heating system)
     _estimate_elec_demand : float [MJ]
         estimate annual electric demand of the building (without heating)
+    simulated_heat_load : list
+        heat load simulated for this building. Value is used to calculated the
+        enviromental indicators for heating
 
     """
 
@@ -915,18 +919,17 @@ class Building(object):
         
         
     def calc_lca_data(self, use_b4 = None, period_lca_scenario = None):
-        """calculates the LCA-data of each thermalzone and set it to the
-        attribute lca_data
+        """calculates the environmental indicators of the building. Without
+        environmental indicators from heating and electric demand
         
-
         Parameters
         ----------
         use_b4 : bool, optional
-            if true environmental indicators of replaced buildingelements are added
-            to stage B4. Otherwise they are added seperatly to the other stages
-        period_lca_scenario : TYPE, optional
-            period which is taken into account for LCA. The default is None.
-
+            if true environmental indicators of replaced buildingelements are 
+            added to stage B4. Otherwise they are added seperatly to the other stages
+        period_lca_scenario : int, optional
+            period of use taken into account for LCA. Default is the project 
+            period (period_lca_scenario in project class)
         """
         lca_data = En15804LcaData()
         
@@ -957,7 +960,7 @@ class Building(object):
             
         self.lca_data = lca_data
         
-    def est_elec_demand(self, q_el_B = None):
+    def est_elec_demand(self):
         """roughly estimates the electricity demand of the building due to it´s
         size, without electricity used for heating (e.g. for heat pumps)
         
@@ -968,9 +971,8 @@ class Building(object):
         q_el_b = 63 #Wh/(m^2 d) DIN 18599-10
         a_ngf = self.net_leased_area
         h_B = 8 #hours lighting per day estimate from DIN 18599-10
-        if q_el_B is None:
-            q_el_B = 10 * a_ngf*d_a * h_B * 0.001 #estimate from DIN 18599-4
-        q_el_wp = 0
+        q_el_B = 10 * a_ngf*d_a * h_B * 0.001 #estimate from DIN 18599-4
+        q_el_wp = 0 #electrical energy for heat pump allready considered in heatload
         
         q_el_ges_a = d_a * q_el_b * a_ngf * 0.001 + q_el_B + q_el_wp
         
@@ -979,12 +981,13 @@ class Building(object):
         self._estimate_elec_demand = q_el_ges_a
     
     def add_lca_data_elec(self, lca_data):
-        """Calculates the electric enviromental indicators 
+        """Calculates enviromental indicators resulting form electric 
+        energy consumption
 
         Parameters
         ----------
         lca_data : En15804LcaData
-            energy carrier LCA Dataset.
+            LCA-Dataset representing the used power generation mix
 
         """
         
@@ -1005,7 +1008,7 @@ class Building(object):
             self.lca_data = lca_data
     
     def _calc_simulated_annual_heat_energy(self):
-        """calculates the annual heating energy with the simulated heatload
+        """calculates the annual heating energy from the simulated heatload
 
         Returns
         -------
@@ -1030,16 +1033,16 @@ class Building(object):
                 
     
     def add_lca_data_heating(self, efficiency, lca_data, annual_heat_energy = None):
-        """Calculates the heating enviromental indicators 
+        """Calculates enviromental indicators resulting form heating
 
         Parameters
         ----------
         efficiency : float
-            overall efficiency of the building.
+            overall efficiency of the heating-system.
         annual_heat_load : float [MJ]
             heat load of the building over a year.
         lca_data : En15804LcaData
-            energy carrier LCA Dataset.
+            LCA-Dataset representing the used energy carrier.
 
         """
         if annual_heat_energy is None:
@@ -1059,6 +1062,16 @@ class Building(object):
             self.lca_data = lca_data
         
     def add_lca_data_template(self, lca_data_id, amount):
+        """This function loads environmental indicators from the JSON,
+        multiplies it with an amount and add it to the building LCA-Data
+
+        Parameters
+        ----------
+        lca_data_id : uuid
+            uuid of the Dataset to be loaded.
+        amount : float
+            factor.
+        """
         lca_data = En15804LcaData()
         
         lca_data.load_lca_data_template(lca_data_id, data_class = self.parent.data)
@@ -1069,8 +1082,7 @@ class Building(object):
             self.lca_data = lca_data * amount
         
     def print_be_information(self):
-        """prints area and gwp of all buildingelements from the building.
-
+        """prints area of all buildingelements
         """
         outer_walls = {"area": 0, "gwp": None }
         doors = {"area": 0, "gwp": None }

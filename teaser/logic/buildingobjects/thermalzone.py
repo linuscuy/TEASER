@@ -80,6 +80,10 @@ class ThermalZone(object):
         average density of the air in the thermal zone
     heat_capac_air : float [J/K]
         average heat capacity of the air in the thermal zone
+    
+    lca_data : En15804LcaData
+        enviromental indicator of the thermalzone. The data referencing to
+        one thermalzone
     """
 
     def __init__(self, parent=None):
@@ -719,16 +723,15 @@ class ThermalZone(object):
 
     def calc_lca_data(self, use_b4 = None, period_lca_scenario = None):
         """sums up every LCA-data from building elements oft he thermalzone.
-        Only one Floor is added in order to prevent redundant calculations.
-        
-
+ 
+    
         Parameters
         ----------
         use_b4 : bool, optional
-            if true alls replaced materials and building elements are added to
+            if true all replaced materials and building elements are added to
             stage B4. The default is None.
         period_lca_scenario : int [a], optional
-            period which is taken into account for LCA. The default is None.
+            period of use taken into account for LCA.
 
         """
         lca_data = En15804LcaData()
@@ -748,11 +751,11 @@ class ThermalZone(object):
         building_elements = self.get_buildingelements()
         
         for building_element in building_elements:
-            if type(building_element).__name__ != "Floor":
-                try:
-                    building_element.calc_lca_data(use_b4, period_lca_scenario)
-                    lca_data = lca_data + building_element.lca_data
-                except:
-                    print("Error while adding {}".format(type(building_element).__name__))
+
+            try:
+                building_element.calc_lca_data(use_b4, period_lca_scenario)
+                lca_data = lca_data + building_element.lca_data
+            except:
+                print("Error while adding {}".format(type(building_element).__name__))
             
         self.lca_data = lca_data

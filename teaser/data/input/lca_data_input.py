@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Oct 13 17:25:24 2021
+"""This module contains functions to load LCA JSON-data from dataclass into En15804LcaData objects"""
 
-@author: Linus
-"""
 
 
 from teaser.logic.buildingobjects.buildingphysics.en15804indicatorvalue import En15804IndicatorValue
@@ -16,15 +13,15 @@ def load_en15804_lca_data_id(lca_data, lca_id, data_class):
 
     Parameters
     ----------
-    lca_data : En15804MainLcaData()
-        instance of TEASERS En15804nLcaData class
+    lca_data : En15804LcaData()
+        instance of TEASERS En15804LcaData class to store selected LCA-dataset
 
     lca_id : str
-        id of LCA-data from JSON
+        uuid of LCA-data from JSON
 
     data_class : DataClass()
-        DataClass containing the bindings for En15804MainLcaData, TypeBuildingElement and
-        Material (typically this is the data class stored in prj.data,
+        DataClass containing the bindings for LCA-data
+        (typically this is the data class stored in prj.data,
         but the user can individually change that.
 
     """
@@ -140,15 +137,15 @@ def load_en15804_lca_data_fallback_id(lca_data, lca_id, data_class):
 
     Parameters
     ----------
-    lca_data : En15804MainLcaData()
-        instance of TEASERS En15804nLcaData class
+    lca_data : En15804LcaData()
+        instance of TEASERS En15804nLcaData class to store selected LCA-fallback
 
     lca_id : str
         id of LCA-data from JSON
 
     data_class : DataClass()
-        DataClass containing the bindings for En15804MainLcaData, TypeBuildingElement and
-        Material (typically this is the data class stored in prj.data,
+        DataClass containing the bindings for LCA-data-fallbacks
+        (typically this is the data class stored in prj.data,
         but the user can individually change that.
 
     """

@@ -27,7 +27,7 @@ def load_type_element(element, year, construction, data_class):
         Construction type, code list ('heavy', 'light', tabula, ...)
 
     data_class : DataClass()
-        DataClass containing the bindings for TypeBuildingElement and
+        DataClass containing the bindings for TypeBuildingElement, LCA-data and
         Material (typically this is the data class stored in prj.data,
         but the user can individually change that.
 
