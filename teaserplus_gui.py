@@ -1058,6 +1058,9 @@ class result(QtWidgets.QWidget):
                                     "adpf"
                                     ])
         
+        self.lbl_unit = QtWidgets.QLabel('Unit:')
+        self.vbox.addWidget(self.lbl_unit)
+        
        
         self.tbl_lca = QtWidgets.QTableWidget()
         self.tbl_lca.setColumnCount(22)
@@ -1129,30 +1132,78 @@ class result(QtWidgets.QWidget):
             
             content = [building.name, amount]
             
-            if indicator == "pere": content.extend(lca_data_dict["pere"])
-            elif indicator == "pert": content.extend(lca_data_dict["pert"])
-            elif indicator == "penre": content.extend(lca_data_dict["penre"])
-            elif indicator == "penrm": content.extend(lca_data_dict["penrm"])
-            elif indicator == "penrt": content.extend(lca_data_dict["penrt"])
-            elif indicator == "sm": content.extend(lca_data_dict["sm"])
-            elif indicator == "rsf": content.extend(lca_data_dict["rsf"])
-            elif indicator == "nrsf": content.extend(lca_data_dict["nrsf"])
-            elif indicator == "fw": content.extend(lca_data_dict["fw"])
-            elif indicator == "hwd": content.extend(lca_data_dict["hwd"])
-            elif indicator == "nhwd": content.extend(lca_data_dict["nhwd"])
-            elif indicator == "rwd": content.extend(lca_data_dict["rwd"])
-            elif indicator == "cru": content.extend(lca_data_dict["cru"])
-            elif indicator == "mfr": content.extend(lca_data_dict["mfr"])
-            elif indicator == "mer": content.extend(lca_data_dict["mer"])
-            elif indicator == "eee": content.extend(lca_data_dict["eee"])
-            elif indicator == "eet": content.extend(lca_data_dict["eet"])
-            elif indicator == "gwp": content.extend(lca_data_dict["gwp"])
-            elif indicator == "odp": content.extend(lca_data_dict["odp"])
-            elif indicator == "pocp": content.extend(lca_data_dict["pocp"])
-            elif indicator == "ap": content.extend(lca_data_dict["ap"])
-            elif indicator == "ep": content.extend(lca_data_dict["ep"])
-            elif indicator == "adpe": content.extend(lca_data_dict["adpe"])
-            elif indicator == "adpf": content.extend(lca_data_dict["adpf"])
+            if indicator == "pere": 
+                content.extend(lca_data_dict["pere"])
+                self.lbl_unit.setText("Unit: MJ")
+            elif indicator == "pert":
+                content.extend(lca_data_dict["pert"])
+                self.lbl_unit.setText("Unit: MJ")
+            elif indicator == "penre": 
+                content.extend(lca_data_dict["penre"])
+                self.lbl_unit.setText("Unit: MJ")
+            elif indicator == "penrm": 
+                content.extend(lca_data_dict["penrm"])
+                self.lbl_unit.setText("Unit: MJ")
+            elif indicator == "penrt": 
+                content.extend(lca_data_dict["penrt"])
+                self.lbl_unit.setText("Unit: MJ")
+            elif indicator == "sm": 
+                content.extend(lca_data_dict["sm"])
+                self.lbl_unit.setText("Unit: kg")
+            elif indicator == "rsf": 
+                content.extend(lca_data_dict["rsf"])
+                self.lbl_unit.setText("Unit: MJ")
+            elif indicator == "nrsf": 
+                content.extend(lca_data_dict["nrsf"])
+                self.lbl_unit.setText("Unit: MJ")
+            elif indicator == "fw": 
+                content.extend(lca_data_dict["fw"])
+                self.lbl_unit.setText("Unit: m^3")
+            elif indicator == "hwd": 
+                content.extend(lca_data_dict["hwd"])
+                self.lbl_unit.setText("Unit: kg")
+            elif indicator == "nhwd": 
+                content.extend(lca_data_dict["nhwd"])
+                self.lbl_unit.setText("Unit: kg")
+            elif indicator == "rwd": 
+                content.extend(lca_data_dict["rwd"])
+                self.lbl_unit.setText("Unit: kg")
+            elif indicator == "cru":
+                content.extend(lca_data_dict["cru"])
+                self.lbl_unit.setText("Unit: kg")
+            elif indicator == "mfr": 
+                content.extend(lca_data_dict["mfr"])
+                self.lbl_unit.setText("Unit: kg")
+            elif indicator == "mer": 
+                content.extend(lca_data_dict["mer"])
+                self.lbl_unit.setText("Unit: kg")
+            elif indicator == "eee": 
+                content.extend(lca_data_dict["eee"])
+                self.lbl_unit.setText("Unit: MJ")
+            elif indicator == "eet": 
+                content.extend(lca_data_dict["eet"])
+                self.lbl_unit.setText("Unit: MJ")
+            elif indicator == "gwp": 
+                content.extend(lca_data_dict["gwp"])
+                self.lbl_unit.setText("Unit: kg CO2 eq.")
+            elif indicator == "odp": 
+                content.extend(lca_data_dict["odp"])
+                self.lbl_unit.setText("Unit: kg R11 eq.")
+            elif indicator == "pocp": 
+                content.extend(lca_data_dict["pocp"])
+                self.lbl_unit.setText("Unit: kg Ethene eq.")
+            elif indicator == "ap": 
+                content.extend(lca_data_dict["ap"])
+                self.lbl_unit.setText("Unit: kg SO2 eq.")
+            elif indicator == "ep": 
+                content.extend(lca_data_dict["ep"])
+                self.lbl_unit.setText("Unit: kg Phosphate eq.")
+            elif indicator == "adpe": 
+                content.extend(lca_data_dict["adpe"])
+                self.lbl_unit.setText("Unit: kg Sb eq.")
+            elif indicator == "adpf": 
+                content.extend(lca_data_dict["adpf"])
+                self.lbl_unit.setText("Unit: MJ")
               
             self.add_lca_row(content)
                     
