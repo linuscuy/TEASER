@@ -736,21 +736,23 @@ class BuildingElement(object):
                 remaining_period = period_lca_scenario % self.service_life
                 
                 if use_b4:
-                    pass
-                    
+                    lca_data = n_be_repl * self.calc_lca_data_no_repl()                  
+                    lca_data = lca_data + (n_be_repl + 1) * self._calc_lca_data_layer_repl(self.service_life)                    
+                    lca_data = lca_data + self._calc_lca_data_layer_repl(remaining_period)                   
+                    lca_data = lca_data.sum_to_b4()                    
+                    lca_data = lca_data + self.calc_lca_data_no_repl()
                     
                 else:
-                    lca_data = (n_be_repl + 1) * self._calc_lca_data_no_repl()
-                    
-                    lca_data = lca_data + (n_be_repl + 1) * self._calc_lca_data_layer_repl(self.service_life)
-                    
+                    lca_data = (n_be_repl + 1) * self._calc_lca_data_no_repl()                    
+                    lca_data = lca_data + (n_be_repl + 1) * self._calc_lca_data_layer_repl(self.service_life)                    
                     lca_data = lca_data + self._calc_lca_data_layer_repl(remaining_period)
             else:
                 if use_b4:
-                    pass
+                    lca_data = self._calc_lca_data_layer_repl(period_lca_scenario)                    
+                    lca_data = lca_data.sum_to_b4()                    
+                    lca_data = lca_data + self._calc_lca_data_no_repl()
                 else:
-                    lca_data = self._calc_lca_data_no_repl()
-                    
+                    lca_data = self._calc_lca_data_no_repl()                   
                     lca_data = lca_data + self._calc_lca_data_layer_repl(period_lca_scenario)
                 
             self.lca_data = lca_data
