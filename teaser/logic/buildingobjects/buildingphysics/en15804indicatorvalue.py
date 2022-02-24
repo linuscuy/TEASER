@@ -96,7 +96,7 @@ class En15804IndicatorValue(object):
 
         Parameters
         ----------
-        value : TYPE
+        value : float
             value to be validated 
         stage_name : str
             printable name of a stage. Used for Error-Messages.
@@ -300,7 +300,7 @@ class En15804IndicatorValue(object):
 
     
     def _ignore_none_sum(self, addend1, addend2):
-        """sums up two numbers, but interprets Noneaddends as 0. When both
+        """sums up two numbers, but interprets None addends as 0. When both
         input-addends are None, it returns None
         
         Parameters
@@ -328,7 +328,7 @@ class En15804IndicatorValue(object):
                 
     def __add__(self, other):
         """Adds two En15804IndicatorValue-Objects. Every stage is summed up 
-        separately and both Objects need equal units.
+        separately. Both objects must have the same unit
         
 
         Parameters
@@ -459,7 +459,8 @@ class En15804IndicatorValue(object):
 
         Returns
         -------
-            sum : overall value of all stages. With or without stage d 
+            sum : float
+                overall value of all stages. With or without stage d 
 
         """
 
@@ -530,8 +531,8 @@ class En15804IndicatorValue(object):
         Parameters
         ----------
         stage : str
-            Stage to add
-        other : TYPE
+            Stage to add (e.g. 'b4')
+        other : En15804IndicatorValue
             the other En15804IndicatorValue
 
         Returns

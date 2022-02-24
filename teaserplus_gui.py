@@ -580,8 +580,10 @@ class about(QtWidgets.QWidget):
         self.hide()
         
 class eco(QtWidgets.QWidget):
-    def __init__(self):
-                
+    """ Window for TEASER+eco
+    """
+    
+    def __init__(self):          
         super(eco, self).__init__()
         self.prj = Project()
         self.prj.used_library_calc = "AixLib"
@@ -650,23 +652,31 @@ class eco(QtWidgets.QWidget):
         
         self.btn_add_bldg.clicked.connect(self.add_building)
         self.btn_start.clicked.connect(self.start)
-        self.btn_close.clicked.connect(self.close_about)
+        self.btn_close.clicked.connect(self.close)
         
     def add_building(self):
+        """Function to open the addBuilding-Window
+        """
         
         global posx, posy
         posx, posy = gf.dimensions(self)
         gf.next_window(self, addBuilding(self.prj, self), False)
 
     def start(self):
+        """Function to open the startSimulation-Window
+        """
         global posx, posy
         posx, posy = gf.dimensions(self)
         gf.next_window(self, startSimulation(self.prj, self), False)
 
-    def close_about(self):
+    def close(self):
+        """Function to close the eco-window
+        """
         self.hide()
 
 class addBuilding(QtWidgets.QWidget):
+    """Window to add buildings to the TEASER+eco-project
+    """
     def __init__(self, prj, parent):
         #initiate the parent
         self.prj = prj
@@ -775,6 +785,15 @@ class addBuilding(QtWidgets.QWidget):
         self.additonal_lca_data = [] #list with LCA-Data IDs
         
     def method_changed(self, value):
+        """Function to set suitable archetypes for the methods in the usage 
+        combo box
+
+        Parameters
+        ----------
+        value : str
+            method (e.g. 'iwu').
+
+        """
 
         self.cb_usage.clear()
         
@@ -791,6 +810,8 @@ class addBuilding(QtWidgets.QWidget):
                 self.cb_usage.addItems(["single_family_house","terraced_house","multi_family_house","apartment_block"])
                     
     def add(self):
+        """Function to add the building to the project
+        """
         
         method = self.cb_method.currentText()
         usage = self.cb_usage.currentText()
@@ -843,11 +864,15 @@ class addBuilding(QtWidgets.QWidget):
             self.parent.building_groups.append([first_index, len(self.prj.buildings)-1])
             
     def add_lca(self):
+        """Function to open the addLca-Window
+        """
         global posx, posy
         posx, posy = gf.dimensions(self)
         gf.next_window(self, addLca(self.prj, self), False)
 
 class addLca(QtWidgets.QWidget):
+    """Window to add additional LCA-data to the building.
+    """
     def __init__(self,prj,parent):
         self.prj = prj
         self.parent = parent
@@ -890,6 +915,8 @@ class addLca(QtWidgets.QWidget):
         self.btn_add.clicked.connect(self.add)
     
     def add(self):
+        """Function to add the additional LCA-data to the building
+        """
         lca_id = self.led_uuid.text()
         amount = self.led_amount.text()
         
@@ -905,6 +932,8 @@ class addLca(QtWidgets.QWidget):
         
     
 class startSimulation(QtWidgets.QWidget):
+    """Window to start the simulation
+    """
     def __init__(self, prj, parent):
 
         self.prj = prj
@@ -971,6 +1000,8 @@ class startSimulation(QtWidgets.QWidget):
         self.btn_start.clicked.connect(self.start_simulation)
         
     def start_simulation(self):
+        """Function to start the simulation
+        """
         
         if self.led_time != "" and self.led_eff != "" and self.txtB_inPath_csv != "" and self.txtB_inPath_out != "" and self.led_elec_lca != "" and self.led_heat_lca != "":
         
@@ -1006,15 +1037,18 @@ class startSimulation(QtWidgets.QWidget):
     
         
     def func_selectDir_out(self):
+        """function to select the directory"""
         dirpath = QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory")       
         self.txtB_inPath_out.setText(dirpath)
         
     
     def func_selectDir_csv(self):
+        """function to select the result.csv path"""
         dirpath = QtWidgets.QFileDialog.getSaveFileName(self, 'Select .csv file')
         self.txtB_inPath_csv.setText(dirpath[0])
 
 class result(QtWidgets.QWidget):
+    """Window to display the result of the life cycle assessment"""
     def __init__(self, prj, parent):
 
         self.prj = prj
@@ -1297,6 +1331,8 @@ class result(QtWidgets.QWidget):
         self.tbl_lca.setItem(rowPosition , 21, QtWidgets.QTableWidgetItem(str(row[21])))
         
     def copy_to_clipboard(self):
+        """Function to copy the result to clipboard
+        """
         
         self.clipboard = QtGui.QClipboard()
         
@@ -1328,7 +1364,6 @@ class result(QtWidgets.QWidget):
                
             
 
-            
         
         
 
