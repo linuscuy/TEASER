@@ -611,8 +611,7 @@ class eco(QtWidgets.QWidget):
         self.btn_add_bldg = QtWidgets.QPushButton('Add building')
         self.vbox.addWidget(self.btn_add_bldg)
         
-        self.btn_rem_bldg = QtWidgets.QPushButton('Remove Building')
-        self.vbox.addWidget(self.btn_rem_bldg)
+
         
         self.bGrid = QtWidgets.QGridLayout()
         self.gB_buildings.setLayout(self.bGrid)
