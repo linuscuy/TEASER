@@ -1,6 +1,6 @@
 ![E.ON EBC RWTH Aachen University](./doc/_static/EBC_Logo.png)
 
-# TEASER - Tool for Energy Analysis and Simulation for Efficient Retrofit
+# TEASER -  Tool for Energy Analysis and Simulation for Efficient Retrofit
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 [![Coverage Status](https://coveralls.io/repos/github/RWTH-EBC/TEASER/badge.svg)](https://coveralls.io/github/RWTH-EBC/TEASER)
