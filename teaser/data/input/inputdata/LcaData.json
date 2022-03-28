@@ -2673,7 +2673,7 @@
 			"d": -423.889170440191
 		},
 		"name": "Holzfaserdämmstoff",
-		"fallback": {"c4": "44e4bf51-8e23-47e3-8f5e-5243525bb32e"}
+		"fallback": null
 	},
 	"8be785fa-5548-4ea5-a2d7-b962675b9eff": {
 		"ref_flow": {
@@ -3166,7 +3166,7 @@
 			"d": -6177.532446127191
 		},
 		"name": "Laubschnittholz - getrocknet (Durchschnitt DE)",
-		"fallback": {"c4": "44e4bf51-8e23-47e3-8f5e-5243525bb32e"}
+		"fallback": null
 	},
 	"a6310ea3-0b04-4c6f-80c2-2e7dfe080785": {
 		"ref_flow": {
@@ -3842,7 +3842,7 @@
 			"d": -3860.4577036191054
 		},
 		"name": "Nadelschnittholz - getrocknet (Durchschnitt DE)",
-		"fallback": {"c4": "44e4bf51-8e23-47e3-8f5e-5243525bb32e"}
+		"fallback": null
 	},
 	"af13e5a8-0961-454a-ad3a-7093a37fc802": {
 		"ref_flow": {
@@ -6156,7 +6156,7 @@
 			"d": -1878.7433515682785
 		},
 		"name": "Holzfaserdämmstoff Trockenverfahren (Durchschnitt DE)",
-		"fallback": {"c4": "44e4bf51-8e23-47e3-8f5e-5243525bb32e"}
+		"fallback": null
 	},
 	"76d3f78a-8743-49fe-b4a1-f43b819cb930": {
 		"ref_flow": {
@@ -6364,7 +6364,7 @@
 			"d": -1110.28055643528
 		},
 		"name": "Holzwolle-Leichtbauplatte",
-		"fallback": {"c4": "44e4bf51-8e23-47e3-8f5e-5243525bb32e"}
+		"fallback": null
 	},
 	"a4fceab4-71a2-46c9-ac9a-19a964d48ce5": {
 		"ref_flow": {
@@ -8488,7 +8488,7 @@
 			"d": -7220
 		},
 		"name": "EGGER OSB-Platten",
-		"fallback": {"c4": "44e4bf51-8e23-47e3-8f5e-5243525bb32e"}
+		"fallback": null
 	},
 	"e98074e5-837f-4ece-a1ba-b215f53fd56a": {
 		"ref_flow": {
@@ -12845,7 +12845,7 @@
 			"d": 0
 		},
 		"name": "Mitteldichte Faserplatte (Durchschnitt DE)",
-		"fallback": {"c4": "44e4bf51-8e23-47e3-8f5e-5243525bb32e"}
+		"fallback": null
 	},
 	"bdda4364-451f-4df2-a68b-5912469ee4c9": {
 		"ref_flow": {
