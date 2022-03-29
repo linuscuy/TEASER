@@ -1009,7 +1009,10 @@ class startSimulation(QtWidgets.QWidget):
             
             self.prj.period_lca_scenario = int(self.led_time.text())
             
-            sim.simulate(path = self.txtB_inPath_out.text(), prj = self.prj, loading_time = 3600, result_path = self.txtB_inPath_csv.text())
+            path1 = self.txtB_inPath_out.text().replace("/", "\\")
+            path2 = self.txtB_inPath_csv.text().replace("/", "\\")
+            
+            sim.simulate(path = path1, prj = self.prj, loading_time = 3600, result_path = path2)
             
             lca_data_elec = En15804LcaData()
             lca_data_elec.load_lca_data_template(self.led_elec_lca.text(), self.prj.data)
