@@ -6,6 +6,7 @@ import uuid
 from teaser.logic.buildingobjects.buildingphysics.en15804indicatorvalue import En15804IndicatorValue
 
 import teaser.data.input.lca_data_input as lca_data_input
+import teaser.data.output.lca_data_output as lca_data_output
 
 class En15804LcaData(object):
     """En15804LcaData class
@@ -605,6 +606,28 @@ class En15804LcaData(object):
 
         lca_data_input.load_en15804_lca_data_id(lca_data=self,
                                      lca_id=lca_id,
+                                     data_class=data_class)
+        
+    def save_lca_data_template(self, data_class=None):
+        """LCA-data loader.
+
+        Saves LCA-data specified in the json.
+
+        Parameters
+        ----------
+
+        data_class : DataClass
+            DataClass containing the bindings for LCA-data and LCA-data
+            -fallbacks (typically this is the data class stored in prj.data,
+            but the user can individually change that.)
+
+        """
+        
+        if data_class is None:
+            data_class = self.parent.parent.parent.parent.data
+        
+
+        lca_data_output.save_lca_data(lca_data=self,
                                      data_class=data_class)
         
     def load_fallbacks(self, fallback_dictonarie, data_class):
