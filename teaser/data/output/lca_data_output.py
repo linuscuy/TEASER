@@ -77,10 +77,16 @@ def save_lca_data(lca_data, data_class):
         
 
     with open(utilities.get_full_path(data_class.path_lcad), 'w') as file:
-        file.write(json.dumps(
+        
+
+        
+        file.write("test")
+        
+        json.dump(
             data_class.lca_data_bind,
+            file,
             indent=4,
-            separators=(',', ': ')))
+            separators=(',', ': '))
         
 
 def save_lca_data_fallback(lca_data, data_class):
