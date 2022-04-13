@@ -638,7 +638,7 @@ class En15804IndicatorValue(object):
             return_dict["c2"] = self.c2
         if self.c3 is not None:
             return_dict["c3"] = self.c3
-        if self.c3 is not None:
+        if self.c4 is not None:
             return_dict["c4"] = self.c4
         if self.d is not None:
             return_dict["d"] = self.d
