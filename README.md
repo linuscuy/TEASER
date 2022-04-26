@@ -1,6 +1,91 @@
-![E.ON EBC RWTH Aachen University](./doc/_static/EBC_Logo.png)
+![E.ON EBC RWTH Aachen University](./pictures/TEASER+_header.png)
 
-# TEASER - Tool for Energy Analysis and Simulation for Efficient Retrofit
+# TEASER+ - An extension to TEASER tool with input and output functionalities for CityGML and Energy ADE 
+
+<!---[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)-->
+
+The TEASER+ extension is developed by members of the "Institute of Energy Efficiency and Sustainable Building (e3D), RWTH Aachen University" using Python 3.5+.
+This extension is based on the "Tool for Energy Analysis and Simulation for Efficient Retrofit (TEASER)" and can be used to import and export CiyGML data sets with or without Energy ADE version 1.0.
+The TEASER+ extension aims to help the simulation scientists to facilitate energy performance simulations using CityGML models.
+This GitHub page will be used to further develop the extension. 
+<!---and make it available under the [MIT License](https://gitlab.e3d.rwth-aachen.de/e3d-software-tools/citybit/citybit/-/blob/master/License/LICENSE).-->
+
+If you have any questions regarding TEASER+ feel free to contact us at: [shamovich@e3d.rwth-aachen.de](mailto:shamovich@e3d.rwth-aachen.de) or [cityatb@e3d.rwth-aachen.de](mailto:cityatb@e3d.rwth-aachen.de) 
+
+
+## Description
+
+Emerging technologies, computational algorithms and simulation environments enable users, facility managers and occupants to achieve a good estimation of the energy demands of their buildings, districts and cities.
+This is a huge step forward towards the realization of the 7th United Nations Sustainable Goal of ensuring an affordable, reliable, sustainable and modern energy for the population of our planet.
+The availability of 3D building models has been increasing in the last few years. As CityGML datasets are now available for some cities and municipalities, energy analysis using CityGML data is advantageous for the UBEM community. Since CityGML data is mainly geometric, an inclusion of the open Energy Application Domain Extension (ADE) facilitates an exchange and disseminination of energy specific data of the considered urban area. Therefore, the TEASER+ extension enhances the existing feature set and abilities of the TEASER tool, and allows integrating 3D city models with energy specific data for urban building performance simulations. 
+
+## Version
+
+The TEASER+ is currently being developed and is based on the TEASER version 0.7.6. 
+
+<!---## How to use TEASER+-->
+
+
+### Dependencies
+
+TEASER+ is currently being developed using Python 3.5+ and PySide2. Beside the basic dependencies from the TEASER tool, TEASER+ uses BuildingsPy version 2.0.0 to automate the simulation process. The current developments of TEASER+ use lxml for importing and exporting CityGML datasets with or without the Energy ADE.
+
+### Installation
+
+The TEASER+ can be used by cloning or downloading the whole TEASER+ package from the GIT Repository. In future, the user can to run the "main.py" for loading the GUI.
+
+### How to contribute to the development of TEASER+
+
+You are invited to contribute to the development of TEASER+. You may report any issues by sending us an email to [shamovich@e3d.rwth-aachen.de](mailto:shamovich@e3d.rwth-aachen.de) or [cityatb@e3d.rwth-aachen.de](mailto:cityatb@e3d.rwth-aachen.de).
+
+## How to cite TEASER+
+The following articles can be used to cite TEASER+:
++ Urban energy simulations using open CityGML models: A comparative analysis. Malhotra, A., Shamovich, M., Frisch, J., & van Treeck, C.. Energy and Buildings, 255, 111658, January 2022.
+
+### TEASER+ related publications
++ Parametric Study of the Different Level of Detail of CityGML and Energy-ADE Information for Energy Performance Simulations. Malhotra, A., Shamovich, M., Frisch, J., & van Treeck, C.. In Proc. 16th IBPSA Conf (Vol. 16, pp. 3429-3436), September 2019.
+
+
+## How to cite original TEASER
+
++ TEASER: an open tool for urban energy modelling of building stocks. Remmen P., Lauster M., Mans M., Fuchs M., Osterhage T., Müller D.. Journal of Building Performance Simulation, February 2017,
+[pdf](http://dx.doi.org/10.1080/19401493.2017.1283539),
+[bibtex](https://github.com/RWTH-EBC/TEASER/tree/master/doc/cite_jbps.bib)
+
+### TEASER related publications
+
++ CityGML Import and Export for Dynamic Building Performance Simulation in Modelica. Remmen P.,
+Lauster M., Mans M., Osterhage T., Müller D.. BSO16, p.329-336, September 2016,
+[pdf](http://www.ibpsa.org/proceedings/BSO2016/p1047.pdf),
+[bibtex](https://github.com/RWTH-EBC/TEASER/tree/master/doc/cite.bib)
+
++ Scalable Design-Driven Parameterization of Reduced Order Models Using Archetype Buildings with TEASER.
+Lauster M., Mans M., Remmen P., Fuchs M., Müller D.. BauSIM2016, p.535-542, September 2016,
+[pdf](https://www.researchgate.net/profile/Moritz_Lauster/publication/310465372_Scalable_Design-Driven_Parameterization_of_Reduced_Order_Models_using_Archetype_Buildings_with_TEASER/links/582ee96908ae004f74be1fb0.pdf?origin=publication_detail&ev=pub_int_prw_xdl&msrp=eEyK6WYemhC8wK7xkMEPRDO4obE4uxBN4-0BdBy1Ldwhy9FhCe1pXfNObJYubvC_aZN0IWDPf9uayBo3u79bsZvg3hzUoLoYRatES2ARH8c.B2cYwSICt0IOa7lD-4oAiEa_3TtrO-7k-1W9chuNQwr_VNMCpZ5ubSb-eY2D77rGUP4S6wS8m6vudUUbMlXbQQ.Cledgd1Q9fPp11nYGpcpKNhSS6bVTqAEXeMZPkiV3HsJxcVWTFj4Hr_jmLZ0MOzDxbDEZObcGiKfmTL_9k_59A)
+
++ Refinement of Dynamic Non-Residential Building Archetypes Using Measurement Data and Bayesian Calibration
+Remmen P., Schäfer J., Müller D.. Building Simulation 2019, September 2019,
+[pdf](https://www.researchgate.net/publication/337925776_Refinement_of_Dynamic_Non-Residential_Building_Archetypes_Using_Measurement_Data_and_Bayesian_Calibration)
+
++ Selecting statistical indices for calibrating building energy models. Vogt, M., Remmen P., Lauster M., Fuchs M. , Müller D.. Building and Environment 144, pages 94-107, October 2018. [bibtex](https://github.com/RWTH-EBC/TEASER/tree/master/doc/cite_be.bib)
+
++  A parametric study of TEASER where all functions and  parameters used in TEASER are gathered and explained. The publication can be found [here](https://publications.rwth-aachen.de/record/749801/files/749801.pdf).
+
+<!---## License
+
+CityBIT is released by RWTH Aachen University, E3D - Institute of Energy Efficiency and Sustainable Building, under the [MIT License](https://gitlab.e3d.rwth-aachen.de/e3d-software-tools/citybit/citybit/-/blob/master/License/LICENSE).-->
+
+## Acknowledgements
+
+The developers of TEASER+ would like to thank the Institute of Energy Efficient Building and Indoor Climate (EBC), E.ON Energy Research Center, RWTH Aachen University for their effort in developing TEASER and for making it available open-source. 
+
+
+
+
+<!---
+
+
+# TEASER -  Tool for Energy Analysis and Simulation for Efficient Retrofit
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 [![Coverage Status](https://coveralls.io/repos/github/RWTH-EBC/TEASER/badge.svg)](https://coveralls.io/github/RWTH-EBC/TEASER)
@@ -149,3 +234,4 @@ and with financial support by BMWi (German Federal Ministry for Economic
 Affairs and Energy).
 
 <img src="http://www.innovation-beratung-foerderung.de/INNO/Redaktion/DE/Bilder/Titelbilder/titel_foerderlogo_bmwi.jpg;jsessionid=4BD60B6CD6337CDB6DE21DC1F3D6FEC5?__blob=poster&v=2)" width="200">
+-->

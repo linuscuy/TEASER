@@ -1063,8 +1063,10 @@ internal_gains_mode: int [1, 2, 3]
 
         citygml_out.save_gml_lxml(self, new_path, ref_coordinates=ref_coordinates, gml_copy=gml_copy, results=results)
 
-    def load_citygml(self, method="iwu", path=None, energyade=False,
+    def load_citygml(self, method="tabula_de", path=None, energyade=False,
                      gml_bldg_ids=None, gml_bldg_names=None, gml_bldg_addresses=None):
+    # def load_citygml(self, method="iwu" (it has to be a string), path=None, energyade=False(if energy ade as an input),
+                     # gml_bldg_ids=None(this is list and the rest as well), gml_bldg_names=None, gml_bldg_addresses=None):
         """Loads buildings from a citygml file
 
         calls the function load_gml choose_gml or load_gmlade
