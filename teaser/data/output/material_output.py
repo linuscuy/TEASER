@@ -64,8 +64,12 @@ def save_material(material, data_class):
             material.material_id]["thickness_list"] = material.thickness_list
         data_class.material_bind[
             material.material_id]["solar_absorp"] = material.solar_absorp
-        data_class.material_bind[
-            material.material_id]["lca_id"] = material.lca_data.lca_data_id
+        if material.lca_data is not None:
+            data_class.material_bind[
+                material.material_id]["lca_id"] = material.lca_data.lca_data_id
+        else:
+            data_class.material_bind[
+                material.material_id]["lca_id"] = None
         data_class.material_bind[
             material.material_id]["service_life"] = material.ervice_life
 
