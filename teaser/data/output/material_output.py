@@ -71,7 +71,7 @@ def save_material(material, data_class):
             data_class.material_bind[
                 material.material_id]["lca_id"] = None
         data_class.material_bind[
-            material.material_id]["service_life"] = material.ervice_life
+            material.material_id]["service_life"] = material.service_life
 
     with open(utilities.get_full_path(data_class.path_mat), 'w') as file:
         file.write(json.dumps(
